@@ -15,8 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
+from logika_general import views as logika_general_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("logika_general.urls", namespace="logika_general")),
+    path("logika-teachers/", include("logika_teachers.urls", namespace="logika_teachers")),
 ]
+
+handler404 = logika_general_views.error_404
+handler500 = logika_general_views.error_500

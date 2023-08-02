@@ -19,9 +19,15 @@ def get_authenticated_session():
         "login": os.environ.get("LMS_LOGIN"),
         "password": os.environ.get("LMS_PASS"),
     }
-    resp = session.post(
-        "https://lms.logikaschool.com/s/auth/api/e/user/auth", data=login_payload
-    )
+    try:
+        resp = session.post(
+            "https://lms.logikaschool.com/s/auth/api/e/user/auth", data=login_payload
+        )
+    except Exception as auth_exception:
+        raise LmsAuthenticationFailed(
+            "Unable to authenticate. Something gone wrong in auth process"
+        ) from auth_exception
+
     if resp.ok:
         print("Session creation is successful!")
         return session
