@@ -21,3 +21,20 @@ class TutorProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
+
+
+class TeacherFeedback(models.Model):
+    teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
+    tutor = models.ForeignKey(TutorProfile, on_delete=models.DO_NOTHING)
+    # lesson_mark = models.IntegerField()
+    mistakes = models.CharField(max_length=256)
+    problems = ArrayField(models.CharField(max_length=256))
+    additional_problems = models.CharField(max_length=1024)
+    predicted_churn = models.CharField(max_length=256)
+    technical_problems = models.CharField(max_length=1024)
+    km_work_comment = models.CharField(max_length=1024, blank=True, null=True)
+    tutor_work_comment = models.CharField(max_length=1024, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Форма ЗЗ {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"

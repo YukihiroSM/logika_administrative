@@ -19,7 +19,12 @@
             <div class="col-lg-6">
                 {%if user_role == "teacher" %}
                 {% for tutor in tutors%}
-                    <h1>{{tutor.user.get_full_name}}</h1>
+                    <a href="{% url 'logika_teachers:teacher-feedback' user.id tutor.user.id %}"><h1>Форма ЗЗ для {{tutor.user.get_full_name}}</h1></a>
+                {% endfor %}
+                <hr>
+                <h2>Відправлені форми:</h2>
+                {% for feedback in feedbacks %}
+                    <a href="{% url 'logika_teachers:view-forms' feedback.id %}"><h1> Форма для {{feedback.tutor.user.get_full_name}} від {{ feedback.created_at }}</h1></a>
                 {% endfor %}
                 {% elif user_role == "tutor" %}
                 <a href="{% url 'logika_teachers:create-teacher'%}">Створити викладача</a>

@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from logika_teachers.forms import TeacherCreateForm
-from logika_teachers.models import TeacherProfile, TutorProfile
+from logika_teachers.forms import TeacherCreateForm, TeacherFeedbackForm
+from logika_teachers.models import TeacherProfile, TutorProfile, TeacherFeedback
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from transliterate import translit
 from utils.get_user_role import get_user_role
 
@@ -13,6 +14,7 @@ def teacher_profile(request, id):
                   {"teacher_profile": teacher_profile, "auser_role": user_role})
 
 
+@login_required
 def create_teacher(request):
     alerts = []
     if request.method == "POST":
@@ -60,3 +62,41 @@ def create_teacher(request):
         form = TeacherCreateForm()
 
     return render(request, "logika_teachers/create_teacher.html", {"form": form})
+
+
+def teacher_feedback_form(request, teacher_id, tutor_id):
+    teacher_user = User.objects.filter(id=teacher_id).first()
+    teacher_profile = TeacherProfile.objects.filter(user=teacher_user).first()
+
+    tutor_user = User.objects.filter(id=tutor_id).first()
+    tutor_profile = TutorProfile.objects.filter(user=tutor_user).first()
+
+    if request.method == "POST":
+        form = TeacherFeedbackForm(request.POST)
+        if form.is_valid():
+            form_data = form.cleaned_data
+            new_form = TeacherFeedback(
+                teacher=teacher_profile,
+                tutor=tutor_profile,
+                mistakes=form_data["mistakes"],
+                additional_problems=form_data["additional_problems"],
+                problems=form_data["problems"],
+                predicted_churn=form_data["predicted_churn"],
+                technical_problems=form_data["technical_problems"],
+                km_work_comment=form_data["km_work_comment"],
+                tutor_work_comment=form_data["tutor_work_comment"],
+            )
+            new_form.save()
+            return redirect("/")
+    else:
+        form = TeacherFeedbackForm()
+
+    return render(request, "logika_teachers/feedback_form.html",
+                  {"teacher_profile": teacher_profile,
+                   "teacher_id": teacher_id, "tutor_id": tutor_id})
+
+
+def view_forms(request, feedback_id):
+    feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
+    user_role = get_user_role(request.user)
+    return render(request, "logika_teachers/view_forms.html", {"feedback": feedback, "user_role": user_role})

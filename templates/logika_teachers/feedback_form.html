@@ -1,0 +1,130 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Skeleton {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-main">
+                    <!--                    <h4 class="text-capitalize breadcrumb-title">Форма ЗЗ</h4>-->
+                    <div class="breadcrumb-action justify-content-center flex-wrap">
+
+                    </div>
+                </div>
+                <div class="col">
+
+                    <div class="col-lg-6">
+                        <div class="card card-horizontal card-default card-md mb-4">
+                            <div class="card-header">
+                                <h6>Форма ЗЗ</h6>
+                            </div>
+                            <div class="card-body py-md-30">
+                                <div class="horizontal-form">
+                                    <form action="{% url 'logika_teachers:teacher-feedback' teacher_id tutor_id %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group row mb-25">
+                                            <label for=""
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть ваші уроки
+                                                (від 1 до 10)</label>
+                                            <div class="slider-wrapper">
+                                                <div class="dm-slider">
+                                                    <div class="slider-basic ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
+                                                        <div class="ui-slider-range ui-corner-all ui-widget-header ui-slider-range-min">
+                                                        <span tabindex="0"
+                                                              class="ui-slider-handle ui-corner-all ui-state-default"></span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-25">
+                                            <div class="form-group select-px-15 tagSelect-rtl">
+                                                <label for="select-tag2"
+                                                       class="il-gray fs-14 fw-500 align-center mb-10">Основні проблеми
+                                                    груп</label>
+                                                <div class="dm-select ">
+                                                    <select name="problems" id="select-tag2"
+                                                            class="form-control select2-hidden-accessible" multiple=""
+                                                            tabindex="-1" aria-hidden="true">
+                                                        <option value="Не маєте авторитету перед учнями">Не маєте авторитету перед учнями</option>
+                                                        <option value="Учні не товаришують один з одним">Учні не товаришують один з одним</option>
+                                                        <option value="Не виконують ДЗ">Не виконують ДЗ</option>
+                                                        <option value="Не активні учні">Не активні учні</option>
+                                                        <option value="Занадто активні учні">Занадто активні учні</option>
+                                                        <option value="Учні не слухаються">Учні не слухаються</option>
+                                                        <option value="В моїх групах немає проблем">В моїх групах немає проблем</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="additional_problems"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10"> Додаткові
+                                                проблеми </label>
+                                            <textarea class="form-control" id="additional_problems"
+                                                      rows="3" name="additional_problems"></textarea>
+                                        </div>
+
+                                        <div class="form-group form-element-textarea">
+                                            <label for="mistakes"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10"> Які основні помилки
+                                                були допущені?</label>
+                                            <textarea class="form-control" id="mistakes"
+                                                      rows="3" name="mistakes"></textarea>
+                                        </div>
+
+                                        <div class="form-group form-element-textarea">
+                                            <label for="predicted_churn"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Передбачувані відвали
+                                                (впишіть ID учня) та причину</label>
+                                            <textarea class="form-control" id="predicted_churn"
+                                                      rows="3" name="predicted_churn"></textarea>
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="technical_problems"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Пропишіть технічні
+                                                проблеми на локації/платформі/в онлайні з якими ви стикнулись на
+                                                уроці</label>
+                                            <textarea class="form-control" id="technical_problems"
+                                                      rows="3" name="technical_problems"></textarea>
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="km_work_comment"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть роботу
+                                                КМа</label>
+                                            <textarea class="form-control" id="km_work_comment"
+                                                      rows="3" name="km_work_comment"></textarea>
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="tutor_work_comment"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть роботу
+                                                тьютора</label>
+                                            <textarea class="form-control" id="tutor_work_comment"
+                                                      rows="3" name="tutor_work_comment"></textarea>
+                                        </div>
+
+                                        <div class="form-group row mb-0">
+                                            <div class="layout-button mt-25">
+                                                <button type="submit"
+                                                        class="btn btn-primary btn-default btn-squared px-30">Відправити
+                                                </button>
+                                            </div>
+                                        </div>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

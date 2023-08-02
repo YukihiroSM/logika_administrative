@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from utils.get_user_role import get_user_role
-from logika_teachers.models import TeacherProfile, TutorProfile
+from logika_teachers.models import TeacherProfile, TutorProfile, TeacherFeedback
 
 
 @login_required(login_url="/login")
@@ -10,13 +10,16 @@ def index(request):
     user_role = get_user_role(request.user)
     teachers = []
     tutors = []
+    feedbacks = []
     if user_role == "teacher":
         teacher_profile = TeacherProfile.objects.filter(user=request.user).first()
-        tutors = teacher_profile.tutors.all()
+        feedbacks = TeacherFeedback.objects.filter(teacher=teacher_profile).all()
+        tutors = teacher_profile.related_tutors.all()
     if user_role == "tutor":
         teachers = TutorProfile.objects.filter(user=request.user).first().related_teachers.all()
+        feedbacks = TeacherFeedback.objects.filter(teacher__in=teachers).all()
 
-    return render(request, "index.html", context={"user": request.user, "user_role": user_role, "tutors": tutors, "teachers": teachers})
+    return render(request, "index.html", context={"user": request.user, "user_role": user_role, "tutors": tutors, "teachers": teachers, "feedbacks": feedbacks})
 
 
 # # sign in user

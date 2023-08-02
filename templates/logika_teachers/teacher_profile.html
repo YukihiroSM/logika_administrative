@@ -35,7 +35,7 @@
                                 </div>
                                 <div class="ap-nameAddress pb-3 pt-1">
                                     <h5 class="ap-nameAddress__title">{{teacher_profile.user.get_full_name}}</h5>
-                                    <p class="ap-nameAddress__subTitle fs-14 m-0">Тьютор: </p>
+<!--                                    <p class="ap-nameAddress__subTitle fs-14 m-0">Тьютор: </p>-->
                                     <p class="ap-nameAddress__subTitle fs-14 m-0">
                                         <img src="{% static 'img/svg/map-pin.svg' %}" alt="map-pin" class="svg">Онлайн
                                     </p>
@@ -66,15 +66,13 @@
                                 <div class="user-content-info">
                                     <p class="user-content-info__item">
                                         <img class="svg" src="{% static 'img/svg/mail.svg' %}" alt="mail"></button>
-                                        Clayton@example.com
+                                        {{teacher_profile.user.email}}
                                     </p>
                                     <p class="user-content-info__item">
-                                        <img src="{% static 'img/svg/phone.svg' %}" alt="phone" class="svg">+44 (0161)
-                                        347
-                                        8854
+                                        <img src="{% static 'img/svg/phone.svg' %}" alt="phone" class="svg">{{teacher_profile.phone_number}}
                                     </p>
                                     <p class="user-content-info__item mb-0">
-                                        <img src="{% static 'img/svg/globe.svg' %}" alt="globe" class="svg">www.example.com
+                                        <img src="{% static 'img/svg/globe.svg' %}" alt="globe" class="svg">{{teacher_profile.telegram_nickaname}}
                                     </p>
                                 </div>
                             </div>
@@ -85,29 +83,29 @@
                                     Курси
                                 </div>
                             </div>
-                            <div class="card-body pt-md-1 pt-0">
-                                <ul class="user-skils-parent">
-                                    <li class="user-skils-parent__item">
-                                        <a href="#">Python Start</a>
-                                    </li>
-                                    <li class="user-skils-parent__item">
-                                        <a href="#">Python Pro</a>
-                                    </li>
-                                    <li class="user-skils-parent__item">
-                                        <a href="#">Scratch</a>
-                                    </li>
+<!--                            <div class="card-body pt-md-1 pt-0">-->
+<!--                                <ul class="user-skils-parent">-->
+<!--                                    <li class="user-skils-parent__item">-->
+<!--                                        <a href="#">Python Start</a>-->
+<!--                                    </li>-->
+<!--                                    <li class="user-skils-parent__item">-->
+<!--                                        <a href="#">Python Pro</a>-->
+<!--                                    </li>-->
+<!--                                    <li class="user-skils-parent__item">-->
+<!--                                        <a href="#">Scratch</a>-->
+<!--                                    </li>-->
 
-                                </ul>
-                            </div>
+<!--                                </ul>-->
+<!--                            </div>-->
                         </div>
                     </div>
                 </aside>
             </div>
             <div class="col">
                 <div class="ap-tab ap-tab-header">
-                    <div class="ap-tab-header__img">
-                        <img src="{% static 'img/ap-header.png' %}" alt="ap-header" class="img-fluid w-100">
-                    </div>
+<!--                    <div class="ap-tab-header__img">-->
+<!--                        <img src="{% static 'img/ap-header.png' %}" alt="ap-header" class="img-fluid w-100">-->
+<!--                    </div>-->
                     <div class="ap-tab-wrapper">
                         <ul class="nav px-25 ap-tab-main" id="ap-tab" role="tablist">
                             <li class="nav-item">
@@ -147,11 +145,11 @@
                                     <div class="ap-po-details radius-xl d-flex justify-content-between">
                                         <div>
                                             <div class="overview-content">
-                                                <h1>80%</h1>
+                                                <h1>--%</h1>
                                                 <p>Успішність</p>
                                                 <div class="ap-po-details-time">
                                                     <span class="color-success"><i class="las la-arrow-up"></i>
-                                                        <strong>25%</strong></span>
+                                                        <strong>--%</strong></span>
                                                     <small></small>
                                                 </div>
                                             </div>
@@ -171,11 +169,11 @@
                                     <div class="ap-po-details radius-xl d-flex justify-content-between">
                                         <div>
                                             <div class="overview-content">
-                                                <h1>5</h1>
+                                                <h1>--</h1>
                                                 <p>Кількість відвалів</p>
                                                 <div class="ap-po-details-time">
                                                     <span class="color-success"><i class="las la-arrow-down"></i>
-                                                        <strong>25%</strong></span>
+                                                        <strong>--%</strong></span>
                                                     <small></small>
                                                 </div>
                                             </div>
@@ -195,11 +193,11 @@
                                     <div class="ap-po-details radius-xl d-flex justify-content-between">
                                         <div>
                                             <div class="overview-content">
-                                                <h1>45%</h1>
+                                                <h1>--%</h1>
                                                 <p>Конверсія</p>
                                                 <div class="ap-po-details-time">
                                                     <span class="color-danger"><i class="las la-arrow-down"></i>
-                                                        <strong>13%</strong></span>
+                                                        <strong>--%</strong></span>
                                                     <small></small>
                                                 </div>
                                             </div>
@@ -225,12 +223,12 @@
                                                     <img src="{% static 'img/svg/more-horizontal.svg' %}"
                                                          alt="more-horizontal" class="svg">
                                                 </a>
-                                                <div class="dropdown-menu dropdown-menu-right"
-                                                     aria-labelledby="products">
-                                                    <a class="dropdown-item" href="#">Action</a>
-                                                    <a class="dropdown-item" href="#">Another action</a>
-                                                    <a class="dropdown-item" href="#">Something else here</a>
-                                                </div>
+<!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+<!--                                                     aria-labelledby="products">-->
+<!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+<!--                                                </div>-->
                                             </div>
                                         </div>
                                         <div class="card-body p-0">
@@ -286,12 +284,12 @@
                                                     <img src="{% static 'img/svg/more-horizontal.svg' %}"
                                                          alt="more-horizontal" class="svg">
                                                 </a>
-                                                <div class="dropdown-menu dropdown-menu-right"
-                                                     aria-labelledby="products">
-                                                    <a class="dropdown-item" href="#">Action</a>
-                                                    <a class="dropdown-item" href="#">Another action</a>
-                                                    <a class="dropdown-item" href="#">Something else here</a>
-                                                </div>
+<!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+<!--                                                     aria-labelledby="products">-->
+<!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+<!--                                                </div>-->
                                             </div>
                                         </div>
                                         <div class="card-body p-0">
@@ -350,12 +348,12 @@
                                                     <img src="{% static 'img/svg/more-horizontal.svg' %}"
                                                          alt="more-horizontal" class="svg">
                                                 </a>
-                                                <div class="dropdown-menu dropdown-menu-right"
-                                                     aria-labelledby="statistics1">
-                                                    <a class="dropdown-item" href="#">Action</a>
-                                                    <a class="dropdown-item" href="#">Another action</a>
-                                                    <a class="dropdown-item" href="#">Something else here</a>
-                                                </div>
+<!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+<!--                                                     aria-labelledby="statistics1">-->
+<!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+<!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+<!--                                                </div>-->
                                             </div>
                                         </div>
                                         <div class="card-body">
