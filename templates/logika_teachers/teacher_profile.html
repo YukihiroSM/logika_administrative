@@ -343,7 +343,7 @@
                                 <div class="col-lg-12">
                                     <div class="card">
                                         <div class="card-header text-capitalize px-md-25 px-3">
-                                            <h6>General Statistics</h6>
+                                            <h6>Загальна статистика</h6>
                                             <div class="dropdown">
                                                 <a href="#" role="button" id="statistics1" data-bs-toggle="dropdown"
                                                    aria-haspopup="true" aria-expanded="false">
@@ -386,21 +386,27 @@
                                                     </div>
                                                     <div class="card-body pb-10">
                                                         <div class="reply-editor media">
-
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="$">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                    {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
-                                                                            <textarea name="reply-text"
+                                                                            <textarea name="comment" id="comment"
                                                                                       class="form-control mb-4"></textarea>
-                                                                            <button class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
+                                                                            <input type="hidden" name="next"
+                                                                                   value="{{ request.path }}">
+                                                                            <input type="hidden" name="comment_type"
+                                                                                   value="other">
+                                                                            <input type="hidden" name="teacher"
+                                                                                   value="{{ teacher_profile.id }}">
+                                                                            <button type="submit"
+                                                                                    class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
                                                                                 Додати коментар
                                                                             </button>
                                                                         </div>
                                                                     </div>
                                                                 </form>
                                                             </div>
-
                                                         </div>
 
                                                     </div>
@@ -414,61 +420,68 @@
                                                     </div>
                                                     <div class="card-body">
                                                         <div class="timeline-box">
-                                                            <div class="timeline-single d-flex">
-                                                                <span class="timeline-line"></span>
-                                                                <span class="timeline-single__buble buble-success"></span>
-                                                                <div class="timeline-single__content">
-                                                                    <p>Create a services site 2015-09-01</p>
-                                                                </div>
-                                                            </div>
+                                                            {% for comment in all_comments %}
 
+                                                            {% if comment.comment_type == "call" %}
                                                             <div class="timeline-single d-flex">
                                                                 <span class="timeline-line"></span>
-                                                                <span class="timeline-single__buble buble-success"></span>
-                                                                <div class="timeline-single__content">
-                                                                    <p>Create a services site 2015-09-01</p>
-                                                                </div>
-                                                            </div>
 
-                                                            <div class="timeline-single d-flex">
-                                                                <span class="timeline-line"></span>
                                                                 <span class="timeline-single__buble buble-danger"></span>
+                                                                <p>
+                                                                    {{comment.created_at}}
+                                                                </p>
                                                                 <div class="timeline-single__content">
-                                                                    <p>Solve initial network problems 1</p>
-                                                                    <p>Solve initial network problems 2</p>
-                                                                    <p>Solve initial network problems 3 2015-09-01</p>
+                                                                    <p>{{comment.comment}}</p>
                                                                 </div>
-                                                            </div>
 
+                                                            </div>
+                                                            {% endif %}
+
+                                                            {% if comment.comment_type == "lesson" %}
                                                             <div class="timeline-single d-flex">
                                                                 <span class="timeline-line"></span>
+                                                                <span class="timeline-single__buble buble-success"></span>
+                                                                <p>
+                                                                    {{comment.created_at}}
+                                                                </p>
+                                                                <div class="timeline-single__content">
+                                                                    <p>Група: {{comment.group_id}}</p>
+                                                                    <p>{{comment.comment}}</p>
+                                                                </div>
+                                                            </div>
+                                                            {% endif %}
+
+                                                            {% if comment.comment_type == "other" %}
+                                                            <div class="timeline-single d-flex">
+                                                                <span class="timeline-line"></span>
+
+                                                                <span class="timeline-single__buble border-extra-light"></span>
+                                                                <p>
+                                                                    {{comment.created_at}}
+                                                                </p>
+                                                                <div class="timeline-single__content">
+                                                                    <p>{{comment.comment}}</p>
+                                                                </div>
+
+                                                            </div>
+                                                            {% endif %}
+
+                                                            {% if comment.comment_type == "feedback" %}
+                                                            <div class="timeline-single d-flex">
+                                                                <span class="timeline-line"></span>
+
                                                                 <span class="timeline-single__buble buble-primary"></span>
+                                                                <p>
+                                                                    {{comment.created_at}}
+                                                                </p>
                                                                 <div class="timeline-single__content">
-                                                                    <p>Technical testing 1</p>
-                                                                    <p>Technical testing 2</p>
-                                                                    <p>Technical testing 3 2015-09-01</p>
+                                                                    <p>{{comment.comment}}</p>
                                                                 </div>
-                                                            </div>
 
-                                                            <div class="timeline-single d-flex">
-                                                                <span class="timeline-line"></span>
-                                                                <span class="timeline-single__buble border-extra-light"></span>
-                                                                <div class="timeline-single__content">
-                                                                    <p>Technical testing 1</p>
-                                                                    <p>Technical testing 2</p>
-                                                                    <p>Technical testing 3 2015-09-01</p>
-                                                                </div>
                                                             </div>
+                                                            {% endif %}
 
-                                                            <div class="timeline-single d-flex">
-                                                                <span class="timeline-line"></span>
-                                                                <span class="timeline-single__buble border-extra-light"></span>
-                                                                <div class="timeline-single__content">
-                                                                    <p>Technical testing 1</p>
-                                                                    <p>Technical testing 2</p>
-                                                                    <p>Technical testing 3 2015-09-01</p>
-                                                                </div>
-                                                            </div>
+                                                            {% endfor %}
 
                                                         </div>
                                                     </div>
@@ -498,15 +511,23 @@
                                                         <div class="reply-editor media">
 
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="$">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                    {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
-                                                                            <textarea name="reply-text"
+                                                                            <textarea name="comment"
                                                                                       class="form-control mb-4"></textarea>
-                                                                            <input type="text"
+                                                                            <input type="text" name="group_id"
                                                                                    class="form-control form-control-lg mb-4"
                                                                                    placeholder="ID групи">
-                                                                            <button class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
+                                                                            <input type="hidden" name="next"
+                                                                                   value="{{ request.path }}">
+                                                                            <input type="hidden" name="comment_type"
+                                                                                   value="lesson">
+                                                                            <input type="hidden" name="teacher"
+                                                                                   value="{{ teacher_profile.id }}">
+                                                                            <button type="submit"
+                                                                                    class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
                                                                                 Додати коментар
                                                                             </button>
                                                                         </div>
@@ -524,22 +545,19 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <div class="timeline-box">
+                                                                    {% for comment in lesson_comments %}
                                                                     <div class="timeline-single d-flex">
                                                                         <span class="timeline-line"></span>
                                                                         <span class="timeline-single__buble buble-success"></span>
+                                                                        <p>
+                                                                            {{comment.created_at}}
+                                                                        </p>
                                                                         <div class="timeline-single__content">
-                                                                            <p>Create a services site 2015-09-01</p>
+                                                                            <p>Група: {{comment.group_id}}</p>
+                                                                            <p>{{comment.comment}}</p>
                                                                         </div>
                                                                     </div>
-
-                                                                    <div class="timeline-single d-flex">
-                                                                        <span class="timeline-line"></span>
-                                                                        <span class="timeline-single__buble buble-success"></span>
-                                                                        <div class="timeline-single__content">
-                                                                            <p>Create a services site 2015-09-01</p>
-                                                                        </div>
-                                                                    </div>
-
+                                                                    {% endfor %}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -555,7 +573,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="call-comments" role="tabpanel" aria-labelledby="call-comments-tab">
+                    <div class="tab-pane fade" id="call-comments" role="tabpanel"
+                         aria-labelledby="call-comments-tab">
                         <div class="ap-post-content">
                             <div class="row">
                                 <div class="col-lg-12 mb-30">
@@ -570,12 +589,20 @@
                                                         <div class="reply-editor media">
 
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="$">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                    {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
-                                                                            <textarea name="reply-text"
+                                                                            <textarea name="comment" id="comment"
                                                                                       class="form-control mb-4"></textarea>
-                                                                            <button class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
+                                                                            <input type="hidden" name="next"
+                                                                                   value="{{ request.path }}">
+                                                                            <input type="hidden" name="comment_type"
+                                                                                   value="call">
+                                                                            <input type="hidden" name="teacher"
+                                                                                   value="{{ teacher_profile.id }}">
+                                                                            <button type="submit"
+                                                                                    class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
                                                                                 Додати коментар
                                                                             </button>
                                                                         </div>
@@ -593,17 +620,20 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <div class="timeline-box">
+                                                                    {% for comment in call_comments %}
                                                                     <div class="timeline-single d-flex">
                                                                         <span class="timeline-line"></span>
-                                                                        <span class="timeline-single__buble buble-danger"></span>
-                                                                        <div class="timeline-single__content">
-                                                                            <p>Solve initial network problems 1</p>
-                                                                            <p>Solve initial network problems 2</p>
-                                                                            <p>Solve initial network problems 3
-                                                                                2015-09-01</p>
-                                                                        </div>
-                                                                    </div>
 
+                                                                        <span class="timeline-single__buble buble-danger"></span>
+                                                                        <p>
+                                                                            {{comment.created_at}}
+                                                                        </p>
+                                                                        <div class="timeline-single__content">
+                                                                            <p>{{comment.comment}}</p>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    {% endfor %}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -619,7 +649,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="form-comments" role="tabpanel" aria-labelledby="form-comments-tab">
+                    <div class="tab-pane fade" id="form-comments" role="tabpanel"
+                         aria-labelledby="form-comments-tab">
                         <div class="ap-post-content">
                             <div class="row">
                                 <div class="col-lg-12 mb-30">
@@ -628,8 +659,10 @@
                                             <h1>
                                                 <h2>Відправлені форми:</h2>
                                                 {% for feedback in feedbacks %}
-                                                <a href="{% url 'logika_teachers:view-forms' feedback.id %}"><h1> Форма
-                                                    для {{feedback.tutor.user.get_full_name}} від {{ feedback.created_at }}</h1></a>
+                                                <a href="{% url 'logika_teachers:view-forms' feedback.id %}"><h1>
+                                                    Форма
+                                                    для {{feedback.tutor.user.get_full_name}} від {{
+                                                    feedback.created_at }}</h1></a>
                                                 {% endfor %}
                                             </h1>
                                         </div>

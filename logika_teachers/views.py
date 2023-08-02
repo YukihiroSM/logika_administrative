@@ -1,6 +1,12 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from logika_teachers.forms import TeacherCreateForm, TeacherFeedbackForm, TeacherCommentForm
-from logika_teachers.models import TeacherProfile, TutorProfile, TeacherFeedback
+from logika_teachers.models import (
+    TeacherProfile,
+    TutorProfile,
+    TeacherFeedback,
+    TeacherComment
+)
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from transliterate import translit
@@ -14,17 +20,15 @@ def teacher_profile(request, id):
         teacher = TeacherProfile.objects.filter(id=id).first()
         feedbacks = TeacherFeedback.objects.filter(teacher=teacher).order_by("created_at").all()
 
-        if request.method == "POST":
-            form = TeacherCommentForm(request.POST)
-            if form.is_valid():
-                form_data = form.cleaned_data
-                comment = form_data["comment"]
-                group_id = form_data.get("group_id")
-
+    tutor_profile = TutorProfile.objects.filter(user=request.user).first()
+    call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by("-created_at").all()
+    lesson_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="lesson").order_by("-created_at").all()
+    all_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile).order_by("-created_at").all()
 
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
     return render(request, "logika_teachers/teacher_profile.html",
-                  {"teacher_profile": teacher_profile, "user_role": user_role, "feedbacks": feedbacks})
+                  {"teacher_profile": teacher_profile, "user_role": user_role, "feedbacks": feedbacks,
+                   "call_comments": call_comments, "lesson_comments": lesson_comments, "all_comments": all_comments})
 
 
 @login_required
@@ -113,3 +117,40 @@ def view_forms(request, feedback_id):
     feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
     user_role = get_user_role(request.user)
     return render(request, "logika_teachers/view_forms.html", {"feedback": feedback, "user_role": user_role})
+
+
+def create_comment(request):
+    request_data = request.GET
+    comment_type = request_data.get("comment_type")
+    teacher_profile = TeacherProfile.objects.filter(id=request_data.get("teacher")).first()
+    tutor_profile = TutorProfile.objects.filter(user=request.user).first()
+    if comment_type == "other" or comment_type == "call":
+        comment = TeacherComment(
+            comment=request_data.get("comment"),
+            comment_type=comment_type,
+            teacher=teacher_profile,
+            tutor=tutor_profile,
+        )
+        comment.save()
+    if comment_type == "lesson":
+        comment = TeacherComment(
+            comment=request_data.get("comment"),
+            comment_type=comment_type,
+            group_id=request_data.get("group_id"),
+            teacher=teacher_profile,
+            tutor=tutor_profile,
+        )
+        comment.save()
+
+    if comment_type == "feedback":
+        feedback = TeacherFeedback.objects.filter(id=request_data.get("feedback_id")).first()
+        comment = TeacherComment(
+            comment=request_data.get("comment"),
+            comment_type=comment_type,
+            feedback=feedback,
+            teacher=teacher_profile,
+            tutor=tutor_profile,
+        )
+        comment.save()
+    next = request.GET.get('next', '/')
+    return HttpResponseRedirect(next)

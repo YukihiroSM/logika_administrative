@@ -48,7 +48,9 @@ class TeacherComment(models.Model):
     comment = models.CharField(max_length=1024)
     created_at = models.DateTimeField(auto_now_add=True)
     comment_type = models.CharField(max_length=16)
-    feedback = models.ForeignKey(TeacherFeedback, on_delete=models.DO_NOTHING, null=True, blank=True)
+    feedback = models.ForeignKey(TeacherFeedback, on_delete=models.DO_NOTHING, null=True, blank=True, default=None)
+    group_id = models.CharField(max_length=16, null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Коментар {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"
+
