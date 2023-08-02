@@ -18,6 +18,8 @@ class TeacherProfile(models.Model):
 class TutorProfile(models.Model):
     one_c_name = models.CharField(max_length=64, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="tutor_profile")
+    auth_token = models.CharField(max_length=64, null=True, blank=True, default=None)
+    login_timestamp = models.DateTimeField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -38,3 +40,15 @@ class TeacherFeedback(models.Model):
 
     def __str__(self):
         return f"Форма ЗЗ {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"
+
+
+class TeacherComment(models.Model):
+    teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
+    tutor = models.ForeignKey(TutorProfile, on_delete=models.DO_NOTHING)
+    comment = models.CharField(max_length=1024)
+    created_at = models.DateTimeField(auto_now_add=True)
+    comment_type = models.CharField(max_length=16)
+    feedback = models.ForeignKey(TeacherFeedback, on_delete=models.DO_NOTHING, null=True, blank=True)
+
+    def __str__(self):
+        return f"Коментар {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"

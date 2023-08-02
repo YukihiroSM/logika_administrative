@@ -33,3 +33,8 @@ class TeacherFeedbackForm(forms.Form):
     km_work_comment = forms.CharField(max_length=1024)
     tutor_work_comment = forms.CharField(max_length=1024)
 
+
+class TeacherCommentForm(forms.Form):
+    comment = forms.CharField(max_length=1024, required=True)
+    group_id = forms.CharField(max_length=16)
+

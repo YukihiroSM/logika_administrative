@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from logika_teachers.forms import TeacherCreateForm, TeacherFeedbackForm
+from logika_teachers.forms import TeacherCreateForm, TeacherFeedbackForm, TeacherCommentForm
 from logika_teachers.models import TeacherProfile, TutorProfile, TeacherFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -7,11 +7,24 @@ from transliterate import translit
 from utils.get_user_role import get_user_role
 
 
+@login_required
 def teacher_profile(request, id):
     user_role = get_user_role(request.user)
+    if user_role == "tutor":
+        teacher = TeacherProfile.objects.filter(id=id).first()
+        feedbacks = TeacherFeedback.objects.filter(teacher=teacher).order_by("created_at").all()
+
+        if request.method == "POST":
+            form = TeacherCommentForm(request.POST)
+            if form.is_valid():
+                form_data = form.cleaned_data
+                comment = form_data["comment"]
+                group_id = form_data.get("group_id")
+
+
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
     return render(request, "logika_teachers/teacher_profile.html",
-                  {"teacher_profile": teacher_profile, "auser_role": user_role})
+                  {"teacher_profile": teacher_profile, "user_role": user_role, "feedbacks": feedbacks})
 
 
 @login_required
