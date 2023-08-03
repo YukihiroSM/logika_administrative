@@ -18,7 +18,7 @@ def teacher_profile(request, id):
     user_role = get_user_role(request.user)
     if user_role == "tutor":
         teacher = TeacherProfile.objects.filter(id=id).first()
-        feedbacks = TeacherFeedback.objects.filter(teacher=teacher).order_by("created_at").all()
+        feedbacks = TeacherFeedback.objects.filter(teacher=teacher).order_by("-created_at").all()
 
     tutor_profile = TutorProfile.objects.filter(user=request.user).first()
     call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by("-created_at").all()
@@ -102,6 +102,7 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                 teacher=teacher_profile,
                 tutor=tutor_profile,
                 mistakes=form_data["mistakes"],
+                lesson_mark=form_data["lesson_mark"],
                 additional_problems=form_data["additional_problems"],
                 problems=form_data["problems"],
                 predicted_churn=form_data["predicted_churn"],

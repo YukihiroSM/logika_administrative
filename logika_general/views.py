@@ -13,7 +13,7 @@ def index(request):
     feedbacks = []
     if user_role == "teacher":
         teacher_profile = TeacherProfile.objects.filter(user=request.user).first()
-        feedbacks = TeacherFeedback.objects.filter(teacher=teacher_profile).all()
+        feedbacks = TeacherFeedback.objects.filter(teacher=teacher_profile).order_by("-created_at").all()
         tutors = teacher_profile.related_tutors.all()
     if user_role == "tutor":
         teachers = TutorProfile.objects.filter(user=request.user).first().related_teachers.all()

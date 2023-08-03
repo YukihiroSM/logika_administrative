@@ -1095,9 +1095,9 @@
   });
 
   $("#select-tag,#select-tag2").select2({
-    placeholder: "Tags Mode",
+    placeholder: "",
     dropdownCssClass: "tag",
-    tags: ["red", "green", "blue"],
+    tags: [],
     allowClear: true,
   });
 

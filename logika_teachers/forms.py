@@ -24,7 +24,7 @@ PROBLEMS_CHOICES = (
 
 
 class TeacherFeedbackForm(forms.Form):
-    # lesson_mark = forms.IntegerField(min_value=1, max_value=10, required=True)
+    lesson_mark = forms.CharField(max_length=16, required=True)
     mistakes = forms.CharField(max_length=256, required=True)
     problems = forms.MultipleChoiceField(choices=PROBLEMS_CHOICES, required=True)
     additional_problems = forms.CharField(max_length=1024)
