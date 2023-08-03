@@ -3,13 +3,13 @@ from django.contrib.postgres.forms import SimpleArrayField
 
 
 class TeacherCreateForm(forms.Form):
-    first_name = forms.CharField(max_length=30)
-    last_name = forms.CharField(max_length=30)
-    email = forms.EmailField()
-    phone_number = forms.CharField(max_length=64)
-    lms_id = forms.CharField(max_length=16)
-    telegram_nickname = forms.CharField(max_length=64, required=False)
-    one_c_ids = forms.CharField(max_length=64)
+    first_name = forms.CharField(max_length=30, label="Ім'я")
+    last_name = forms.CharField(max_length=30, label="Прізвище")
+    email = forms.EmailField(label="Електронна пошта")
+    phone_number = forms.CharField(max_length=64, label="Номер телефону")
+    lms_id = forms.CharField(max_length=16, label="ID в LMS")
+    telegram_nickname = forms.CharField(max_length=64, required=False, label="Нікнейм в Telegram")
+    one_c_ids = forms.CharField(max_length=64, label="ID в 1С")
 
 
 PROBLEMS_CHOICES = (

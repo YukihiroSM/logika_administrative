@@ -12,7 +12,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="breadcrumb-main">
-<!--                    <h4 class="text-capitalize breadcrumb-title">Створення викладача</h4>-->
+                    <!--                    <h4 class="text-capitalize breadcrumb-title">Створення викладача</h4>-->
                     <div class="breadcrumb-action justify-content-center flex-wrap">
 
                         {% if alerts %}
@@ -20,7 +20,17 @@
                         <div class="alert-big alert alert-danger  alert-dismissible fade show " role="alert">
                             <div class="alert-content">
                                 <h6 class="alert-heading">{{alert.title}}</h6>
-                                <p> {{alert.content}} </p>
+                                {% for field in form.visible_fields %}
+                                <div>
+                                    {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                        <li>{{ field.label }} - {{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
                                 <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert"
                                         aria-label="Close">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -56,7 +66,7 @@
                                                 <input type="text"
                                                        class="form-control ih-medium ip-gray radius-xs b-light px-15"
                                                        placeholder="Прізвище"
-                                                        id="last_name"
+                                                       id="last_name"
                                                        name="last_name"
                                                        required
                                                 >
@@ -74,7 +84,7 @@
                                                 <input type="text"
                                                        class="form-control ih-medium ip-gray radius-xs b-light px-15"
                                                        placeholder="Номер телефону (380...)"
-                                                        id="phone_number"
+                                                       id="phone_number"
                                                        name="phone_number"
                                                        required
                                                 >
@@ -83,7 +93,7 @@
                                                 <input type="text"
                                                        class="form-control ih-medium ip-gray radius-xs b-light px-15"
                                                        placeholder="ID в LMS"
-                                                        id="lms_id"
+                                                       id="lms_id"
                                                        name="lms_id"
                                                        required
                                                 >
@@ -109,7 +119,8 @@
                                             <div class="col-md-6">
                                                 <div class="layout-button mt-0">
                                                     <input type="submit"
-                                                            class="btn btn-primary btn-default btn-squared px-30" value="Створити">
+                                                           class="btn btn-primary btn-default btn-squared px-30"
+                                                           value="Створити">
                                                 </div>
                                             </div>
                                         </div>
