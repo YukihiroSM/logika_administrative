@@ -28,7 +28,7 @@ class TutorProfile(models.Model):
 class TeacherFeedback(models.Model):
     teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
     tutor = models.ForeignKey(TutorProfile, on_delete=models.DO_NOTHING)
-    lesson_mark = models.CharField(max_length=16)
+    lesson_mark = models.IntegerField()
     mistakes = models.CharField(max_length=256)
     problems = ArrayField(models.CharField(max_length=256))
     additional_problems = models.CharField(max_length=1024)

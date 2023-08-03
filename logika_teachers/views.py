@@ -93,7 +93,7 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
 
     tutor_user = User.objects.filter(id=tutor_id).first()
     tutor_profile = TutorProfile.objects.filter(user=tutor_user).first()
-
+    alerts = []
     if request.method == "POST":
         form = TeacherFeedbackForm(request.POST)
         if form.is_valid():
@@ -112,12 +112,18 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             )
             new_form.save()
             return redirect("/")
+        else:
+            alerts.append({
+                "title": "Невірна форма",
+                "content": f"Ви заповнили не всі поля, або додали додаткові проблеми в полі 'Проблеми'.",
+            })
     else:
         form = TeacherFeedbackForm()
 
     return render(request, "logika_teachers/feedback_form.html",
                   {"teacher_profile": teacher_profile,
-                   "teacher_id": teacher_id, "tutor_id": tutor_id})
+                   "teacher_id": teacher_id, "tutor_id": tutor_id,
+                   "form": form, "alerts": alerts})
 
 
 def view_forms(request, feedback_id):
