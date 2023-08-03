@@ -159,4 +159,47 @@ def update_user(request):
         return JsonResponse(
             {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
     else:
-        return redirect("/create_user")
+        request_data_GET = dict(request.GET)
+        request_data_POST = dict(request.POST)
+        if request.META["REMOTE_ADDR"] != "127.0.0.1":
+            return JsonResponse(
+                {"status": "False", "details": "Request received from not authorized IP"})
+        first_name = request_data_GET.get("first_name")[0]
+        last_name = request_data_GET.get("last_name")[0]
+        role = request_data_GET.get("role")[0]
+        territorial_manager = request_data_GET.get("territorial_manager")
+        if territorial_manager:
+            territorial_manager = territorial_manager[0]
+        if role == "territorial_manager_km" and not territorial_manager:
+            return JsonResponse(
+                {"status": "False", "details": "Client manager must be followed by territorial_manager"})
+
+        username = f"{first_name}_{last_name}"
+        raw_password = "abcdefgh"
+        user_obj = User.objects.filter(username=f"{first_name}_{last_name}").first()
+        if user_obj:
+            return JsonResponse(
+                {"status": "False", "details": "User already exists."})
+        user = User.objects.create_user(username=username, password=raw_password)
+        if user:
+            user.first_name = first_name
+            user.last_name = last_name
+            if role == "tutor":
+                profile = TutorProfile(user=user)
+                profile.save()
+
+            # if role == "territorial_manager_km":
+            #     tm_first_name = territorial_manager.split()[0]
+            #     tm_last_name = territorial_manager.split()[1]
+            #     tm_user = User.objects.filter(first_name=tm_first_name, last_name=tm_last_name).first()
+            #
+            #     if tm_user:
+            #         user_mapping.related_to = tm_user
+            # user_mapping.save()
+            # group.save()
+            user.save()
+            return JsonResponse(
+                {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
+        else:
+            return JsonResponse(
+                {"status": "False", "details": "Unable to create user"})
