@@ -17,8 +17,9 @@ from utils.get_user_role import get_user_role
 def teacher_profile(request, id):
     user_role = get_user_role(request.user)
     if user_role == "tutor":
+        tutor = TutorProfile.objects.filter(user=request.user).first()
         teacher = TeacherProfile.objects.filter(id=id).first()
-        feedbacks = TeacherFeedback.objects.filter(teacher=teacher).order_by("-created_at").all()
+        feedbacks = TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor).order_by("-created_at").all()
 
     tutor_profile = TutorProfile.objects.filter(user=request.user).first()
     call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by("-created_at").all()
