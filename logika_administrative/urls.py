@@ -16,14 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from django.conf import settings
+from django.conf.urls.static import static
 from logika_general import views as logika_general_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("logika_general.urls", namespace="logika_general")),
+    path("", include("logika_auth.urls", namespace="logika_auth")),
     path("logika-teachers/", include("logika_teachers.urls", namespace="logika_teachers")),
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler404 = logika_general_views.error_404
 handler500 = logika_general_views.error_500
