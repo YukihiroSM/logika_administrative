@@ -661,8 +661,7 @@
                                                 {% for feedback in feedbacks %}
                                                 <a href="{% url 'logika_teachers:view-forms' feedback.id %}"><h1>
                                                     Форма
-                                                    для {{feedback.tutor.user.get_full_name}} від {{
-                                                    feedback.created_at }}</h1></a>
+                                                    для {{feedback.tutor.user.get_full_name}} від {{feedback.created_at }}</h1></a>
                                                 {% endfor %}
                                             </h1>
                                         </div>
