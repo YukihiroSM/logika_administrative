@@ -164,10 +164,10 @@ def update_user(request):
         if request.META["REMOTE_ADDR"] != "127.0.0.1":
             return JsonResponse(
                 {"status": "False", "details": "Request received from not authorized IP"})
-        first_name = request_data_GET.get("first_name")[0]
-        last_name = request_data_GET.get("last_name")[0]
-        role = request_data_GET.get("role")[0]
-        territorial_manager = request_data_GET.get("territorial_manager")
+        first_name = request_data_GET.get("first_name_new")[0]
+        last_name = request_data_GET.get("last_name_new")[0]
+        role = request_data_GET.get("role_new")[0]
+        territorial_manager = request_data_GET.get("territorial_manager_new")
         if territorial_manager:
             territorial_manager = territorial_manager[0]
         if role == "territorial_manager_km" and not territorial_manager:
