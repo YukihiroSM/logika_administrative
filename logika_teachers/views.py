@@ -74,6 +74,12 @@ def create_teacher(request):
             teacher_profile.save()
             return render(request, "logika_teachers/login_password_responce.html",
                           {"username": username, "password": password, "created": created_user})
+        else:
+            alerts.append({
+                "title": "Неможливо створити викладача",
+                "content": f"Перевірте правильність введених даних. {form.errors}"
+            })
+            return render(request, "logika_teachers/create_teacher.html", {"form": form, "alerts": alerts})
 
     else:
         form = TeacherCreateForm()

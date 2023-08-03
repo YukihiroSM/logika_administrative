@@ -8,7 +8,7 @@ class TeacherProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     related_tutors = models.ManyToManyField("TutorProfile", related_name="related_teachers")
     telegram_nickname = models.CharField(max_length=64, null=True, blank=True)
-    phone_number = models.CharField(max_length=16, null=True, blank=True)
+    phone_number = models.CharField(max_length=64, null=True, blank=True)
     one_c_ids = models.CharField(max_length=64, null=True, blank=True)
 
     def __str__(self):
