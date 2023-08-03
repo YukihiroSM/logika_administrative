@@ -31,7 +31,7 @@ class TeacherFeedback(models.Model):
     lesson_mark = models.IntegerField()
     mistakes = models.CharField(max_length=256)
     problems = ArrayField(models.CharField(max_length=256))
-    additional_problems = models.CharField(max_length=1024)
+    additional_problems = models.CharField(max_length=1024, null=True, blank=True)
     predicted_churn = models.CharField(max_length=256)
     technical_problems = models.CharField(max_length=1024)
     km_work_comment = models.CharField(max_length=1024, blank=True, null=True)
