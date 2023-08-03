@@ -159,5 +159,4 @@ def update_user(request):
         return JsonResponse(
             {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
     else:
-        return JsonResponse(
-            {"status": "False", "details": "User not found"})
+        return redirect("/create_user")
