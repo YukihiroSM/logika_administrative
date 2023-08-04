@@ -110,6 +110,8 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                 technical_problems=form_data["technical_problems"],
                 km_work_comment=form_data["km_work_comment"],
                 tutor_work_comment=form_data["tutor_work_comment"],
+                km_work_mark=form_data["km_work_mark"],
+                tutor_work_mark=form_data["tutor_work_mark"],
             )
             new_form.save()
             return redirect("/")

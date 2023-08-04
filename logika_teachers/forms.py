@@ -30,8 +30,10 @@ class TeacherFeedbackForm(forms.Form):
     additional_problems = forms.CharField(max_length=1024, label="Додаткові проблеми", required=False)
     predicted_churn = forms.CharField(max_length=256, required=True, label="Прогнозований відвал")
     technical_problems = forms.CharField(max_length=1024, required=True, label="Технічні проблеми")
-    km_work_comment = forms.CharField(max_length=1024, required=True, label="Коментарі до роботи КМ")
-    tutor_work_comment = forms.CharField(max_length=1024, required=True, label="Коментарі до роботи тьютора")
+    km_work_mark = forms.IntegerField(min_value=1, max_value=10, required=True, label="Оцінка роботи КМ")
+    km_work_comment = forms.CharField(max_length=1024, required=False, label="Коментарі до роботи КМ")
+    tutor_work_mark = forms.IntegerField(min_value=1, max_value=10, required=True, label="Оцінка роботи тьютора")
+    tutor_work_comment = forms.CharField(max_length=1024, required=False, label="Коментарі до роботи тьютора")
 
 
 class TeacherCommentForm(forms.Form):

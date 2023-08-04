@@ -35,7 +35,9 @@ class TeacherFeedback(models.Model):
     predicted_churn = models.CharField(max_length=256)
     technical_problems = models.CharField(max_length=1024)
     km_work_comment = models.CharField(max_length=1024, blank=True, null=True)
+    km_work_mark = models.IntegerField(blank=True, null=True, default=10)
     tutor_work_comment = models.CharField(max_length=1024, blank=True, null=True)
+    tutor_work_mark = models.IntegerField(blank=True, null=True, default=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
