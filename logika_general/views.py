@@ -17,7 +17,10 @@ def index(request):
         tutors = teacher_profile.related_tutors.all()
     if user_role == "tutor":
         teachers = TutorProfile.objects.filter(user=request.user).first().related_teachers.all()
-        feedbacks = TeacherFeedback.objects.filter(teacher__in=teachers).all()
+        feedbacks = []
+        tutor_profile = TutorProfile.objects.filter(user=request.user).first()
+        for teacher in teachers:
+            feedbacks.append(TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile).order_by("-created_at").first())
 
     return render(request, "index.html", context={"user": request.user, "user_role": user_role, "tutors": tutors, "teachers": teachers, "feedbacks": feedbacks})
 
