@@ -147,10 +147,16 @@ def update_user(request):
             return JsonResponse(
                 {"status": "False", "details": "Temporarily unavailable for this role"}
             )
+        if role_new == "general_tutor":
+            profile_class = RegionalTutorProfile
+            profile = profile_class.objects.filter(user=user_obj).first()
+            if not profile:
+                profile = profile_class(user=user_obj)
+                profile.save()
         profile = profile_class.objects.filter(user=user_obj).first()
         user_obj.first_name = first_name_new
         user_obj.last_name = last_name_new
-        user_obj.username = f"{first_name_new} {last_name_new}"
+        user_obj.username = f"{first_name_new}_{last_name_new}"
         if role_new == "territorial_manager_km":
             try:
                 territorial_new = request_data_GET.get("territorial_manager_new")[0]
