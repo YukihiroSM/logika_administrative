@@ -94,6 +94,7 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
 
     tutor_user = User.objects.filter(id=tutor_id).first()
     tutor_profile = TutorProfile.objects.filter(user=tutor_user).first()
+    tutor_name = tutor_user.get_full_name()
     alerts = []
     if request.method == "POST":
         form = TeacherFeedbackForm(request.POST)
@@ -126,7 +127,7 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
     return render(request, "logika_teachers/feedback_form.html",
                   {"teacher_profile": teacher_profile,
                    "teacher_id": teacher_id, "tutor_id": tutor_id,
-                   "form": form, "alerts": alerts})
+                   "form": form, "alerts": alerts, "tutor_name": tutor_name})
 
 
 def view_forms(request, feedback_id):
