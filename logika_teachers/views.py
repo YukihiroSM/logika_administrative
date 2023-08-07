@@ -40,7 +40,7 @@ def create_teacher(request):
         if form.is_valid():
             form_data = form.cleaned_data
             full_name = f"{form_data['first_name']} {form_data['last_name']}"
-            username = translit(full_name, "ru", reversed=True).lower().replace(" ", "_").replace("'", "")
+            username = translit(full_name, "ru", reversed=True).lower().replace(" ", "_").replace("'", "").replace("і", "i").replace("є", "ye").replace("ї", "yi").replace("ґ", "g")
             password = User.objects.make_random_password(length=8)
             teacher_user, created_user = User.objects.get_or_create(
                 username=username,
