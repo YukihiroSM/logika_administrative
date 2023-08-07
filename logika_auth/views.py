@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
 from datetime import datetime, timedelta, timezone
-from logika_teachers.models import TutorProfile, TeacherProfile
+from logika_teachers.models import TutorProfile, TeacherProfile, RegionalTutorProfile
 from utils.get_user_role import get_user_role
 
 
@@ -38,6 +38,9 @@ def create_user(request):
         user.last_name = last_name
         if role == "tutor":
             profile = TutorProfile(user=user)
+            profile.save()
+        if role == "general_tutor":
+            profile = RegionalTutorProfile(user=user)
             profile.save()
 
         # if role == "territorial_manager_km":
@@ -138,6 +141,8 @@ def update_user(request):
     if user_obj:
         if user_role == "tutor":
             profile_class = TutorProfile
+        elif user_role == "general_tutor":
+            profile_class = RegionalTutorProfile
         else:
             return JsonResponse(
                 {"status": "False", "details": "Temporarily unavailable for this role"}
@@ -186,6 +191,9 @@ def update_user(request):
             user.last_name = last_name
             if role == "tutor":
                 profile = TutorProfile(user=user)
+                profile.save()
+            if role == "general_tutor":
+                profile = RegionalTutorProfile(user=user)
                 profile.save()
 
             # if role == "territorial_manager_km":

@@ -25,6 +25,14 @@ class TutorProfile(models.Model):
         return f"{self.user.first_name} {self.user.last_name}"
 
 
+class RegionalTutorProfile(models.Model):
+    one_c_name = models.CharField(max_length=64, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="regional_tutor_profile")
+    auth_token = models.CharField(max_length=64, null=True, blank=True, default=None)
+    login_timestamp = models.DateTimeField(null=True, blank=True, default=None)
+    related_tutors = models.ManyToManyField("TutorProfile", related_name="related_regional_tutors")
+
+
 class TeacherFeedback(models.Model):
     teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
     tutor = models.ForeignKey(TutorProfile, on_delete=models.DO_NOTHING)
