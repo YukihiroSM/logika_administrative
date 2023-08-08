@@ -22,8 +22,10 @@ def teacher_profile(request, id):
         feedbacks = TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor).order_by("-created_at").all()
 
     tutor_profile = TutorProfile.objects.filter(user=request.user).first()
-    call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by("-created_at").all()
-    lesson_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="lesson").order_by("-created_at").all()
+    call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by(
+        "-created_at").all()
+    lesson_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile,
+                                                    comment_type="lesson").order_by("-created_at").all()
     all_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile).order_by("-created_at").all()
 
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
@@ -40,7 +42,9 @@ def create_teacher(request):
         if form.is_valid():
             form_data = form.cleaned_data
             full_name = f"{form_data['first_name']} {form_data['last_name']}"
-            username = translit(full_name, "ru", reversed=True).lower().replace(" ", "_").replace("'", "").replace("і", "i").replace("є", "ye").replace("ї", "yi").replace("ґ", "g")
+            username = translit(full_name, "ru", reversed=True).lower().replace(" ", "_").replace("'", "").replace("і",
+                                                                                                                   "i").replace(
+                "є", "ye").replace("ї", "yi").replace("ґ", "g")
             password = User.objects.make_random_password(length=8)
             teacher_user, created_user = User.objects.get_or_create(
                 username=username,
@@ -171,3 +175,19 @@ def create_comment(request):
         comment.save()
     next = request.GET.get('next', '/')
     return HttpResponseRedirect(next)
+
+
+@login_required
+def refresh_credentials(request, user_id):
+    user = User.objects.filter(id=user_id).first()
+    if user:
+        full_name = user.get_full_name()
+        username = translit(full_name, "ru", reversed=True).lower().replace(" ", "_").replace("'", "").replace("і",
+                                                                                                               "i").replace(
+            "є", "ye").replace("ї", "yi").replace("ґ", "g")
+        password = User.objects.make_random_password(length=8)
+        user.username = username
+        user.set_password(password)
+        user.save()
+        return render(request, "logika_teachers/login_password_responce.html",
+                      {"username": username, "password": password, "created": True})

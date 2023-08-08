@@ -37,12 +37,12 @@
                             </div>
                             {% endfor %}
 
-<!--                            <p> {{alert.content}} </p>-->
-<!--                            <ul class="errorlist">-->
-<!--                                {% for error, message in form.errors.items %}-->
-<!--                                <p>{{error}} - {{message}}</p>-->
-<!--                                {% endfor %}-->
-<!--                            </ul>-->
+                            <!--                            <p> {{alert.content}} </p>-->
+                            <!--                            <ul class="errorlist">-->
+                            <!--                                {% for error, message in form.errors.items %}-->
+                            <!--                                <p>{{error}} - {{message}}</p>-->
+                            <!--                                {% endfor %}-->
+                            <!--                            </ul>-->
                             <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert"
                                     aria-label="Close">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -72,7 +72,11 @@
                                                 10 <span class="color-danger">(*обов'язково)</span></label>
                                             <input type="number"
                                                    class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                   id="lesson_mark" placeholder="10" name="lesson_mark">
+                                                   id="lesson_mark" placeholder="10" min="1" max="10" name="lesson_mark"
+                                                   required
+                                                   {% if form_data.lesson_mark %}
+                                                   value="{{form_data.lesson_mark}}"
+                                                   {% endif %}>
 
 
                                         </div>
@@ -80,9 +84,13 @@
                                         <div class="form-group form-element-textarea">
                                             <label for="mistakes"
                                                    class="il-gray fs-14 fw-500 align-center mb-10"> Які основні помилки
-                                                були допущені під час уроків? <span class="color-danger">(*обов'язково)</span></label>
+                                                були допущені під час уроків? <span
+                                                        class="color-danger">(*обов'язково)</span></label>
                                             <textarea class="form-control" id="mistakes"
-                                                      rows="3" name="mistakes"></textarea>
+                                                      rows="3" name="mistakes" required
+                                                      {% if form_data.mistakes %}
+                                                      value="{{form_data.mistakes}}"
+                                                      {% endif %}></textarea>
                                         </div>
 
                                         <div class="form-group row mb-25">
@@ -93,7 +101,7 @@
                                                 <div class="dm-select ">
                                                     <select name="problems" id="select-tag2"
                                                             class="form-control select2-hidden-accessible" multiple=""
-                                                            tabindex="-1" aria-hidden="true">
+                                                            tabindex="-1" aria-hidden="true" required>
                                                         <option value="Не маєте авторитету перед учнями">Не маєте
                                                             авторитету перед учнями
                                                         </option>
@@ -117,17 +125,87 @@
                                                    class="il-gray fs-14 fw-500 align-center mb-10"> Додаткові
                                                 проблеми </label>
                                             <textarea class="form-control" id="additional_problems"
-                                                      rows="3" name="additional_problems"></textarea>
+                                                      rows="3" name="additional_problems"
+                                                      {% if form_data.additional_problems %}
+                                                      value="{{form_data.additional_problems}}"
+                                                      {% endif %}
+                                            ></textarea>
                                         </div>
+                                        <label for="students-container"
+                                               class="il-gray fs-14 fw-500 align-center mb-10">Передбачувані відвали
+                                            (впишіть ID учня) та причину <span
+                                                    class="color-danger">(*обов'язково)</span></label>
+                                        <div id="students-container">
+                                            <div class="student-row">
+                                                <input type="text"
+                                                       inputmode="numeric" pattern="\d*"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                       id="inputName" placeholder="ID учня з LMS"
+                                                       name="predicted_churn_id"
+                                                       aria-describedby="churn-id-validation"
+                                                       required/>
+                                                <div id="churn-id-validation" class="invalid-feedback">
+                                                    Додайте хоча б одного учня.
+                                                </div>
+                                                <br>
+                                                <input
+                                                        type="text"
+                                                        name="predicted_churn_description[]"
+                                                        placeholder="Опис Проблеми"
+                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                        required
+                                                        aria-describedby="churn-description-validation"
+                                                />
+                                                <div id="churn-description-validation" class="invalid-feedback">
+                                                    Додайте хоча б одного учня.
+                                                </div>
+                                                <br>
 
-
-                                        <div class="form-group form-element-textarea">
-                                            <label for="predicted_churn"
-                                                   class="il-gray fs-14 fw-500 align-center mb-10">Передбачувані відвали
-                                                (впишіть ID учня) та причину <span class="color-danger">(*обов'язково)</span></label>
-                                            <textarea class="form-control" id="predicted_churn"
-                                                      rows="3" name="predicted_churn"></textarea>
+                                                <button type="button"
+                                                        class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">
+                                                    Видалити
+                                                </button>
+                                                <br>
+                                            </div>
                                         </div>
+                                        <br>
+                                        <button type="button" id="add-student"
+                                                class="btn btn-secondary btn-default btn-squared px-30">Додати ще учня
+                                        </button>
+                                        <br>
+                                        <script>
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const addStudentButton = document.getElementById("add-student");
+                                                const studentsContainer = document.getElementById("students-container");
+
+                                                addStudentButton.addEventListener("click", function () {
+                                                    const studentRow = document.createElement("div");
+                                                    studentRow.className = "student-row";
+                                                    studentRow.innerHTML = `
+                                                <input type="text"
+                                                inputmode="numeric" pattern="\d*"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                       id="inputName" placeholder="ID учня з LMS">
+                                                       <br>
+                                                <input
+                                                        type="text"
+                                                        name="predicted_churn_description[]"
+                                                        placeholder="Опис Проблеми"
+                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                />
+                                                <br>
+                                                <button type="button" class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">Видалити</button>
+<br>`;
+                                                    studentsContainer.appendChild(studentRow);
+                                                });
+
+                                                studentsContainer.addEventListener("click", function (event) {
+                                                    if (event.target.classList.contains("remove-student")) {
+                                                        event.target.closest(".student-row").remove();
+                                                    }
+                                                });
+                                            });
+                                        </script>
                                         <div class="form-group form-element-textarea">
                                             <label for="technical_problems"
                                                    class="il-gray fs-14 fw-500 align-center mb-10">Пропишіть технічні
@@ -138,27 +216,44 @@
                                         </div>
                                         <div class="form-group row mb-25">
                                             <label for="km_work_mark"
-                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцніть роботу КМ від 1 до
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцніть роботу КМ від
+                                                1 до
                                                 10 <span class="color-danger">(*обов'язково)</span></label>
                                             <input type="number"
                                                    class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                   id="km_work_mark" placeholder="10" name="km_work_mark">
+                                                   id="km_work_mark" placeholder="10" min="1" max="10"
+                                                   name="km_work_mark" required
+                                                   {% if form_data.km_work_mark %}
+                                                   value="{{form_data.km_work_mark}}"
+                                                   {% endif %}
+                                            >
 
 
                                         </div>
                                         <div class="form-group form-element-textarea">
                                             <label for="km_work_comment"
-                                                   class="il-gray fs-14 fw-500 align-center mb-10">Коментар по роботі з КМ</label>
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Коментар по роботі з
+                                                КМ</label>
                                             <textarea class="form-control" id="km_work_comment"
-                                                      rows="3" name="km_work_comment"></textarea>
+                                                      rows="3" name="km_work_comment"
+                                                      {% if form_data.km_work_comment %}
+                                                      value="{{form_data.km_work_comment}}"
+                                                      {% endif %}
+                                            ></textarea>
                                         </div>
                                         <div class="form-group row mb-25">
                                             <label for="tutor_work_mark"
-                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцніть роботу тьютора від 1 до
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцніть роботу тьютора
+                                                від 1 до
                                                 10 <span class="color-danger">(*обов'язково)</span></label>
                                             <input type="number"
                                                    class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                   id="tutor_work_mark" placeholder="10" name="tutor_work_mark">
+                                                   id="tutor_work_mark" placeholder="10" name="tutor_work_mark" min="1"
+                                                   max="10" required
+                                                   {% if form_data.tutor_work_mark %}
+                                                   value="{{form_data.tutor_work_mark}}"
+                                                   {% endif %}
+                                            >
 
 
                                         </div>
@@ -167,7 +262,11 @@
                                                    class="il-gray fs-14 fw-500 align-center mb-10">Коментар по роботі з
                                                 тьютором</label>
                                             <textarea class="form-control" id="tutor_work_comment"
-                                                      rows="3" name="tutor_work_comment"></textarea>
+                                                      rows="3" name="tutor_work_comment"
+                                                      {% if form_data.tutor_work_comment %}
+                                                      value="{{form_data.tutor_work_comment}}"
+                                                      {% endif %}
+                                            ></textarea>
                                         </div>
 
                                         <div class="form-group row mb-0">
@@ -177,18 +276,17 @@
                                                 </button>
                                             </div>
                                         </div>
+                                    </form>
                                 </div>
-                                </form>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
-
             </div>
         </div>
     </div>
-</div>
 </div>
 <script>
     const sliderInput = document.getElementById('sliderInput');
