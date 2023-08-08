@@ -40,13 +40,14 @@ class TeacherFeedback(models.Model):
     mistakes = models.CharField(max_length=256)
     problems = ArrayField(models.CharField(max_length=256))
     additional_problems = models.CharField(max_length=1024, null=True, blank=True)
-    predicted_churn = models.CharField(max_length=256)
+    predicted_churn_object = models.BinaryField(null=True, blank=True)
     technical_problems = models.CharField(max_length=1024, null=True, blank=True)
     km_work_comment = models.CharField(max_length=1024, blank=True, null=True)
     km_work_mark = models.IntegerField(blank=True, null=True, default=10)
     tutor_work_comment = models.CharField(max_length=1024, blank=True, null=True)
     tutor_work_mark = models.IntegerField(blank=True, null=True, default=10)
     created_at = models.DateTimeField(auto_now_add=True)
+    commented_churn = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Форма ЗЗ {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"
@@ -60,6 +61,7 @@ class TeacherComment(models.Model):
     comment_type = models.CharField(max_length=16)
     feedback = models.ForeignKey(TeacherFeedback, on_delete=models.DO_NOTHING, null=True, blank=True, default=None)
     group_id = models.CharField(max_length=16, null=True, blank=True, default=None)
+    churn_id = models.CharField(max_length=16, null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Коментар {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"

@@ -43,7 +43,7 @@
                             <!--                                <p>{{error}} - {{message}}</p>-->
                             <!--                                {% endfor %}-->
                             <!--                            </ul>-->
-                            <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert"
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"
                                     aria-label="Close">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -138,33 +138,21 @@
                                         <div id="students-container">
                                             <div class="student-row">
                                                 <input type="text"
-                                                       inputmode="numeric" pattern="\d*"
                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                       id="inputName" placeholder="ID учня з LMS"
-                                                       name="predicted_churn_id"
-                                                       aria-describedby="churn-id-validation"
-                                                       required/>
-                                                <div id="churn-id-validation" class="invalid-feedback">
-                                                    Додайте хоча б одного учня.
-                                                </div>
-                                                <br>
-                                                <input
-                                                        type="text"
-                                                        name="predicted_churn_description[]"
-                                                        placeholder="Опис Проблеми"
-                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                        required
-                                                        aria-describedby="churn-description-validation"
-                                                />
-                                                <div id="churn-description-validation" class="invalid-feedback">
-                                                    Додайте хоча б одного учня.
-                                                </div>
+                                                       name="predicted_churn_id[]"
+                                                       placeholder="ID учня з LMS">
+
+                                                <input type="text"
+                                                       id="predicted_churn_description[]"
+                                                       name="predicted_churn_description[]"
+                                                       placeholder="Опис Проблеми"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
                                                 <br>
 
-                                                <button type="button"
-                                                        class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">
-                                                    Видалити
-                                                </button>
+                                                <!--                                                <button type="button"-->
+                                                <!--                                                        class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">-->
+                                                <!--                                                    Видалити-->
+                                                <!--                                                </button>-->
                                                 <br>
                                             </div>
                                         </div>
@@ -183,16 +171,15 @@
                                                     studentRow.className = "student-row";
                                                     studentRow.innerHTML = `
                                                 <input type="text"
-                                                inputmode="numeric" pattern="\d*"
-                                                       class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                       id="inputName" placeholder="ID учня з LMS">
-                                                       <br>
-                                                <input
-                                                        type="text"
-                                                        name="predicted_churn_description[]"
-                                                        placeholder="Опис Проблеми"
                                                         class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                />
+                                                        name="predicted_churn_id[]"
+                                                       placeholder="ID учня з LMS">
+
+                                                <input type="text"
+                                                       id="predicted_churn_description[]"
+                                                       name="predicted_churn_description[]"
+                                                       placeholder="Опис Проблеми"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
                                                 <br>
                                                 <button type="button" class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">Видалити</button>
 <br>`;

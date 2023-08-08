@@ -66,11 +66,13 @@
                                         <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Передбачувані відвали: </h6>
                                 </div>
                             </div>
-
+                                {% for churn, description in predicted_churns.items %}
                                 <div class="user-group-people mt-15 text">
-                                <p class="text-normal">{{feedback.predicted_churn}}</p>
+                                <p class="text-normal">ID: {{churn}}</p>
+                                <p class="text-normal">Опис: {{description}}</p>
 
-                            </div>
+                                </div>
+                                {% endfor %}
 
                         </div>
                     </div>

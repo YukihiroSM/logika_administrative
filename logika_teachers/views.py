@@ -9,6 +9,7 @@ from logika_teachers.models import (
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+import pickle
 from transliterate import translit
 from utils.get_user_role import get_user_role
 
@@ -21,6 +22,8 @@ def teacher_profile(request, id):
         teacher = TeacherProfile.objects.filter(id=id).first()
         feedbacks = TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor).order_by("-created_at").all()
 
+        recent_predicted_churns = pickle.loads(feedbacks[0].predicted_churn_object) if feedbacks and feedbacks[0].predicted_churn_object else None
+
     tutor_profile = TutorProfile.objects.filter(user=request.user).first()
     call_comments = TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile, comment_type="call").order_by(
         "-created_at").all()
@@ -31,7 +34,8 @@ def teacher_profile(request, id):
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
     return render(request, "logika_teachers/teacher_profile.html",
                   {"teacher_profile": teacher_profile, "user_role": user_role, "feedbacks": feedbacks,
-                   "call_comments": call_comments, "lesson_comments": lesson_comments, "all_comments": all_comments})
+                   "call_comments": call_comments, "lesson_comments": lesson_comments, "all_comments": all_comments,
+                   "recent_feedback_churn": recent_predicted_churns}, )
 
 
 @login_required
@@ -104,6 +108,8 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
         form = TeacherFeedbackForm(request.POST)
         if form.is_valid():
             form_data = form.cleaned_data
+            predicted_churn_ids = request.POST.getlist("predicted_churn_id[]")
+            predicted_churn_descriptions = request.POST.getlist("predicted_churn_description[]")
             new_form = TeacherFeedback(
                 teacher=teacher_profile,
                 tutor=tutor_profile,
@@ -111,13 +117,17 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                 lesson_mark=form_data["lesson_mark"],
                 additional_problems=form_data["additional_problems"],
                 problems=form_data["problems"],
-                predicted_churn=form_data["predicted_churn"],
                 technical_problems=form_data["technical_problems"],
                 km_work_comment=form_data["km_work_comment"],
                 tutor_work_comment=form_data["tutor_work_comment"],
                 km_work_mark=form_data["km_work_mark"],
                 tutor_work_mark=form_data["tutor_work_mark"],
             )
+            churns = {}
+            for i in range(len(predicted_churn_ids)):
+                churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
+
+            new_form.predicted_churn_object = pickle.dumps(churns)
             new_form.save()
             return redirect("/")
         else:
@@ -137,11 +147,13 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
 def view_forms(request, feedback_id):
     feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
     user_role = get_user_role(request.user)
-    return render(request, "logika_teachers/view_forms.html", {"feedback": feedback, "user_role": user_role})
+    predicted_churns = pickle.loads(feedback.predicted_churn_object) if feedback.predicted_churn_object else None
+    return render(request, "logika_teachers/view_forms.html",
+                  {"feedback": feedback, "user_role": user_role, "predicted_churns": predicted_churns})
 
 
 def create_comment(request):
-    request_data = request.GET
+    request_data = request.POST
     comment_type = request_data.get("comment_type")
     teacher_profile = TeacherProfile.objects.filter(id=request_data.get("teacher")).first()
     tutor_profile = TutorProfile.objects.filter(user=request.user).first()
@@ -173,7 +185,19 @@ def create_comment(request):
             tutor=tutor_profile,
         )
         comment.save()
-    next = request.GET.get('next', '/')
+
+    if comment_type == "predicted_churn":
+        feedback = TeacherFeedback.objects.filter(id=request_data.get("feedback_id")).first()
+        comment = TeacherComment(
+            comment=request_data.get("comment"),
+            comment_type=comment_type,
+            feedback=feedback,
+            teacher=teacher_profile,
+            tutor=tutor_profile,
+            churn_id=request_data.get("churn"),
+        )
+        comment.save()
+    next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 
 

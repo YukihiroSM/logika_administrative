@@ -80,7 +80,7 @@
                             </div>
                         </div>
                         <br>
-                        <a href="{% url 'logika_teachers:refresh-credentials' teacher_profile.user.id %}" >
+                        <a href="{% url 'logika_teachers:refresh-credentials' teacher_profile.user.id %}">
                             <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
                                 <i class="uil uil-refresh"></i>
                                 Згенерувати нові логін, пароль
@@ -396,7 +396,7 @@
                                                     <div class="card-body pb-10">
                                                         <div class="reply-editor media">
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}" method="post">
                                                                     {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
@@ -440,7 +440,26 @@
                                                                     {{comment.created_at}}
                                                                 </p>
                                                                 <div class="timeline-single__content">
+                                                                    <span>Дзвінок.</span>
                                                                     <p>{{comment.comment}}</p>
+                                                                </div>
+
+                                                            </div>
+                                                            {% endif %}
+
+                                                            {% if comment.comment_type == "predicted_churn" %}
+                                                            <div class="timeline-single d-flex">
+                                                                <span class="timeline-line"></span>
+
+                                                                <span class="timeline-single__buble buble-warning"></span>
+                                                                <p>
+                                                                    {{comment.created_at}}
+                                                                </p>
+                                                                <div class="timeline-single__content">
+                                                                    <span>Передбачуваний відвал.</span>
+                                                                    <p>{{comment.churn_id}}</p>
+                                                                    <p>ID студента: {{comment.comment}}</p>
+
                                                                 </div>
 
                                                             </div>
@@ -454,6 +473,7 @@
                                                                     {{comment.created_at}}
                                                                 </p>
                                                                 <div class="timeline-single__content">
+                                                                    <span>Відвідування уроку.</span>
                                                                     <p>Група: {{comment.group_id}}</p>
                                                                     <p>{{comment.comment}}</p>
                                                                 </div>
@@ -469,6 +489,7 @@
                                                                     {{comment.created_at}}
                                                                 </p>
                                                                 <div class="timeline-single__content">
+                                                                    <span>Звичайний коментар.</span>
                                                                     <p>{{comment.comment}}</p>
                                                                 </div>
 
@@ -484,6 +505,7 @@
                                                                     {{comment.created_at}}
                                                                 </p>
                                                                 <div class="timeline-single__content">
+                                                                    <span>Форма ЗЗ.</span>
                                                                     <p>{{comment.comment}}</p>
                                                                 </div>
 
@@ -520,7 +542,7 @@
                                                         <div class="reply-editor media">
 
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}" method="post">
                                                                     {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
@@ -598,7 +620,7 @@
                                                         <div class="reply-editor media">
 
                                                             <div class="reply-editor__form media-body">
-                                                                <form action="{% url 'logika_teachers:create-comment' %}">
+                                                                <form action="{% url 'logika_teachers:create-comment' %}" method="post">
                                                                     {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
@@ -665,12 +687,49 @@
                                 <div class="col-lg-12 mb-30">
                                     <div class="card mt-30">
                                         <div class="card-body">
+                                            <h1>Останні передбачувані відвали: </h1>
+                                            {% for churn, description in recent_feedback_churn.items %}
+                                            <div class="job-item px-25 py-30">
+                                                <div class="card-body p-0  d-flex align-items-sm-center align-items-start flex-wrap">
+                                                    <div class="job-item__body text-capitalize d-flex flex-wrap">
+                                                        <div class="job-item__content d-flex">
+                                                            <div class="job-deadline">
+                                                                <h6>ID: {{churn}}</h6>
+                                                                <span>Опис: {{description}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="job-item__button d-flex flex-wrap my-sm-0 my-10">
+                                                        <form action="{% url 'logika_teachers:create-comment' %}"
+                                                              method="post">
+                                                            {% csrf_token %}
+
+                                                            <textarea name="comment" id="comment"
+                                                                      class="form-control mb-4"></textarea>
+                                                            <input type="hidden" name="next"
+                                                                   value="{{ request.path }}">
+                                                            <input type="hidden" name="churn"
+                                                                   value="{{ churn }}">
+                                                            <input type="hidden" name="comment_type"
+                                                                   value="predicted_churn">
+                                                            <input type="hidden" name="teacher"
+                                                                   value="{{ teacher_profile.id }}">
+                                                            <button type="submit"
+                                                                    class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
+                                                                Додати коментар
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
                                             <h1>
                                                 <h2>Відправлені форми:</h2>
                                                 {% for feedback in feedbacks %}
                                                 <a href="{% url 'logika_teachers:view-forms' feedback.id %}"><h1>
                                                     Форма
-                                                    для {{feedback.tutor.user.get_full_name}} від {{feedback.created_at}}</h1></a>
+                                                    для {{feedback.tutor.user.get_full_name}} від
+                                                    {{feedback.created_at}}</h1></a>
                                                 {% endfor %}
                                             </h1>
                                         </div>
