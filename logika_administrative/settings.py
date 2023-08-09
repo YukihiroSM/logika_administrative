@@ -56,7 +56,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'logika_general.maintenance_middleware.MaintenanceMiddleware',
+
 ]
+
+MAINTENANCE_MODE = False
 
 ROOT_URLCONF = "logika_administrative.urls"
 

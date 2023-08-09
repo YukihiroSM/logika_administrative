@@ -7673,7 +7673,6 @@ body.top-menu .navbar-left .customizer-trigger + .top-menu {
 	align-items: center;
 	-webkit-border-radius: 10px 10px 0 0;
 	border-radius: 10px 10px 0 0;
-	text-transform: capitalize;
 	padding-top: 0;
 	padding-bottom: 0;
 	min-height: 66px;
