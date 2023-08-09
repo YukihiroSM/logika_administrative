@@ -140,10 +140,10 @@ STATICFILES_FINDERS = [
     'sass_processor.finders.CssFinder',
 ]
 
-STATIC_URL = "static/"
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_DIRS = [BASE_DIR / "static"]
+# Static files (CSS, JavaScript, Images)
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 SASS_PROCESSOR_ROOT = STATIC_ROOT
 # Media Files
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -156,3 +156,35 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': f"{BASE_DIR}/logging.log",
+            'formatter': 'timestamped',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'timestamped',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+    'formatters': {
+        'timestamped': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+}
