@@ -37,7 +37,7 @@
                             </div>
                             {% endfor %}
 
-                            <!--                            <p> {{alert.content}} </p>-->
+                            <p> {{alert.content}} </p>
                             <!--                            <ul class="errorlist">-->
                             <!--                                {% for error, message in form.errors.items %}-->
                             <!--                                <p>{{error}} - {{message}}</p>-->
@@ -88,9 +88,7 @@
                                                         class="color-danger">(*обов'язково)</span></label>
                                             <textarea class="form-control" id="mistakes"
                                                       rows="3" name="mistakes" required
-                                                      {% if form_data.mistakes %}
-                                                      value="{{form_data.mistakes}}"
-                                                      {% endif %}></textarea>
+                                            >{% if form_data.mistakes %}{{form_data.mistakes}}{% endif %}</textarea>
                                         </div>
 
                                         <div class="form-group row mb-25">
@@ -126,10 +124,8 @@
                                                 проблеми </label>
                                             <textarea class="form-control" id="additional_problems"
                                                       rows="3" name="additional_problems"
-                                                      {% if form_data.additional_problems %}
-                                                      value="{{form_data.additional_problems}}"
-                                                      {% endif %}
-                                            ></textarea>
+
+                                            >{% if form_data.additional_problems %}{{form_data.additional_problems}}{% endif %}</textarea>
                                         </div>
                                         <label for="students-container"
                                                class="il-gray fs-14 fw-500 align-center mb-10">Передбачувані відвали
@@ -199,7 +195,7 @@
                                                 проблеми на локації/платформі/в онлайні з якими ви стикнулись на
                                                 уроці</label>
                                             <textarea class="form-control" id="technical_problems"
-                                                      rows="3" name="technical_problems"></textarea>
+                                                      rows="3" name="technical_problems">{% if form_data.technical_problems %}{{form_data.technical_problems}}{% endif %}</textarea>
                                         </div>
                                         <div class="form-group row mb-25">
                                             <label for="km_work_mark"
@@ -223,10 +219,8 @@
                                                 КМ</label>
                                             <textarea class="form-control" id="km_work_comment"
                                                       rows="3" name="km_work_comment"
-                                                      {% if form_data.km_work_comment %}
-                                                      value="{{form_data.km_work_comment}}"
-                                                      {% endif %}
-                                            ></textarea>
+
+                                            >{% if form_data.km_work_comment %}{{form_data.km_work_comment}}{% endif %}</textarea>
                                         </div>
                                         <div class="form-group row mb-25">
                                             <label for="tutor_work_mark"
@@ -250,10 +244,7 @@
                                                 тьютором</label>
                                             <textarea class="form-control" id="tutor_work_comment"
                                                       rows="3" name="tutor_work_comment"
-                                                      {% if form_data.tutor_work_comment %}
-                                                      value="{{form_data.tutor_work_comment}}"
-                                                      {% endif %}
-                                            ></textarea>
+                                            >{% if form_data.tutor_work_comment %}{{form_data.tutor_work_comment}}{% endif %}</textarea>
                                         </div>
 
                                         <div class="form-group row mb-0">

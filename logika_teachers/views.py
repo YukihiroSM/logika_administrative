@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 import pickle
 from transliterate import translit
 from utils.get_user_role import get_user_role
+from utils.lms_authentication import get_authenticated_session
 
 
 @login_required
@@ -99,7 +100,7 @@ def create_teacher(request):
 def teacher_feedback_form(request, teacher_id, tutor_id):
     teacher_user = User.objects.filter(id=teacher_id).first()
     teacher_profile = TeacherProfile.objects.filter(user=teacher_user).first()
-
+    form_data = None
     tutor_user = User.objects.filter(id=tutor_id).first()
     tutor_profile = TutorProfile.objects.filter(user=tutor_user).first()
     tutor_name = tutor_user.get_full_name()
@@ -110,6 +111,21 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             form_data = form.cleaned_data
             predicted_churn_ids = request.POST.getlist("predicted_churn_id[]")
             predicted_churn_descriptions = request.POST.getlist("predicted_churn_description[]")
+            for student_id in predicted_churn_ids:
+                student_url = f"https://lms.logikaschool.com/api/v1/student/view/{student_id}?expand=branch,group"
+                session = get_authenticated_session()
+                response = session.get(student_url)
+                if response.status_code == 404:
+                    alerts.append({
+                        "title": "Невірна форма",
+                        "content": f"Невірно вказано ID учня {student_id}. Такого учня не існує."
+                    })
+            if len(alerts) > 0:
+                return render(request, "logika_teachers/feedback_form.html",
+                              {"teacher_profile": teacher_profile,
+                               "teacher_id": teacher_id, "tutor_id": tutor_id,
+                               "form": form, "alerts": alerts, "tutor_name": tutor_name, "form_data": form_data})
+
             new_form = TeacherFeedback(
                 teacher=teacher_profile,
                 tutor=tutor_profile,
@@ -141,15 +157,29 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
     return render(request, "logika_teachers/feedback_form.html",
                   {"teacher_profile": teacher_profile,
                    "teacher_id": teacher_id, "tutor_id": tutor_id,
-                   "form": form, "alerts": alerts, "tutor_name": tutor_name})
+                   "form": form, "alerts": alerts, "tutor_name": tutor_name, "form_data": form_data})
 
 
 def view_forms(request, feedback_id):
     feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
     user_role = get_user_role(request.user)
     predicted_churns = pickle.loads(feedback.predicted_churn_object) if feedback.predicted_churn_object else None
+    churns_data = []
+    session = get_authenticated_session()
+    for predicted_churn in predicted_churns:
+        student_url = f"https://lms.logikaschool.com/api/v1/student/view/{predicted_churn}?expand=branch,group"
+        student_response = session.get(student_url)
+        if student_response.status_code == 200:
+            student_info = {}
+            student_info["student_id"] = predicted_churn
+            student_data = student_response.json()["data"]
+            student_info["student_name"] = f"{student_data['first_name']} {student_data['last_name']}"
+            group_data = student_data["group"]
+            if group_data:
+                student_info["group_link"] = f'<a href="https://lms.logikaschool.com/group/view/{group_data["id"]}" target="_blank">{group_data["title"]}</a>'
+            churns_data.append(student_info)
     return render(request, "logika_teachers/view_forms.html",
-                  {"feedback": feedback, "user_role": user_role, "predicted_churns": predicted_churns})
+                  {"feedback": feedback, "user_role": user_role, "predicted_churns": predicted_churns, "churns_data": churns_data})
 
 
 def create_comment(request):
