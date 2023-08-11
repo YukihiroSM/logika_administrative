@@ -166,19 +166,18 @@ def view_forms(request, feedback_id):
     predicted_churns = pickle.loads(feedback.predicted_churn_object) if feedback.predicted_churn_object else None
     churns_data = []
     session = get_authenticated_session()
-    if predicted_churns:
-        for predicted_churn in predicted_churns:
-            student_url = f"https://lms.logikaschool.com/api/v1/student/view/{predicted_churn}?expand=branch,group"
-            student_response = session.get(student_url)
-            if student_response.status_code == 200:
-                student_info = {}
-                student_info["student_id"] = predicted_churn
-                student_data = student_response.json()["data"]
-                student_info["student_name"] = f"{student_data['first_name']} {student_data['last_name']}"
-                group_data = student_data["group"]
-                if group_data:
-                    student_info["group_link"] = f'<a href="https://lms.logikaschool.com/group/view/{group_data["id"]}" target="_blank">{group_data["title"]}</a>'
-                churns_data.append(student_info)
+    for predicted_churn in predicted_churns:
+        student_url = f"https://lms.logikaschool.com/api/v1/student/view/{predicted_churn}?expand=branch,group"
+        student_response = session.get(student_url)
+        if student_response.status_code == 200:
+            student_info = {}
+            student_info["student_id"] = predicted_churn
+            student_data = student_response.json()["data"]
+            student_info["student_name"] = f"{student_data['first_name']} {student_data['last_name']}"
+            group_data = student_data["group"]
+            if group_data:
+                student_info["group_link"] = f'<a href="https://lms.logikaschool.com/group/view/{group_data["id"]}" target="_blank">{group_data["title"]}</a>'
+            churns_data.append(student_info)
     return render(request, "logika_teachers/view_forms.html",
                   {"feedback": feedback, "user_role": user_role, "predicted_churns": predicted_churns, "churns_data": churns_data})
 
