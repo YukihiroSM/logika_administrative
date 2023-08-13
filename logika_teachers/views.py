@@ -97,6 +97,7 @@ def create_teacher(request):
     return render(request, "logika_teachers/create_teacher.html", {"form": form})
 
 
+@login_required
 def teacher_feedback_form(request, teacher_id, tutor_id):
     teacher_user = User.objects.filter(id=teacher_id).first()
     teacher_profile = TeacherProfile.objects.filter(user=teacher_user).first()
@@ -112,14 +113,15 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             predicted_churn_ids = request.POST.getlist("predicted_churn_id[]")
             predicted_churn_descriptions = request.POST.getlist("predicted_churn_description[]")
             for student_id in predicted_churn_ids:
-                student_url = f"https://lms.logikaschool.com/api/v1/student/view/{student_id}?expand=branch,group"
-                session = get_authenticated_session()
-                response = session.get(student_url)
-                if response.status_code == 404:
-                    alerts.append({
-                        "title": "Невірна форма",
-                        "content": f"Невірно вказано ID учня {student_id}. Такого учня не існує."
-                    })
+                if student_id != "":
+                    student_url = f"https://lms.logikaschool.com/api/v1/student/view/{student_id}?expand=branch,group"
+                    session = get_authenticated_session()
+                    response = session.get(student_url)
+                    if response.status_code == 404:
+                        alerts.append({
+                            "title": "Невірна форма",
+                            "content": f"Невірно вказано ID учня {student_id}. Такого учня не існує."
+                        })
             if len(alerts) > 0:
                 return render(request, "logika_teachers/feedback_form.html",
                               {"teacher_profile": teacher_profile,
