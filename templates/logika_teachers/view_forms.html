@@ -71,17 +71,15 @@
                                 <p class="text-normal">ID: {{churn}}</p>
                                 <p class="text-normal">Опис: {{description}}</p>
 
-                                    <p>Деталі: </p>
+                                    <b>Деталі: </b>
                                     {% for row in churns_data %}
-                                    {% for key, value in row.items %}
-                                    {% if key == "student_id" and value == churn %}
-                                    <p class="text-normal">Студент: {%if key == "full_name" %}{{value}}{%endif%}</p>
-                                    <p class="text-normal">Група: {%if key == "group_link" %}{{value|safe}}{%endif%}</p>
-                                    <p></p>
+                                    {% if row.student_id == churn %}
+                                    <p class="text-normal">Студент: {{row.student_name}}</p>
+                                    <p class="text-normal">Група: {{row.group_link|safe}}</p>
                                     {% endif %}
-                                    {% endfor%}
                                     {% endfor %}
                                 </div>
+                            <hr>
                                 {% endfor %}
 
                         </div>

@@ -403,8 +403,157 @@
                                                                     {% csrf_token %}
                                                                     <div class="row">
                                                                         <div class="form-group col-12">
-                                                                            <textarea name="comment" id="comment"
-                                                                                      class="form-control mb-4"></textarea>
+<!--                                                                            <textarea name="comment" id="comment"-->
+<!--                                                                                      class="form-control mb-4"></textarea>-->
+
+                                                                            <div class="trumbowyg-box trumbowyg-editor-visible trumbowyg-en trumbowyg">
+                                                                                <div class="trumbowyg-button-pane">
+                                                                                    <div class="trumbowyg-button-group ">
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-formatting-button trumbowyg-open-dropdown"
+                                                                                                title="Formatting"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-p"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-strong-button "
+                                                                                                title="Strong (Ctrl + B)"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-strong"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-em-button "
+                                                                                                title="Emphasis (Ctrl + I)"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-em"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-superscript-button "
+                                                                                                title="Superscript"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-superscript"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-subscript-button "
+                                                                                                title="Subscript"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-subscript"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-link-button trumbowyg-open-dropdown"
+                                                                                                title="Link"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-link"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    <div class="trumbowyg-button-group ">
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-unorderedList-button "
+                                                                                                title="Unordered list"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-unordered-list"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                        <button type="button"
+                                                                                                class="trumbowyg-orderedList-button "
+                                                                                                title="Ordered list"
+                                                                                                tabindex="-1">
+                                                                                            <svg>
+                                                                                                <use xlink:href="#trumbowyg-ordered-list"></use>
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="trumbowyg-editor"
+                                                                                     contenteditable="true" dir="ltr"
+                                                                                     placeholder="Type your message..."
+                                                                                     style="height: 20.0312px;"></div>
+                                                                                <textarea name="comment"
+                                                                                          id="mail-reply-message2"
+                                                                                          class="form-control-lg trumbowyg-textarea"
+                                                                                          placeholder="Введіть коментар..."
+                                                                                          tabindex="-1"
+                                                                                          style="height: 20.0312px;"></textarea>
+                                                                                <div class="trumbowyg-dropdown-formatting trumbowyg-dropdown trumbowyg-fixed-top "
+                                                                                     data-trumbowyg-dropdown="formatting"
+                                                                                     style="position: absolute; top: 47px; left: 0px; display: none;">
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-p-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-p"></use>
+                                                                                        </svg>
+                                                                                        Абзац
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-blockquote-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-blockquote"></use>
+                                                                                        </svg>
+                                                                                        Цитата
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-h1-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-h1"></use>
+                                                                                        </svg>
+                                                                                        Заголовок 1
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-h2-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-h2"></use>
+                                                                                        </svg>
+                                                                                        Заголовок 2
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-h3-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-h3"></use>
+                                                                                        </svg>
+                                                                                        Заголовок 3
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-h4-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-h4"></use>
+                                                                                        </svg>
+                                                                                        Заголовок 4
+                                                                                    </button>
+                                                                                </div>
+                                                                                <div class="trumbowyg-dropdown-link trumbowyg-dropdown trumbowyg-fixed-top "
+                                                                                     data-trumbowyg-dropdown="link"
+                                                                                     style="position: absolute; top: 47px; left: 175px; display: none;">
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-createLink-dropdown-button "
+                                                                                            title="(Ctrl + K)">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-create-link"></use>
+                                                                                        </svg>
+                                                                                        Додати посилання
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            class="trumbowyg-unlink-dropdown-button ">
+                                                                                        <svg>
+                                                                                            <use xlink:href="#trumbowyg-unlink"></use>
+                                                                                        </svg>
+                                                                                        Прибрати посилання
+                                                                                    </button>
+                                                                                </div>
+                                                                                <div class="trumbowyg-overlay"></div>
+                                                                            </div>
                                                                             <input type="hidden" name="next"
                                                                                    value="{{ request.path }}">
                                                                             <input type="hidden" name="comment_type"
@@ -1665,24 +1814,24 @@
         </div>
     </div>
 </div>
-<script>
-    tinymce.init({
-        selector: 'textarea',
-        plugins: 'ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-        tinycomments_mode: 'embedded',
-        tinycomments_author: 'Author name',
-        mergetags_list: [
-            {
-                value: 'First.Name',
-                title: 'First Name'
-            },
-            {
-                value: 'Email',
-                title: 'Email'
-            },
-        ],
-        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant"))
-    });
-</script>
+<!--<script>-->
+<!--    tinymce.init({-->
+<!--        selector: 'textarea',-->
+<!--        plugins: 'ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',-->
+<!--        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',-->
+<!--        tinycomments_mode: 'embedded',-->
+<!--        tinycomments_author: 'Author name',-->
+<!--        mergetags_list: [-->
+<!--            {-->
+<!--                value: 'First.Name',-->
+<!--                title: 'First Name'-->
+<!--            },-->
+<!--            {-->
+<!--                value: 'Email',-->
+<!--                title: 'Email'-->
+<!--            },-->
+<!--        ],-->
+<!--        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant"))-->
+<!--    });-->
+<!--</script>-->
 {% endblock %}

@@ -62,6 +62,13 @@ MIDDLEWARE = [
 
 MAINTENANCE_MODE = False
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": BASE_DIR / "cache",
+    }
+}
+
 ROOT_URLCONF = "logika_administrative.urls"
 
 TEMPLATES = [

@@ -10,6 +10,7 @@ from logika_teachers.models import (
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import pickle
+from django.views.decorators.cache import cache_page, never_cache
 from transliterate import translit
 from utils.get_user_role import get_user_role
 from utils.lms_authentication import get_authenticated_session
@@ -161,7 +162,9 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                    "teacher_id": teacher_id, "tutor_id": tutor_id,
                    "form": form, "alerts": alerts, "tutor_name": tutor_name, "form_data": form_data})
 
-
+@login_required
+@never_cache
+# @cache_page(60*60*24)
 def view_forms(request, feedback_id):
     feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
     user_role = get_user_role(request.user)
@@ -184,7 +187,7 @@ def view_forms(request, feedback_id):
     return render(request, "logika_teachers/view_forms.html",
                   {"feedback": feedback, "user_role": user_role, "predicted_churns": predicted_churns, "churns_data": churns_data})
 
-
+@login_required
 def create_comment(request):
     request_data = request.POST
     comment_type = request_data.get("comment_type")
