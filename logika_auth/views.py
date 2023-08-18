@@ -39,10 +39,13 @@ def create_user(request):
         if role == "tutor":
             profile = TutorProfile(user=user)
             profile.save()
-        if role == "general_tutor":
+        elif role == "general_tutor":
             profile = RegionalTutorProfile(user=user)
             profile.save()
-
+        else:
+            group = Group.objects.get(name=role)
+            group.user_set.add(user)
+            group.save()
         # if role == "territorial_manager_km":
         #     tm_first_name = territorial_manager.split()[0]
         #     tm_last_name = territorial_manager.split()[1]
@@ -199,10 +202,13 @@ def update_user(request):
             if role == "tutor":
                 profile = TutorProfile(user=user)
                 profile.save()
-            if role == "general_tutor":
+            elif role == "general_tutor":
                 profile = RegionalTutorProfile(user=user)
                 profile.save()
-
+            else:
+                group = Group.objects.get(name=role)
+                group.user_set.add(user)
+                group.save()
             # if role == "territorial_manager_km":
             #     tm_first_name = territorial_manager.split()[0]
             #     tm_last_name = territorial_manager.split()[1]
@@ -212,7 +218,7 @@ def update_user(request):
             #         user_mapping.related_to = tm_user
             # user_mapping.save()
             # group.save()
-            user.save()
+            # user.save()
             return JsonResponse(
                 {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
         else:

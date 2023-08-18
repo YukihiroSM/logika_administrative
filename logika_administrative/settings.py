@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     "logika_general.apps.LogikaGeneralConfig",
     "logika_teachers.apps.LogikaTeachersConfig",
     "logika_auth.apps.LogikaAuthConfig",
+    "logika_statistics.apps.LogikaStatisticsConfig",
     "django_sass",
     "sass_processor",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
