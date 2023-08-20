@@ -9,7 +9,7 @@ import json
 
 def run():
     logger = logging.getLogger(__name__)
-    timelines = [("2023-08-01", "2023-08-06"), ("2023-08-07", "2023-08-13")]
+    timelines = [("2023-08-01", "2023-08-18")]
     # timelines = [("2023-0")]
     #
     #
@@ -32,9 +32,9 @@ def run():
         os.environ["start_date"] = timeline[0]
         os.environ["end_date"] = timeline[1]
         os.environ["month"] = month
-        management.call_command("process_mk")
-        management.call_command("payments_process", course="programming")
-        management.call_command("payments_process", course="english")
+        # management.call_command("process_mk")
+        # management.call_command("payments_process", course="programming")
+        # management.call_command("payments_process", course="english")
         management.call_command("generate_reports")
         # management.call_command("analyse_1c_bo")
     # management.call_command("no_amo_id_issue_analyse")

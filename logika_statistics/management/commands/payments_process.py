@@ -55,7 +55,7 @@ class Command(BaseCommand):
             one_c_host = "school.cloud24.com.ua"
         else:
             one_c_host = "localhost"
-        url = f"https://school.cloud24.com.ua:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={url_start}&till={url_end}&businessDirection={course}&firstPayment=true"
+        url = f"https://localhost:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={url_start}&till={url_end}&businessDirection={course}&firstPayment=true"
 
         response = requests.get(url, headers=library.payments_headers, verify=False)
         payments_data = response.json()
