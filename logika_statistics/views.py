@@ -69,7 +69,7 @@ def health(request):
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-18"
+    "Серпень": "2023-08-01_2023-08-20"
 }
 
 
