@@ -29,6 +29,3 @@ urlpatterns = [
     path("", include("logika_statistics.urls", namespace="logika_statistics")),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-
-handler404 = logika_general_views.error_404
-handler500 = logika_general_views.error_500
