@@ -174,32 +174,4 @@ class Command(BaseCommand):
                         f"Payments: {payments}, Attended: {attended_mc}, Enrolled: {enrolled_mc}, Conversion: {conversion}")
                     new_report.save()
 
-                for teacher in all_teachers:
-                    payments = len(reports.filter(business="programming", teacher=teacher,
-                                                  territorial_manager=territorial_manager,
-                                                  regional_manager=regional_manager, payment=1).all())
-                    attended_mc = len(reports.filter(business="programming", teacher=teacher,
-                                                     territorial_manager=territorial_manager,
-                                                     regional_manager=regional_manager, attended_mc=1).exclude(
-                        amo_id__isnull=True, is_duplicate=1).all())
-                    enrolled_mc = len(reports.filter(business="programming", teacher=teacher,
-                                                     territorial_manager=territorial_manager,
-                                                     regional_manager=regional_manager, enrolled_mc=1).exclude(
-                        amo_id__isnull=True, is_duplicate=1).all())
-                    conversion = self.get_conversion(payments, attended_mc)
-                    new_report = TeacherReportNew(
-                        teacher=teacher,
-                        territorial_manager=territorial_manager,
-                        regional_manager=regional_manager,
-                        business="programming",
-                        total_attended=attended_mc,
-                        total_payments=payments,
-                        conversion=conversion,
-                        total_enrolled=enrolled_mc,
-                        start_date=start_date,
-                        end_date=end_date
-                    )
-                    print(
-                        f"Regional Manager: {regional_manager}, Territorial Manager: {territorial_manager}, Teacher: {teacher}"
-                        f"Payments: {payments}, Attended: {attended_mc}, Enrolled: {enrolled_mc}, Conversion: {conversion}")
-                    new_report.save()
+                
