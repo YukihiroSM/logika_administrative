@@ -17,11 +17,24 @@ class Command(BaseCommand):
         if groups_resp.status_code == 200:
             groups_data = groups_resp.json()["data"]["items"]
             for group in groups_data:
-                if (group["status"]["value"] not in GROUP_STATUSES
-                        or group["type"]["value"] not in GROUP_TYPES):
+                if (
+                    group["status"]["value"] not in GROUP_STATUSES
+                    or group["type"]["value"] not in GROUP_TYPES
+                ):
                     continue
 
                 teacher_name = group.get("teacherName", "not_set")
+                teacher_id = None
+                if teacher_name != "not_set":
+                    detailed_group_resp = session.get(
+                        f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
+                    )
+                    if detailed_group_resp.status_code == 200:
+                        detailed_group_data = detailed_group_resp.json()["data"]
+                        if detailed_group_data.get("teacher"):
+                            teacher_id = detailed_group_data["teacher"]["id"]
+                        else:
+                            teacher_id = None
                 group_id = group["id"]
                 group_name = group["title"]
                 group_status = group["status"]["value"]
@@ -34,6 +47,7 @@ class Command(BaseCommand):
                     type=group_type,
                     venue=group_venue,
                     teacher_name=teacher_name,
+                    teacher_id=teacher_id,
                 )
                 group_obj.save()
                 if created:
@@ -44,8 +58,10 @@ class Command(BaseCommand):
                     group_obj.type = group_type
                     group_obj.venue = group_venue
                     group_obj.teacher_name = teacher_name
+                    group_obj.teacher_id = teacher_id
                     group_obj.save()
-                    self.stdout.write(self.style.SUCCESS(f"Group {group_name} already exists. Updated data."))
-
-
-
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Group {group_name} already exists. Updated data."
+                        )
+                    )

@@ -244,6 +244,11 @@
                                             переглянути профіль
                                         </button>
                                     </a>
+                                    <a href="{% url 'logika_teachers:teacher-performance' teacher.id %}">
+                                        <button class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
+                                            підрахунок успішності
+                                        </button>
+                                    </a>
                                     {% for feedback in feedbacks %}
                                     {% if feedback.teacher == teacher %}
                                     <a href="{% url 'logika_teachers:view-forms' feedback.id %}">

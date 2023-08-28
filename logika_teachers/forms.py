@@ -38,3 +38,10 @@ class TeacherFeedbackForm(forms.Form):
 class TeacherCommentForm(forms.Form):
     comment = forms.CharField(max_length=1024, required=True)
     group_id = forms.CharField(max_length=16)
+
+
+class TeacherPerformanceForm(forms.Form):
+    month = forms.CharField(max_length=1024, required=True)
+    locations = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+    )
