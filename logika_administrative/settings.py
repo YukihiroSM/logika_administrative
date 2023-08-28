@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DEBUG") == "TRUE"
 
 ALLOWED_HOSTS = ["*"]
-ADMIN_ENABLED = True
+ADMIN_ENABLED = os.environ.get("ADMIN_ENABLED") == "TRUE"
 
 # Application definition
 
