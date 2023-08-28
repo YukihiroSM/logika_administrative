@@ -33,8 +33,9 @@ regions = [
     ("UA_Donetskobl", "UA_Donetskobl"),
     ("UA_Center", "UA_Center"),
     ("UA_Nikolaevskaya_obl", "UA_Nikolaevskaya_obl"),
-    ("UA_Dnepropetrovskaya oblast2", "UA_Dnepropetrovskaya oblast2")
+    ("UA_Dnepropetrovskaya oblast2", "UA_Dnepropetrovskaya oblast2"),
 ]
+
 
 class Group(models.Model):
     lms_id = models.IntegerField()
@@ -46,26 +47,32 @@ class Group(models.Model):
     start_date = models.DateField(blank=True, null=True)
     approximate_end_date = models.DateField(blank=True, null=True)
     course_id = models.IntegerField(blank=True, null=True)
+    teacher_id = models.IntegerField(blank=True, null=True)
 
 
 class Location(models.Model):
     standart_name = models.CharField(
-        max_length=256, blank=True, null=True, editable=False)
+        max_length=256, blank=True, null=True, editable=False
+    )
     lms_location_name = models.CharField(max_length=256)
     client_manager = models.CharField(max_length=256, null=True, blank=True)
-    client_manager_english = models.CharField(
-        max_length=256, null=True, blank=True)
-    territorial_manager = models.CharField(
-        max_length=256, null=True, blank=True)
+    client_manager_english = models.CharField(max_length=256, null=True, blank=True)
+    territorial_manager = models.CharField(max_length=256, null=True, blank=True)
     regional_manager = models.CharField(max_length=256, null=True, blank=True)
     tutor = models.CharField(max_length=256, null=True, blank=True)
     tutor_english = models.CharField(max_length=256, null=True, blank=True)
-    region = models.CharField(
-        max_length=200, choices=regions, default=None, null=True)
+    region = models.CharField(max_length=200, choices=regions, default=None, null=True)
 
     def save(self, *args, **kwargs):
-        self.standart_name = str(self.lms_location_name).lower().replace(
-            " ", "_").replace("-", "_").replace('"', "'").replace(",", "").replace(".", "")
+        self.standart_name = (
+            str(self.lms_location_name)
+            .lower()
+            .replace(" ", "_")
+            .replace("-", "_")
+            .replace('"', "'")
+            .replace(",", "")
+            .replace(".", "")
+        )
         super(Location, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -104,8 +111,7 @@ class Report(models.Model):
     total = models.IntegerField()
     attended = models.IntegerField()
     payments = models.IntegerField()
-    students_without_amo = models.CharField(
-        max_length=1024, null=True, blank=True)
+    students_without_amo = models.CharField(max_length=1024, null=True, blank=True)
     conversion = models.FloatField()
     territorial_manager = models.CharField(max_length=256, default="")
     start_date = models.DateField(null=True, blank=True)
@@ -116,7 +122,7 @@ class Report(models.Model):
     tutor = models.CharField(max_length=256, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.region}:{self.location_name} {self.start_date}_{self.end_date} => {self.conversion}'
+        return f"{self.region}:{self.location_name} {self.start_date}_{self.end_date} => {self.conversion}"
 
 
 class StudentAMORef(models.Model):
@@ -164,8 +170,7 @@ class TeacherReport(models.Model):
 class GlobalGroup(models.Model):
     lms_id = models.CharField(max_length=16)
     group_name = models.CharField(max_length=256)
-    location = models.ForeignKey(
-        Location, on_delete=models.DO_NOTHING, null=True)
+    location = models.ForeignKey(Location, on_delete=models.DO_NOTHING, null=True)
     teacher = models.CharField(max_length=256)
     client_manager = models.CharField(max_length=256)
     group_type = models.CharField(max_length=256)
@@ -183,9 +188,14 @@ class StudentReport(models.Model):
     student_first_name = models.CharField(max_length=128, null=True)
     student_last_name = models.CharField(max_length=128, null=True)
     student_mk_group_id = models.ForeignKey(
-        GlobalGroup, on_delete=models.DO_NOTHING, related_name="student_mk", null=True)
+        GlobalGroup, on_delete=models.DO_NOTHING, related_name="student_mk", null=True
+    )
     student_current_group_id = models.ForeignKey(
-        GlobalGroup, on_delete=models.DO_NOTHING, related_name="student_current", null=True)
+        GlobalGroup,
+        on_delete=models.DO_NOTHING,
+        related_name="student_current",
+        null=True,
+    )
     enrolled_mc = models.IntegerField(null=True)
     attended_mc = models.IntegerField(null=True)
     amo_id = models.CharField(max_length=16, null=True)
@@ -204,11 +214,11 @@ class StudentReport(models.Model):
 
 
 class UsersMapping(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="user_id")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_id")
     password = models.CharField(max_length=256)
     related_to = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="related_user_id", null=True)
+        User, on_delete=models.CASCADE, related_name="related_user_id", null=True
+    )
     auth_token = models.CharField(max_length=256, null=True)
     login_timestamp = models.DateTimeField(null=True)
 

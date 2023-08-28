@@ -12,3 +12,8 @@ def get_user_role(user):
     except:
         pass
     return "undefined"
+
+
+def get_user_role_by_request(request):
+    role = get_user_role(request.user)
+    return {"user_role": role}
