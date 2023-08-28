@@ -161,3 +161,7 @@ cython_debug/
 resources/
 
 staticfiles/
+
+fixture.json
+groups.json
+session.pickle

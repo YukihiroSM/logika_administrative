@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "logika_teachers.apps.LogikaTeachersConfig",
     "logika_auth.apps.LogikaAuthConfig",
     "logika_statistics.apps.LogikaStatisticsConfig",
+    "logika_analytics.apps.LogikaAnalyticsConfig",
     "django_sass",
     "sass_processor",
     "django_extensions",
@@ -86,6 +87,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "utils.get_user_role.get_user_role_by_request"
             ],
         },
     },
