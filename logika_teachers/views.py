@@ -397,9 +397,11 @@ def teacher_performance(request, teacher_id):
             if result:
                 session = get_authenticated_session()
                 groups_data["teacher_average"] = 0
+                group_count = 0
                 for group in result:
                     if len(result[group]) < 1:
                         continue
+                    group_count += 1
                     group_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group}")
                     group_data = group_resp.json()["data"]
                     group_title = group_data["title"]
@@ -409,7 +411,7 @@ def teacher_performance(request, teacher_id):
                     groups_data[group]["min"] = min(result[group]) if result[group] else 0
                     groups_data[group]["title"] = group_title
                     groups_data["teacher_average"] += groups_data[group]["average"]
-                groups_data["teacher_average"] = groups_data["teacher_average"] / len(result)
+                groups_data["teacher_average"] = groups_data["teacher_average"] /group_count
             return render(
                 request,
                 "logika_teachers/teacher_performance.html",
