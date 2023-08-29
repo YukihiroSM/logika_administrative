@@ -398,7 +398,7 @@ def teacher_performance(request, teacher_id):
                 session = get_authenticated_session()
                 groups_data["teacher_average"] = 0
                 for group in result:
-                    if len(group) < 1:
+                    if len(result[group]) < 1:
                         continue
                     group_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group}")
                     group_data = group_resp.json()["data"]
