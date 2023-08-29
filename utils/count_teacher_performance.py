@@ -13,7 +13,7 @@ def is_lesson_in_month(lesson_date, month):
 
 def get_teacher_performance_by_month(teacher_id, locations, month):
     teacher = TeacherProfile.objects.get(id=teacher_id)
-    groups = Group.objects.filter(venue__in=locations, teacher_id=teacher.lms_id, type="regular")
+    groups = Group.objects.filter(venue__in=locations, teacher_id=teacher.lms_id, type__in=["regular", "individual"])
     session = get_authenticated_session()
     results = {}
     for group in groups:
