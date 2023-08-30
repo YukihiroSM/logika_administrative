@@ -391,7 +391,9 @@ def teacher_performance(request, teacher_id):
         locations = request.POST.getlist("locations")
         month = request.POST.get("month")
         if month and locations:
-            result = get_teacher_performance_by_month(teacher_id, locations, month_dict[month])
+            result = get_teacher_performance_by_month(
+                teacher_id, locations, month_dict[month]
+            )
             groups_data = {}
 
             if result:
@@ -402,36 +404,45 @@ def teacher_performance(request, teacher_id):
                     if len(result[group]) < 1:
                         continue
                     group_count += 1
-                    group_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group}")
+                    group_resp = session.get(
+                        f"https://lms.logikaschool.com/api/v1/group/{group}"
+                    )
                     group_data = group_resp.json()["data"]
-                    group_title = group_data["title"]
+                    group_title = group_data["title"].replace("_", "")
                     groups_data[group] = {}
-                    groups_data[group]["average"] = sum(result[group]) / len(result[group]) if result[group] else 0
-                    groups_data[group]["max"] = max(result[group]) if result[group] else 0
-                    groups_data[group]["min"] = min(result[group]) if result[group] else 0
+                    groups_data[group]["average"] = (
+                        sum(result[group]) / len(result[group]) if result[group] else 0
+                    )
+                    groups_data[group]["max"] = (
+                        max(result[group]) if result[group] else 0
+                    )
+                    groups_data[group]["min"] = (
+                        min(result[group]) if result[group] else 0
+                    )
                     groups_data[group]["title"] = group_title
                     groups_data["teacher_average"] += groups_data[group]["average"]
-                groups_data["teacher_average"] = groups_data["teacher_average"] /group_count
+                groups_data["teacher_average"] = (
+                    groups_data["teacher_average"] / group_count
+                )
             return render(
                 request,
                 "logika_teachers/teacher_performance.html",
-                {"groups_data": groups_data,
-                 "teachers_locations": get_teacher_locations(teacher_id),
-                 "teacher": teacher,
-                 "form_data": {"month": month, "locations": locations}
-                 },
+                {
+                    "groups_data": groups_data,
+                    "teachers_locations": get_teacher_locations(teacher_id),
+                    "teacher": teacher,
+                    "form_data": {"month": month, "locations": locations},
+                },
             )
     return render(
         request,
         "logika_teachers/teacher_performance.html",
         {
-         "teachers_locations": get_teacher_locations(teacher_id),
-         "teacher": teacher,
-         },
+            "teachers_locations": get_teacher_locations(teacher_id),
+            "teacher": teacher,
+        },
     )
 
+
 def tutor_results(request):
-    return render(
-        request,
-        "logika_teachers/tutor_results.html"
-    )
+    return render(request, "logika_teachers/tutor_results.html")
