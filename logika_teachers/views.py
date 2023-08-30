@@ -410,19 +410,21 @@ def teacher_performance(request, teacher_id):
                     group_data = group_resp.json()["data"]
                     group_title = group_data["title"].replace("_", " ")
                     groups_data[group] = {}
-                    groups_data[group]["average"] = (
-                        sum(result[group]) / len(result[group]) if result[group] else 0
+                    groups_data[group]["average"] = round(
+                        sum(result[group]) / len(result[group]) if result[group] else 0,
+                        1,
                     )
-                    groups_data[group]["max"] = (
-                        max(result[group]) if result[group] else 0
+                    groups_data[group]["max"] = round(
+                        max(result[group]) if result[group] else 0, 1
                     )
-                    groups_data[group]["min"] = (
-                        min(result[group]) if result[group] else 0
+                    groups_data[group]["min"] = round(
+                        min(result[group]) if result[group] else 0, 1
                     )
                     groups_data[group]["title"] = group_title
                     groups_data["teacher_average"] += groups_data[group]["average"]
-                groups_data["teacher_average"] = (
-                    groups_data["teacher_average"] / group_count if group_count else 0
+                groups_data["teacher_average"] = round(
+                    groups_data["teacher_average"] / group_count if group_count else 0,
+                    1,
                 )
             return render(
                 request,
