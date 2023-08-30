@@ -422,7 +422,7 @@ def teacher_performance(request, teacher_id):
                     groups_data[group]["title"] = group_title
                     groups_data["teacher_average"] += groups_data[group]["average"]
                 groups_data["teacher_average"] = (
-                    groups_data["teacher_average"] / group_count
+                    groups_data["teacher_average"] / group_count if group_count else 0
                 )
             return render(
                 request,
