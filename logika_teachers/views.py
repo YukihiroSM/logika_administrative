@@ -11,6 +11,7 @@ from logika_teachers.models import (
     TutorProfile,
     TeacherFeedback,
     TeacherComment,
+    TutorMonthReport,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -448,3 +449,85 @@ def teacher_performance(request, teacher_id):
 
 def tutor_results(request):
     return render(request, "logika_teachers/tutor_results.html")
+
+
+def tutor_month_report(request, user_id):
+    month_dict = {
+        "Січень": 1,
+        "Лютий": 2,
+        "Березень": 3,
+        "Квітень": 4,
+        "Травень": 5,
+        "Червень": 6,
+        "Липень": 7,
+        "Серпень": 8,
+        "Вересень": 9,
+        "Жовтень": 10,
+        "Листопад": 11,
+        "Грудень": 12,
+    }
+    user = User.objects.get(id=user_id)
+    tutor = TutorProfile.objects.get(user=user)
+    if request.method == "POST":
+        month = request.POST.get("month")
+        churns_percent = request.POST.get("churns_percent")
+        category = request.POST.get("category")
+        is_salary_counted = request.POST.getlist("is_salary_counted")
+        report_id = request.POST.get("report_id")
+        if month:
+            month_reports = TutorMonthReport.objects.filter(
+                month=month, tutor=tutor
+            ).all()
+            if not month_reports:
+                tutor_teachers = tutor.related_teachers.all()
+                for teacher in tutor_teachers:
+                    new_month_report = TutorMonthReport(
+                        teacher=teacher,
+                        churns_percent="-",
+                        performance_percent="-",
+                        conversion="-",
+                        month=month,
+                        tutor=tutor,
+                    )
+                    new_month_report.save()
+            month_reports = (
+                TutorMonthReport.objects.filter(month=month, tutor=tutor)
+                .order_by("teacher")
+                .all()
+            )
+            if report_id:
+                month_report = TutorMonthReport.objects.get(report_id=report_id)
+                if is_salary_counted and is_salary_counted[0] == "yes":
+                    month_report.is_salary_counted = True
+
+                if churns_percent:
+                    month_report.churns_percent = churns_percent
+
+                if category:
+                    month_report.category = category
+                month_report.save()
+
+            return render(
+                request,
+                "logika_teachers/tutor_month_report.html",
+                {"tutor": tutor, "month_reports": month_reports},
+            )
+    return render(request, "logika_teachers/tutor_month_report.html", {"tutor": tutor})
+
+
+def add_performance_to_report(request, teacher_id):
+    teacher = TeacherProfile.objects.get(id=teacher_id)
+    tutor = TutorProfile.objects.get(user=request.user)
+    if request.method == "POST":
+        print(request.POST)
+        month = request.POST.get("month")
+        performance = request.POST.get("performance")
+        teacher_month_report = TutorMonthReport.objects.filter(
+            teacher=teacher, month=month, tutor=tutor
+        ).first()
+        print(teacher_month_report)
+        if teacher_month_report:
+            teacher_month_report.performance_percent = performance
+            teacher_month_report.save()
+
+        return redirect("logika_teachers:teacher-performance", teacher_id=teacher_id)

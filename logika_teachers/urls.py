@@ -16,8 +16,22 @@ urlpatterns = [
         views.refresh_credentials,
         name="refresh-credentials",
     ),
-    path("teacher-performance/<int:teacher_id>", views.teacher_performance, name="teacher-performance"),
+    path(
+        "teacher-performance/<int:teacher_id>",
+        views.teacher_performance,
+        name="teacher-performance",
+    ),
     path("tutor-results/", views.tutor_results, name="tutor-results"),
+    path(
+        "tutor-month-report/<int:user_id>",
+        views.tutor_month_report,
+        name="tutor-month-report",
+    ),
+    path(
+        "add-performance-to-report/<int:teacher_id>",
+        views.add_performance_to_report,
+        name="add-performance-to-report",
+    ),
 ]
 
 app_name = "logika_teachers"
