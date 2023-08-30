@@ -24,6 +24,8 @@ def get_teacher_performance_by_month(teacher_id, locations, month):
         if group_performance_resp.status_code == 200:
             group_performance_data = group_performance_resp.json()["data"]["items"]
             for lesson in group_performance_data:
+                if "підготовка до ву" in lesson.get("title", "").lower() or "відкритий урок" in lesson.get("title", "").lower():
+                    continue
                 if lesson.get("startTime") and is_lesson_in_month(lesson.get("startTime"), month):
                     month_performance.append(
                         lesson.get("regularTaskScoreSumPercent") if lesson.get("regularTaskScoreSumPercent") else 0
