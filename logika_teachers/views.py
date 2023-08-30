@@ -408,7 +408,7 @@ def teacher_performance(request, teacher_id):
                         f"https://lms.logikaschool.com/api/v1/group/{group}"
                     )
                     group_data = group_resp.json()["data"]
-                    group_title = group_data["title"].replace("_", "")
+                    group_title = group_data["title"].replace("_", " ")
                     groups_data[group] = {}
                     groups_data[group]["average"] = (
                         sum(result[group]) / len(result[group]) if result[group] else 0
