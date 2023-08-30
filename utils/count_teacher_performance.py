@@ -31,6 +31,8 @@ def get_teacher_performance_by_month(teacher_id, locations, month):
                 if (
                     "підготовка до ву" in lesson.get("title", "").lower()
                     or "відкритий урок" in lesson.get("title", "").lower()
+                    or "revision" in lesson.get("title", "").lower()
+                    or "repetition" in lesson.get("title", "").lower()
                 ):
                     continue
                 if lesson.get("startTime") and is_lesson_in_month(
