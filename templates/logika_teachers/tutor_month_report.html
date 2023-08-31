@@ -112,11 +112,11 @@ load i18n %} {% load static %} {% block content %}
                       <td>
                         <div class="userDatatable-content">
                           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modal-basic">Редагувати</button>
+                            data-bs-target="#modal-basic{{forloop.counter}}">Редагувати</button>
                         </div>
                         <form action="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}" method="post">
                           {% csrf_token %}
-                          <div class="modal-basic modal fade" id="modal-basic" tabindex="-1" style="display: none;"
+                          <div class="modal-basic modal fade" id="modal-basic{{forloop.counter}}" tabindex="-1" style="display: none;"
                             aria-hidden="true">
                             <div class="modal-dialog modal-md" role="document">
                               <div class="modal-content modal-bg-white ">
