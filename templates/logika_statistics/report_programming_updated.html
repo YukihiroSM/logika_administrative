@@ -1,13 +1,19 @@
-{% extends "layout/app.html" %}
-{% block title %} Отчеты по программированию {% endblock %}
+{% extends "layout/app.html" %} {% block title %} Отчеты по программированию {%
+endblock %}
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
-{% block content %}
+{% block stylesheets %}{% endblock stylesheets %} {% block content %}
 
 <script>
-
   function sortTable(tableClass, n) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    var table,
+      rows,
+      switching,
+      i,
+      x,
+      y,
+      shouldSwitch,
+      dir,
+      switchcount = 0;
 
     table = document.getElementById(tableClass);
     switching = true;
@@ -15,14 +21,18 @@
     while (switching) {
       switching = false;
       rows = table.getElementsByTagName("TR");
-      for (i = 1; i < (rows.length - 1); i++) {
+      for (i = 1; i < rows.length - 1; i++) {
         shouldSwitch = false;
         x = rows[i].getElementsByTagName("TD")[n];
         y = rows[i + 1].getElementsByTagName("TD")[n];
-        var cmpX = isNaN(parseInt(x.innerHTML)) ? x.innerHTML.toLowerCase() : parseInt(x.innerHTML);
-        var cmpY = isNaN(parseInt(y.innerHTML)) ? y.innerHTML.toLowerCase() : parseInt(y.innerHTML);
-        cmpX = (cmpX == '-') ? 0 : cmpX;
-        cmpY = (cmpY == '-') ? 0 : cmpY;
+        var cmpX = isNaN(parseInt(x.innerHTML))
+          ? x.innerHTML.toLowerCase()
+          : parseInt(x.innerHTML);
+        var cmpY = isNaN(parseInt(y.innerHTML))
+          ? y.innerHTML.toLowerCase()
+          : parseInt(y.innerHTML);
+        cmpX = cmpX == "-" ? 0 : cmpX;
+        cmpY = cmpY == "-" ? 0 : cmpY;
         if (dir == "asc") {
           if (cmpX > cmpY) {
             shouldSwitch = true;
@@ -47,7 +57,6 @@
       }
     }
   }
-
 </script>
 
 <!-- [ Main Content ] start -->
@@ -64,22 +73,30 @@
               <!--                            <button type="button" class="btn btn-warning" onclick="document.getElementById('inconsistencies').scrollIntoView();">Несостыковок: <span class="badge badge-light">4</span> Нажмите, чтобы перейти к исправлению</button>-->
               <div>
                 <div class="col-sm-12">
-                  <hr>
-                  {% load replace_space_to_ %}
-                  {% load count_conversion %}
+                  <hr />
+                  {% load replace_space_to_ %} {% load count_conversion %}
                   <form method="POST" action="/programming_updated">
                     {% csrf_token %}
-                    <select name="report_scale" id="report_scale" class="form-control" style="width: 250px"
-                      onchange="this.form.submit()">
-                      <option value="none" selected disabled hidden>Оберіть період</option>
+                    <select
+                      name="report_scale"
+                      id="report_scale"
+                      class="form-control"
+                      style="width: 250px"
+                      onchange="this.form.submit()"
+                    >
+                      <option value="none" selected disabled hidden>
+                        Оберіть період
+                      </option>
                       {% for scale in report_scales %}
                       <option value="{{ scale }}">{{ scale }}</option>
                       {% endfor %}
                     </select>
-                    <hr>
+                    <hr />
                   </form>
-                  <h3 class="m-0">Програмування. Звіт за {{ report_date_default }}</h3>
-                  <br>
+                  <h3 class="m-0">
+                    Програмування. Звіт за {{ report_date_default }}
+                  </h3>
+                  <br />
                   {% if user_role == "admin" %}
                   <table class="table table-hover">
                     <tr>
@@ -106,7 +123,7 @@
                         <h6 class="m-0">{{ value.payments }}</h6>
                       </td>
                       <td>
-                        <h6 class="m-0"> {{ value | count_conversion }} %</h6>
+                        <h6 class="m-0">{{ value | count_conversion }} %</h6>
                       </td>
                       <td>
                         <h6 class="m-0"></h6>
@@ -115,36 +132,77 @@
                     {% endfor %}
                   </table>
                   {% endif %}
-                  <hr>
+                  <hr />
                   <div class="col-sm-12">
-                    <hr>
-                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <hr />
+                    <ul
+                      class="nav nav-pills mb-3"
+                      id="pills-tab"
+                      role="tablist"
+                    >
                       <li class="nav-item">
-                        <a class="nav-link active show" id="pills-home-tab" data-toggle="pill" href="#pills-home"
-                          role="tab" aria-controls="pills-home" aria-selected="true">По локації</a>
+                        <a
+                          class="nav-link active show"
+                          id="pills-home-tab"
+                          data-toggle="pill"
+                          href="#pills-home"
+                          role="tab"
+                          aria-controls="pills-home"
+                          aria-selected="true"
+                          >По локації</a
+                        >
                       </li>
                       <li class="nav-item">
-                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab"
-                          aria-controls="pills-profile" aria-selected="false">По КМ</a>
+                        <a
+                          class="nav-link"
+                          id="pills-profile-tab"
+                          data-toggle="pill"
+                          href="#pills-profile"
+                          role="tab"
+                          aria-controls="pills-profile"
+                          aria-selected="false"
+                          >По КМ</a
+                        >
                       </li>
                       <li class="nav-item">
-                        <a class="nav-link" id="pills-course-tab" data-toggle="pill" href="#pills-course" role="tab"
-                          aria-controls="pills-course" aria-selected="false">По курсу</a>
+                        <a
+                          class="nav-link"
+                          id="pills-course-tab"
+                          data-toggle="pill"
+                          href="#pills-course"
+                          role="tab"
+                          aria-controls="pills-course"
+                          aria-selected="false"
+                          >По курсу</a
+                        >
                       </li>
                     </ul>
                     <div class="tab-content" id="pills-tabContent">
-                      <div class="tab-pane fade active show" id="pills-home" role="tabpanel"
-                        aria-labelledby="pills-home-tab">
-                        {% for regional, tms in managers.items %}
-                        {% if regional != "None" and regional != None %}
+                      <div
+                        class="tab-pane fade active show"
+                        id="pills-home"
+                        role="tabpanel"
+                        aria-labelledby="pills-home-tab"
+                      >
+                        {% for regional, tms in managers.items %} {% if regional
+                        != "None" and regional != None %}
                         <div class="card">
-                          <div class="card-header" id="heading{{ forloop.counter }}">
-                            <h5 class="mb-0"><a href="#!" data-toggle="collapse"
-                                data-target="#collapse{{ forloop.counter }}" aria-expanded="false"
-                                aria-controls="collapse{{ forloop.counter }}">{{ regional }}</a>
+                          <div
+                            class="card-header"
+                            id="heading{{ forloop.counter }}"
+                          >
+                            <h5 class="mb-0">
+                              <a
+                                href="#!"
+                                data-toggle="collapse"
+                                data-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="false"
+                                aria-controls="collapse{{ forloop.counter }}"
+                                >{{ regional }}</a
+                              >
                             </h5>
                           </div>
-                          <hr>
+                          <hr />
                           {% for tm in tms %}
                           <h5>{{tm}}</h5>
                           <table class="table table-hover" id="table_location">
@@ -160,14 +218,28 @@
                               </tr>
                             </thead>
                             <tbody>
-                              {% for data in location_reports %}
-                              {% if data.territorial_manager == tm and data.regional_manager == regional and
-                              data.territorial_manager != None and data.territorial_manager != "UNKWNOWN" and
+                              {% for data in location_reports %} {% if
+                              data.territorial_manager == tm and
+                              data.regional_manager == regional and
+                              data.territorial_manager != None and
+                              data.territorial_manager != "UNKWNOWN" and
                               data.regional_manager != None%}
                               <tr>
                                 <td>
-                                  <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>{{
-                                    data.location_name }}</h6>
+                                  <h6
+                                    class="m-0"
+                                    {%
+                                    if
+                                    data.conversion
+                                    <
+                                    40
+                                    %}style="color: darkred"
+                                    {%
+                                    endif
+                                    %}
+                                  >
+                                    {{ data.location_name }}
+                                  </h6>
                                 </td>
                                 <td>
                                   <h6 class="m-0">{{ data.total_enrolled }}</h6>
@@ -179,34 +251,39 @@
                                   <h6 class="m-0">{{ data.total_payments }}</h6>
                                 </td>
                                 <td>
-                                  <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>{{
-                                    data.conversion }} %</h6>
+                                  <h6
+                                    class="m-0"
+                                    {%
+                                    if
+                                    data.conversion
+                                    <
+                                    40
+                                    %}style="color: darkred"
+                                    {%
+                                    endif
+                                    %}
+                                  >
+                                    {{ data.conversion }} %
+                                  </h6>
                                 </td>
                                 <td>
-                                  <h6 class="m-0"> </h6>
-                                </td>
-                              </tr>
-                              {% endif %}
-                              {% endfor %}
-                              <tr>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
+                                  <h6 class="m-0"></h6>
                                 </td>
                               </tr>
-                              {% for key, value in totals_tm.items %}
-                              {% if key == tm and key != None and key != "UNKWNOWN" %}
+                              {% endif %} {% endfor %}
+                              <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                              </tr>
+                              {% for key, value in totals_tm.items %} {% if key
+                              == tm and key != None and key != "UNKWNOWN" %}
                               <tr>
                                 <td>
-                                  <h6 class="m-0"> Усього </h6>
+                                  <h6 class="m-0">Усього</h6>
                                 </td>
                                 <td>
                                   <h6 class="m-0">{{ value.enrolled }}</h6>
@@ -218,22 +295,24 @@
                                   <h6 class="m-0">{{ value.payments }}</h6>
                                 </td>
                                 <td>
-                                  <h6 class="m-0"> {{ value | count_conversion }} %</h6>
+                                  <h6 class="m-0">
+                                    {{ value | count_conversion }} %
+                                  </h6>
                                 </td>
                                 <td>
-                                  <h6 class="m-0"> - </h6>
+                                  <h6 class="m-0">-</h6>
                                 </td>
                               </tr>
-                              {% endif %}
-                              {% endfor %}
+                              {% endif %} {% endfor %}
                             </tbody>
                           </table>
                           {% endfor %}
-                          <div id="collapse{{ forloop.counter }}" class=" card-body collapse"
-                            aria-labelledby="heading{{ forloop.counter }}" data-parent="#accordionExample">
-
-
-                          </div>
+                          <div
+                            id="collapse{{ forloop.counter }}"
+                            class="card-body collapse"
+                            aria-labelledby="heading{{ forloop.counter }}"
+                            data-parent="#accordionExample"
+                          ></div>
                           <table>
                             <tr>
                               <th></th>
@@ -244,8 +323,8 @@
                               <th></th>
                               <th class="text-center"></th>
                             </tr>
-                            {% for key, value in totals_rm.items %}
-                            {% if key == regional %}
+                            {% for key, value in totals_rm.items %} {% if key ==
+                            regional %}
                             <tr>
                               <td>
                                 <h6 class="m-0"></h6>
@@ -260,43 +339,73 @@
                                 <h6 class="m-0">{{ value.payments }}</h6>
                               </td>
                               <td>
-                                <h6 class="m-0"> {{ value | count_conversion }} %</h6>
+                                <h6 class="m-0">
+                                  {{ value | count_conversion }} %
+                                </h6>
                               </td>
                               <td>
                                 <h6 class="m-0"></h6>
                               </td>
                             </tr>
-                            {% endif %}
-                            {% endfor %}
+                            {% endif %} {% endfor %}
                           </table>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                        {% endif %} {% endfor %}
                       </div>
 
-                      <div class="tab-pane fade" id="pills-course" role="tabpanel" aria-labelledby="pills-course-tab">
-                        {% for regional, tms in managers.items %}
-                        {% if regional != "None" and regional != None %}
+                      <div
+                        class="tab-pane fade"
+                        id="pills-course"
+                        role="tabpanel"
+                        aria-labelledby="pills-course-tab"
+                      >
+                        {% for regional, tms in managers.items %} {% if regional
+                        != "None" and regional != None %}
                         <div class="card">
-                          <div class="card-header" id="heading{{ forloop.counter }}course">
-                            <h5 class="mb-0"><a href="#!" data-toggle="collapse"
-                                data-target="#collapse{{ forloop.counter }}course" aria-expanded="false"
-                                aria-controls="collapse{{ forloop.counter }}course">{{ regional }}</a>
+                          <div
+                            class="card-header"
+                            id="heading{{ forloop.counter }}course"
+                          >
+                            <h5 class="mb-0">
+                              <a
+                                href="#!"
+                                data-toggle="collapse"
+                                data-target="#collapse{{ forloop.counter }}course"
+                                aria-expanded="false"
+                                aria-controls="collapse{{ forloop.counter }}course"
+                                >{{ regional }}</a
+                              >
                             </h5>
                           </div>
-                          <div id="collapse{{ forloop.counter }}course" class=" card-body collapse"
-                            aria-labelledby="heading{{ forloop.counter }}course" data-parent="#accordionExample">
+                          <div
+                            id="collapse{{ forloop.counter }}course"
+                            class="card-body collapse"
+                            aria-labelledby="heading{{ forloop.counter }}course"
+                            data-parent="#accordionExample"
+                          >
                             {% for tm in tms %}
                             <div class="card">
-                              <div class="card-header" id="heading_tmcourse{{ tm|replace_space_to_ }}">
-                                <h5 class="mb-0"><a href="#!" data-toggle="collapse"
-                                    data-target="#collapse_tmcourse{{ tm|replace_space_to_ }}" aria-expanded="false"
-                                    aria-controls="collapse_tmcourse{{ tm|replace_space_to_ }}">{{ tm }}</a>
+                              <div
+                                class="card-header"
+                                id="heading_tmcourse{{ tm|replace_space_to_ }}"
+                              >
+                                <h5 class="mb-0">
+                                  <a
+                                    href="#!"
+                                    data-toggle="collapse"
+                                    data-target="#collapse_tmcourse{{ tm|replace_space_to_ }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapse_tmcourse{{ tm|replace_space_to_ }}"
+                                    >{{ tm }}</a
+                                  >
                                 </h5>
                               </div>
-                              <div id="collapse_tmcourse{{ tm|replace_space_to_ }}" class=" card-body collapse"
+                              <div
+                                id="collapse_tmcourse{{ tm|replace_space_to_ }}"
+                                class="card-body collapse"
                                 aria-labelledby="heading_tmcourse{{ tm|replace_space_to_ }}"
-                                data-parent="#accordionCourse">
+                                data-parent="#accordionCourse"
+                              >
                                 <table class="table table-hover">
                                   <thead>
                                     <tr>
@@ -309,78 +418,107 @@
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {% for data in course_reports %}
-                                    {% if data.regional_manager == regional %}
-                                    {% if data.territorial_manager == tm %}
-                                    {% if data.total_enrolled != 0 or data.total_attended != 0 or data.total_payments !=
-                                    0 %}
+                                    {% for data in course_reports %} {% if
+                                    data.regional_manager == regional %} {% if
+                                    data.territorial_manager == tm %} {% if
+                                    data.total_enrolled != 0 or
+                                    data.total_attended != 0 or
+                                    data.total_payments != 0 %}
                                     <tr>
                                       <td>
-                                        <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>
-                                          {{ data.course }}</h6>
+                                        <h6
+                                          class="m-0"
+                                          {%
+                                          if
+                                          data.conversion
+                                          <
+                                          40
+                                          %}style="color: darkred"
+                                          {%
+                                          endif
+                                          %}
+                                        >
+                                          {{ data.course }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_enrolled }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_enrolled }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_attended }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_attended }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_payments }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_payments }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>
-                                          {{ data.conversion }} %</h6>
+                                        <h6
+                                          class="m-0"
+                                          {%
+                                          if
+                                          data.conversion
+                                          <
+                                          40
+                                          %}style="color: darkred"
+                                          {%
+                                          endif
+                                          %}
+                                        >
+                                          {{ data.conversion }} %
+                                        </h6>
                                       </td>
                                     </tr>
-                                    {% endif %}
-                                    {% endif %}
-                                    {% endif %}
-                                    {% endfor %}
+                                    {% endif %} {% endif %} {% endif %} {%
+                                    endfor %}
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                    {% for key, value in totals_tm.items %} {%
+                                    if key == tm %}
                                     <tr>
                                       <td>
+                                        <h6 class="m-0">Усього</h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.enrolled }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.attended }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.payments }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value | count_conversion }} %
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">-</h6>
                                       </td>
                                     </tr>
-                                    {% for key, value in totals_tm.items %}
-                                    {% if key == tm %}
-                                    <tr>
-                                      <td>
-                                        <h6 class="m-0"> Усього </h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.enrolled }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.attended }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.payments }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0"> {{ value | count_conversion }} %</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0"> - </h6>
-                                      </td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
+                                    {% endif %} {% endfor %}
                                   </tbody>
                                 </table>
                               </div>
                             </div>
                             {% endfor %}
-
                           </div>
                           <table>
                             <tr>
@@ -392,8 +530,8 @@
                               <th></th>
                               <th class="text-center"></th>
                             </tr>
-                            {% for key, value in totals_rm.items %}
-                            {% if key == regional %}
+                            {% for key, value in totals_rm.items %} {% if key ==
+                            regional %}
                             <tr>
                               <td>
                                 <h6 class="m-0"></h6>
@@ -408,44 +546,73 @@
                                 <h6 class="m-0">{{ value.payments }}</h6>
                               </td>
                               <td>
-                                <h6 class="m-0"> {{ value | count_conversion }} %</h6>
+                                <h6 class="m-0">
+                                  {{ value | count_conversion }} %
+                                </h6>
                               </td>
                               <td>
                                 <h6 class="m-0"></h6>
                               </td>
                             </tr>
-                            {% endif %}
-                            {% endfor %}
+                            {% endif %} {% endfor %}
                           </table>
                         </div>
-                        {% endif %}
-                        {% endfor %}
-
+                        {% endif %} {% endfor %}
                       </div>
 
-
-                      <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                        {% for regional, tms in managers.items %}
-                        {% if regional != "None" and regional != None %}
+                      <div
+                        class="tab-pane fade"
+                        id="pills-profile"
+                        role="tabpanel"
+                        aria-labelledby="pills-profile-tab"
+                      >
+                        {% for regional, tms in managers.items %} {% if regional
+                        != "None" and regional != None %}
                         <div class="card">
-                          <div class="card-header" id="headingkm{{ forloop.counter }}">
-                            <h5 class="mb-0"><a href="#!" data-toggle="collapse"
-                                data-target="#collapsekm{{ forloop.counter }}" aria-expanded="false"
-                                aria-controls="collapsekm{{ forloop.counter }}">{{ regional }}</a>
+                          <div
+                            class="card-header"
+                            id="headingkm{{ forloop.counter }}"
+                          >
+                            <h5 class="mb-0">
+                              <a
+                                href="#!"
+                                data-toggle="collapse"
+                                data-target="#collapsekm{{ forloop.counter }}"
+                                aria-expanded="false"
+                                aria-controls="collapsekm{{ forloop.counter }}"
+                                >{{ regional }}</a
+                              >
                             </h5>
                           </div>
-                          <div id="collapsekm{{ forloop.counter }}" class=" card-body collapse"
-                            aria-labelledby="headingkm{{ forloop.counter }}" data-parent="#accordionExample">
+                          <div
+                            id="collapsekm{{ forloop.counter }}"
+                            class="card-body collapse"
+                            aria-labelledby="headingkm{{ forloop.counter }}"
+                            data-parent="#accordionExample"
+                          >
                             {% for tm in tms %}
                             <div class="card">
-                              <div class="card-header" id="heading_km{{ tm|replace_space_to_ }}">
-                                <h5 class="mb-0"><a href="#!" data-toggle="collapse"
-                                    data-target="#collapse_km{{ tm|replace_space_to_ }}" aria-expanded="false"
-                                    aria-controls="collapse_km{{ tm|replace_space_to_ }}">{{ tm }}</a>
+                              <div
+                                class="card-header"
+                                id="heading_km{{ tm|replace_space_to_ }}"
+                              >
+                                <h5 class="mb-0">
+                                  <a
+                                    href="#!"
+                                    data-toggle="collapse"
+                                    data-target="#collapse_km{{ tm|replace_space_to_ }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapse_km{{ tm|replace_space_to_ }}"
+                                    >{{ tm }}</a
+                                  >
                                 </h5>
                               </div>
-                              <div id="collapse_km{{ tm|replace_space_to_ }}" class=" card-body collapse"
-                                aria-labelledby="heading_km{{ tm|replace_space_to_ }}" data-parent="#accordionkm">
+                              <div
+                                id="collapse_km{{ tm|replace_space_to_ }}"
+                                class="card-body collapse"
+                                aria-labelledby="heading_km{{ tm|replace_space_to_ }}"
+                                data-parent="#accordionkm"
+                              >
                                 <table class="table table-hover">
                                   <thead>
                                     <tr>
@@ -459,73 +626,103 @@
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {% for data in client_manager_reports %}
-                                    {% if data.territorial_manager == tm and data.regional_manager == regional %}
+                                    {% for data in client_manager_reports %} {%
+                                    if data.territorial_manager == tm and
+                                    data.regional_manager == regional %}
                                     <tr>
                                       <td>
-                                        <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>
-                                          {{ data.client_manager }}</h6>
+                                        <h6
+                                          class="m-0"
+                                          {%
+                                          if
+                                          data.conversion
+                                          <
+                                          40
+                                          %}style="color: darkred"
+                                          {%
+                                          endif
+                                          %}
+                                        >
+                                          {{ data.client_manager }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_enrolled }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_enrolled }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_attended }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_attended }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0">{{ data.total_payments }}</h6>
+                                        <h6 class="m-0">
+                                          {{ data.total_payments }}
+                                        </h6>
                                       </td>
                                       <td>
-                                        <h6 class="m-0" {% if data.conversion < 40 %}style="color: darkred" {% endif %}>
-                                          {{ data.conversion }} %</h6>
+                                        <h6
+                                          class="m-0"
+                                          {%
+                                          if
+                                          data.conversion
+                                          <
+                                          40
+                                          %}style="color: darkred"
+                                          {%
+                                          endif
+                                          %}
+                                        >
+                                          {{ data.conversion }} %
+                                        </h6>
                                       </td>
                                     </tr>
-                                    {% endif %}
-                                    {% endfor %}
+                                    {% endif %} {% endfor %}
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                    {% for key, value in totals_tm.items %} {%
+                                    if key == tm %}
                                     <tr>
                                       <td>
+                                        <h6 class="m-0">Усього</h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.enrolled }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.attended }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value.payments }}
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">
+                                          {{ value | count_conversion }} %
+                                        </h6>
                                       </td>
                                       <td>
+                                        <h6 class="m-0">-</h6>
                                       </td>
                                     </tr>
-                                    {% for key, value in totals_tm.items %}
-                                    {% if key == tm %}
-                                    <tr>
-                                      <td>
-                                        <h6 class="m-0"> Усього </h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.enrolled }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.attended }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0">{{ value.payments }}</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0"> {{ value | count_conversion }} %</h6>
-                                      </td>
-                                      <td>
-                                        <h6 class="m-0"> - </h6>
-                                      </td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endfor %}
+                                    {% endif %} {% endfor %}
                                   </tbody>
                                 </table>
                               </div>
                             </div>
                             {% endfor %}
-
                           </div>
                           <table>
                             <tr>
@@ -537,8 +734,8 @@
                               <th></th>
                               <th class="text-center"></th>
                             </tr>
-                            {% for key, value in totals_rm.items %}
-                            {% if key == regional %}
+                            {% for key, value in totals_rm.items %} {% if key ==
+                            regional %}
                             <tr>
                               <td>
                                 <h6 class="m-0"></h6>
@@ -553,24 +750,23 @@
                                 <h6 class="m-0">{{ value.payments }}</h6>
                               </td>
                               <td>
-                                <h6 class="m-0"> {{ value | count_conversion }} %</h6>
+                                <h6 class="m-0">
+                                  {{ value | count_conversion }} %
+                                </h6>
                               </td>
                               <td>
                                 <h6 class="m-0"></h6>
                               </td>
                             </tr>
-                            {% endif %}
-                            {% endfor %}
+                            {% endif %} {% endfor %}
                           </table>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                        {% endif %} {% endfor %}
                       </div>
                     </div>
                   </div>
 
-                  <div id="inconsistencies">
-                  </div>
+                  <div id="inconsistencies"></div>
                 </div>
               </div>
             </div>
