@@ -567,6 +567,7 @@ def tutor_results_report(request):
         elif current_user_role == "tutor":
             tutor_profile = TutorProfile.objects.get(user=request.user)
             tutors = [tutor_profile]
+        print(tutors)
         data = {}
         for tutor in tutors:
             data[tutor] = {}
@@ -608,13 +609,13 @@ def tutor_results_report(request):
                 "total_lessons": lesson_summ,
             }
 
-            return render(
-                request,
-                "logika_teachers/weekly_tutors_result.html",
-                context={
-                    "data": data,
-                    "report_start": report_start,
-                    "report_end": report_end,
-                },
-            )
+        return render(
+            request,
+            "logika_teachers/weekly_tutors_result.html",
+            context={
+                "data": data,
+                "report_start": report_start,
+                "report_end": report_end,
+            },
+        )
     return render(request, "logika_teachers/weekly_tutors_result.html")
