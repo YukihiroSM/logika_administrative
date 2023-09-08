@@ -607,6 +607,7 @@ def tutor_results_report(request):
             data[tutor]["total"] = {
                 "total_calls": call_summ,
                 "total_lessons": lesson_summ,
+                "total_teachers": len(data[tutor])
             }
 
         return render(

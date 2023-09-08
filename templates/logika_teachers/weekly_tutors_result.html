@@ -68,7 +68,7 @@
                     <h5>{{tutor}}</h5>
                     {% for key, value in details.items%} {%if key == "total" %}
                     <h6>
-                      Всього: Дзвінків: {{value.total_calls}} Відвідувань
+                      Всього: Викладачів: {{value.total_teachers}} | Дзвінків: {{value.total_calls}} | Відвідувань
                       уроків: {{value.total_lessons}}
                     </h6>
                     {%endif%} {%endfor%}
