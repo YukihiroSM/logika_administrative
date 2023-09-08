@@ -559,51 +559,54 @@ def add_performance_to_report(request, teacher_id):
 def tutor_results_report(request):
     current_user_role = get_user_role(request.user)
     if request.method == "POST":
+        report_start = request.POST.get("report_start")
+        report_end = request.POST.get("report_end")
         if current_user_role == "regional_tutor":
-            report_start = request.POST.get("report_start")
-            report_end = request.POST.get("report_end")
             regional_tutor_profile = RegionalTutorProfile.objects.get(user=request.user)
             tutors = regional_tutor_profile.related_tutors.all()
-            data = {}
-            for tutor in tutors:
-                data[tutor] = {}
-                call_summ = 0
-                lesson_summ = 0
-                for teacher in tutor.related_teachers.order_by("user__first_name").all():
-                    comments_call = TeacherComment.objects.filter(
-                        teacher=teacher,
-                        tutor=tutor,
-                        created_at__gte=report_start,
-                        created_at__lte=report_end,
-                        comment_type="call",
-                    ).all()
-                    comments_lesson = TeacherComment.objects.filter(
-                        teacher=teacher,
-                        tutor=tutor,
-                        created_at__gte=report_start,
-                        created_at__lte=report_end,
-                        comment_type="lesson",
-                    ).all()
-                    feedbacks = TeacherFeedback.objects.filter(
-                        teacher=teacher,
-                        tutor=tutor,
-                        created_at__gte=report_start,
-                        created_at__lte=report_end,
-                    ).all()
-                    data[tutor][teacher] = {
-                        "call": comments_call,
-                        "lesson": comments_lesson,
-                        "call_amount": len(comments_call),
-                        "lesson_amount": len(comments_lesson),
-                        "feedbacks_amount": len(feedbacks),
-                        "id": teacher.id,
-                    }
-                    call_summ += len(comments_call)
-                    lesson_summ += len(comments_lesson)
-                data[tutor]["total"] = {
-                    "total_calls": call_summ,
-                    "total_lessons": lesson_summ,
+        elif current_user_role == "tutor":
+            tutor_profile = TutorProfile.objects.get(user=request.user)
+            tutors = [tutor_profile]
+        data = {}
+        for tutor in tutors:
+            data[tutor] = {}
+            call_summ = 0
+            lesson_summ = 0
+            for teacher in tutor.related_teachers.order_by("user__first_name").all():
+                comments_call = TeacherComment.objects.filter(
+                    teacher=teacher,
+                    tutor=tutor,
+                    created_at__gte=report_start,
+                    created_at__lte=report_end,
+                    comment_type="call",
+                ).all()
+                comments_lesson = TeacherComment.objects.filter(
+                    teacher=teacher,
+                    tutor=tutor,
+                    created_at__gte=report_start,
+                    created_at__lte=report_end,
+                    comment_type="lesson",
+                ).all()
+                feedbacks = TeacherFeedback.objects.filter(
+                    teacher=teacher,
+                    tutor=tutor,
+                    created_at__gte=report_start,
+                    created_at__lte=report_end,
+                ).all()
+                data[tutor][teacher] = {
+                    "call": comments_call,
+                    "lesson": comments_lesson,
+                    "call_amount": len(comments_call),
+                    "lesson_amount": len(comments_lesson),
+                    "feedbacks_amount": len(feedbacks),
+                    "id": teacher.id,
                 }
+                call_summ += len(comments_call)
+                lesson_summ += len(comments_lesson)
+            data[tutor]["total"] = {
+                "total_calls": call_summ,
+                "total_lessons": lesson_summ,
+            }
 
             return render(
                 request,
