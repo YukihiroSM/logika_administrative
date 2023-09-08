@@ -3,7 +3,7 @@ from logika_teachers.models import TeacherProfile, TutorProfile, TeacherFeedback
 
 
 class TeacherProfileAdmin(admin.ModelAdmin):
-    search_fields = ["user.last_name"]
+    search_fields = ["user__last_name", "user__first_name"]
 
 admin.site.register(TeacherProfile, TeacherProfileAdmin)
 admin.site.register(TutorProfile)
