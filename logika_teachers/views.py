@@ -569,7 +569,7 @@ def tutor_results_report(request):
                 data[tutor] = {}
                 call_summ = 0
                 lesson_summ = 0
-                for teacher in tutor.related_teachers.all():
+                for teacher in tutor.related_teachers.order_by("user__first_name").all():
                     comments_call = TeacherComment.objects.filter(
                         teacher=teacher,
                         tutor=tutor,
