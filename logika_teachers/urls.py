@@ -32,6 +32,11 @@ urlpatterns = [
         views.add_performance_to_report,
         name="add-performance-to-report",
     ),
+    path(
+        "tutor-results-report",
+        views.tutor_results_report,
+        name="tutor-results-report"
+    ),
 ]
 
 app_name = "logika_teachers"

@@ -98,6 +98,9 @@
                 </div>
                 {%endfor%}
                 {% elif user_role == "regional_tutor" %}
+                <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
+                    <i class="las la-plus fs-16"></i>Звіт роботи тьюторів</a>
+                <br>
                 {% for tutor in tutors %}
                 <div class="row">
                     <div class="col-md-6 col-sm-12 mb-25">

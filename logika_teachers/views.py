@@ -12,10 +12,12 @@ from logika_teachers.models import (
     TeacherFeedback,
     TeacherComment,
     TutorMonthReport,
+    RegionalTutorProfile,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import pickle
+from datetime import datetime
 from django.views.decorators.cache import cache_page, never_cache
 from transliterate import translit
 from utils.get_user_role import get_user_role
@@ -531,3 +533,64 @@ def add_performance_to_report(request, teacher_id):
             teacher_month_report.save()
 
         return redirect("logika_teachers:teacher-performance", teacher_id=teacher_id)
+
+
+def tutor_results_report(request):
+    current_user_role = get_user_role(request.user)
+    if request.method == "POST":
+        if current_user_role == "regional_tutor":
+            report_start = request.POST.get("report_start")
+            report_end = request.POST.get("report_end")
+            regional_tutor_profile = RegionalTutorProfile.objects.get(user=request.user)
+            tutors = regional_tutor_profile.related_tutors.all()
+            data = {}
+            for tutor in tutors:
+                data[tutor] = {}
+                call_summ = 0
+                lesson_summ = 0
+                for teacher in tutor.related_teachers.all():
+                    comments_call = TeacherComment.objects.filter(
+                        teacher=teacher,
+                        tutor=tutor,
+                        created_at__gte=report_start,
+                        created_at__lte=report_end,
+                        comment_type="call",
+                    ).all()
+                    comments_lesson = TeacherComment.objects.filter(
+                        teacher=teacher,
+                        tutor=tutor,
+                        created_at__gte=report_start,
+                        created_at__lte=report_end,
+                        comment_type="lesson",
+                    ).all()
+                    feedbacks = TeacherFeedback.objects.filter(
+                        teacher=teacher,
+                        tutor=tutor,
+                        created_at__gte=report_start,
+                        created_at__lte=report_end,
+                    ).all()
+                    data[tutor][teacher] = {
+                        "call": comments_call,
+                        "lesson": comments_lesson,
+                        "call_amount": len(comments_call),
+                        "lesson_amount": len(comments_lesson),
+                        "feedbacks_amount": len(feedbacks),
+                        "id": teacher.id,
+                    }
+                    call_summ += len(comments_call)
+                    lesson_summ += len(comments_lesson)
+                data[tutor]["total"] = {
+                    "total_calls": call_summ,
+                    "total_lessons": lesson_summ,
+                }
+
+            return render(
+                request,
+                "logika_teachers/weekly_tutors_result.html",
+                context={
+                    "data": data,
+                    "report_start": report_start,
+                    "report_end": report_end,
+                },
+            )
+    return render(request, "logika_teachers/weekly_tutors_result.html")
