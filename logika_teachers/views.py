@@ -30,10 +30,32 @@ from utils.get_teacher_locations import get_teacher_locations
 def teacher_profile(request, id):
     user_role = get_user_role(request.user)
     if user_role == "tutor":
-        tutor = TutorProfile.objects.filter(user=request.user).first()
+        tutor_profile = TutorProfile.objects.filter(user=request.user).first()
         teacher = TeacherProfile.objects.filter(id=id).first()
         feedbacks = (
-            TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor)
+            TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
+            .order_by("-created_at")
+            .all()
+        )
+
+        recent_predicted_churns = (
+            pickle.loads(feedbacks[0].predicted_churn_object)
+            if feedbacks and feedbacks[0].predicted_churn_object
+            else None
+        )
+    if user_role == "regional_tutor":
+        teacher = TeacherProfile.objects.filter(id=id).first()
+        teacher_tutors = teacher.related_tutors.all()
+        user_profile = RegionalTutorProfile.objects.get(user=request.user)
+        rt_tutors = user_profile.related_tutors.all()
+        tutor=None
+        for one_tutor in rt_tutors:
+            if one_tutor in teacher_tutors:
+                tutor_profile = one_tutor
+                break
+
+        feedbacks = (
+            TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
             .order_by("-created_at")
             .all()
         )
@@ -44,7 +66,6 @@ def teacher_profile(request, id):
             else None
         )
 
-    tutor_profile = TutorProfile.objects.filter(user=request.user).first()
     call_comments = (
         TeacherComment.objects.filter(
             teacher=teacher, tutor=tutor_profile, comment_type="call"
