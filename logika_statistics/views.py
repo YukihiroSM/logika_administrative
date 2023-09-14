@@ -1,48 +1,24 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
 import csv
 import os
-import textwrap
 
 import pandas as pd
-import requests
 from django import template
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
 from django.urls import reverse
-import copy
 from .forms import (
-    ReportDateForm,
-    CreateAmoRef,
-    ReasonForCloseForm,
-    AssignIssueForm,
-    AddCMForm,
-    AddStudentId,
-    AddLocationForm,
-    AddTeacherForm,
-    AssignTutorIssueForm,
-    ReasonForRevert,
+    ReportDateForm
 )
 import datetime
 import library
 from .models import (
-    Report,
-    Issue,
     Location,
-    TeacherReport,
-    Payment,
-    GlobalGroup,
     StudentReport,
-    UsersMapping,
-    LessonsConsolidation,
     ClientManagerReport,
     LocationReport,
     CourseReport,
-    TeacherReportNew
 )
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -53,6 +29,7 @@ from .utils import (
 )
 from logika_administrative.settings import BASE_DIR
 from utils.lms_authentication import get_authenticated_session
+
 
 def is_member(user, group_name):
     return user.groups.filter(name=group_name).exists()
@@ -70,9 +47,9 @@ def health(request):
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-25"
+    "Серпень": "2023-08-01_2023-08-31",
+    "Вересень": "2023-09-01_2023-09-10",
 }
-
 
 
 @csrf_exempt
@@ -124,7 +101,7 @@ def collect_lessons_links_extended(request):
 def get_possible_report_scales():
     month_report = None
     with open(
-            f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
+        f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
     ) as report_scales_fileobj:
         scales = report_scales_fileobj.readlines()
     scales_dict = {}
@@ -180,22 +157,19 @@ def programming_report_updated(request):
     else:
         report_start, report_end = possible_report_scales[-1].split(" - ")
     if not month_report:
-        report_start = datetime.datetime.strptime(
-            report_start, "%Y-%m-%d").date()
+        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
         report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
     else:
         report_start, report_end = scales_new[month_report].split("_")
-        report_start = datetime.datetime.strptime(
-            report_start, "%Y-%m-%d").date()
+        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
         report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
 
     user_role = get_user_role(request.user)
     if user_role == "admin":
         location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start, end_date=report_end)
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
@@ -219,136 +193,9 @@ def programming_report_updated(request):
             .distinct()
         )
         course_report = (
-            CourseReport.objects.filter(
-                start_date=report_start, end_date=report_end)
+            CourseReport.objects.filter(start_date=report_start, end_date=report_end)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
-        )
-    elif user_role == "regional":
-        user_name = f"{request.user.last_name} {request.user.first_name}"
-        location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        client_manager_reports = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                regional_manager=user_name,
-            )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
-        )
-        course_report = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-    elif user_role == "territorial_manager":
-        user_name = f"{request.user.last_name} {request.user.first_name}"
-        location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        client_manager_reports = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
-        )
-        course_report = (
-            CourseReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-    elif user_role == "territorial_manager_km":
-        user_mapping = UsersMapping.objects.filter(user=request.user).first()
-        user_name = (
-            f"{user_mapping.related_to.last_name} {user_mapping.related_to.first_name}"
-        )
-        location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        client_manager_reports = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        course_report = (
-            CourseReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
         )
     else:
         context = {}
@@ -357,12 +204,11 @@ def programming_report_updated(request):
     managers = {}
     totals_tm = {}
     totals_rm = {}
-    ukrainian_totals = {"Ukraine": {
-        "attended": 0, "payments": 0, "enrolled": 0}}
+    ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
         if (
-                report.territorial_manager is not None
-                and report.territorial_manager != "UNKNOWN"
+            report.territorial_manager is not None
+            and report.territorial_manager != "UNKNOWN"
         ):
             if report.territorial_manager in totals_tm:
                 totals_tm[report.territorial_manager][
@@ -417,7 +263,9 @@ def programming_report_updated(request):
         "course_reports": course_report
         # "reports_by_course": formatted_courses
     }
-    html_template = loader.get_template("logika_statistics/report_programming_updated.html")
+    html_template = loader.get_template(
+        "logika_statistics/report_programming_updated.html"
+    )
     return HttpResponse(html_template.render(context, request))
 
 
