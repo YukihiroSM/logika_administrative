@@ -1,0 +1,175 @@
+{% extends 'layout/app.html' %}
+
+{% block title %}  {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1>
+                    Форма для {{feedback.tutor.user.get_full_name}} від {{ feedback.created_at }}
+                </h1>
+                <hr>
+                <div class="col-xxl-4 mb-25 col-md-6">
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Оцінка уроку:</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.lesson_mark}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Виявлені помилки</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text">
+                                <p class="text-normal">{{feedback.mistakes}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Проблеми: </h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                {% for problem in feedback.problems %}
+                                <span class="dm-tag tag-secondary tag-transparented">{{problem}}</span>
+                                {% endfor %}
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Передбачувані відвали: </h6>
+                                </div>
+                            </div>
+                                {% for churn, description in predicted_churns.items %}
+                                <div class="user-group-people mt-15 text">
+                                <p class="text-normal">ID: {{churn}}</p>
+                                <p class="text-normal">Опис: {{description}}</p>
+
+                                    <b>Деталі: </b>
+                                    {% for row in churns_data %}
+                                    {% if row.student_id == churn %}
+                                    <p class="text-normal">Студент: {{row.student_name}}</p>
+                                    <p class="text-normal">Група: {{row.group_link|safe}}</p>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            <hr>
+                                {% endfor %}
+
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Додаткові проблеми</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.additional_problems}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Технічні проблеми</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.technical_problems}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Оцінка роботи з КМ</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.km_work_mark}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Коментар по роботі з КМ</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.km_work_comment}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Оцінка роботи з тьютором</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.tutor_work_mark}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-group radius-xl media-ui media-ui--late pt-30 pb-25">
+                        <div class="border-bottom px-30">
+                            <div class="media user-group-media d-flex justify-content-between">
+                                <div class="media-body d-flex align-items-center flex-wrap text-capitalize my-sm-0 my-n2">
+                                        <h6 class="mt-0  fw-500 user-group media-ui__title bg-transparent">Коментар по роботі з тьютором</h6>
+                                </div>
+                            </div>
+                            <div class="user-group-people mt-15 text-capitalize">
+                                <p class="text-normal">{{feedback.tutor_work_comment}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

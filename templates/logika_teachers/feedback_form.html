@@ -1,0 +1,277 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Skeleton {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-main">
+                    <!--                    <h4 class="text-capitalize breadcrumb-title">Форма ЗЗ</h4>-->
+                    <div class="breadcrumb-action justify-content-center flex-wrap">
+
+                    </div>
+                </div>
+                <div class="col">
+                    {% if alerts %}
+                    {% for alert in alerts %}
+
+                    <div class="alert-big alert alert-danger  alert-dismissible fade show " role="alert">
+                        <div class="alert-content">
+                            <h6 class="alert-heading">{{alert.title}}</h6>
+
+                            {% for field in form.visible_fields %}
+                            <div>
+                                {% if field.errors %}
+                                <ul class="errorlist">
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }} - {{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+
+                            <p> {{alert.content}} </p>
+                            <!--                            <ul class="errorlist">-->
+                            <!--                                {% for error, message in form.errors.items %}-->
+                            <!--                                <p>{{error}} - {{message}}</p>-->
+                            <!--                                {% endfor %}-->
+                            <!--                            </ul>-->
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" class="svg replaced-svg">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    <div class="col-lg-6">
+                        <div class="card card-horizontal card-default card-md mb-4">
+                            <div class="card-header">
+                                <h6>Форма ЗЗ для {{tutor_name}}</h6>
+                            </div>
+                            <div class="card-body py-md-30">
+                                <div class="horizontal-form">
+                                    <form action="{% url 'logika_teachers:teacher-feedback' teacher_id tutor_id %}"
+                                          method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group row mb-25">
+                                            <label for="lesson_mark"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть уроки від 1 до
+                                                10 <span class="color-danger">(*обов'язково)</span></label>
+                                            <input type="number"
+                                                   class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                   id="lesson_mark" placeholder="10" min="1" max="10" name="lesson_mark"
+                                                   required
+                                                   {% if form_data.lesson_mark %}
+                                                   value="{{form_data.lesson_mark}}"
+                                                   {% endif %}>
+
+
+                                        </div>
+
+                                        <div class="form-group form-element-textarea">
+                                            <label for="mistakes"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10"> Які основні помилки
+                                                були допущені під час уроків? <span
+                                                        class="color-danger">(*обов'язково)</span></label>
+                                            <textarea class="form-control" id="mistakes"
+                                                      rows="3" name="mistakes" required
+                                            >{% if form_data.mistakes %}{{form_data.mistakes}}{% endif %}</textarea>
+                                        </div>
+
+                                        <div class="form-group row mb-25">
+                                            <div class="form-group select-px-15 tagSelect-rtl">
+                                                <label for="select-tag2"
+                                                       class="il-gray fs-14 fw-500 align-center mb-10">Основні проблеми
+                                                    груп <span class="color-danger">(*обов'язково)</span></label>
+                                                <div class="dm-select ">
+                                                    <select name="problems" id="select-tag2"
+                                                            class="form-control select2-hidden-accessible" multiple=""
+                                                            tabindex="-1" aria-hidden="true" required>
+                                                        <option value="Не маєте авторитету перед учнями">Не маєте
+                                                            авторитету перед учнями
+                                                        </option>
+                                                        <option value="Учні не товаришують один з одним">Учні не
+                                                            товаришують один з одним
+                                                        </option>
+                                                        <option value="Не виконують ДЗ">Не виконують ДЗ</option>
+                                                        <option value="Не активні учні">Не активні учні</option>
+                                                        <option value="Занадто активні учні">Занадто активні учні
+                                                        </option>
+                                                        <option value="Учні не слухаються">Учні не слухаються</option>
+                                                        <option value="В моїх групах немає проблем">В моїх групах немає
+                                                            проблем
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="additional_problems"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10"> Додаткові
+                                                проблеми </label>
+                                            <textarea class="form-control" id="additional_problems"
+                                                      rows="3" name="additional_problems"
+
+                                            >{% if form_data.additional_problems %}{{form_data.additional_problems}}{% endif %}</textarea>
+                                        </div>
+                                        <label for="students-container"
+                                               class="il-gray fs-14 fw-500 align-center mb-10">Передбачувані відвали
+                                            (впишіть ID учня) та причину <span
+                                                    class="color-danger"></span></label>
+                                        <div id="students-container">
+                                            <div class="student-row">
+                                                <input type="text"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                       name="predicted_churn_id[]"
+                                                       placeholder="ID учня з LMS">
+
+                                                <input type="text"
+                                                       id="predicted_churn_description[]"
+                                                       name="predicted_churn_description[]"
+                                                       placeholder="Опис Проблеми"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
+                                                <br>
+
+                                                <!--                                                <button type="button"-->
+                                                <!--                                                        class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">-->
+                                                <!--                                                    Видалити-->
+                                                <!--                                                </button>-->
+                                                <br>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <button type="button" id="add-student"
+                                                class="btn btn-secondary btn-default btn-squared px-30">Додати ще учня
+                                        </button>
+                                        <br>
+                                        <script>
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const addStudentButton = document.getElementById("add-student");
+                                                const studentsContainer = document.getElementById("students-container");
+
+                                                addStudentButton.addEventListener("click", function () {
+                                                    const studentRow = document.createElement("div");
+                                                    studentRow.className = "student-row";
+                                                    studentRow.innerHTML = `
+                                                <input type="text"
+                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                        name="predicted_churn_id[]"
+                                                       placeholder="ID учня з LMS">
+
+                                                <input type="text"
+                                                       id="predicted_churn_description[]"
+                                                       name="predicted_churn_description[]"
+                                                       placeholder="Опис Проблеми"
+                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
+                                                <br>
+                                                <button type="button" class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">Видалити</button>
+<br>`;
+                                                    studentsContainer.appendChild(studentRow);
+                                                });
+
+                                                studentsContainer.addEventListener("click", function (event) {
+                                                    if (event.target.classList.contains("remove-student")) {
+                                                        event.target.closest(".student-row").remove();
+                                                    }
+                                                });
+                                            });
+                                        </script>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="technical_problems"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Пропишіть технічні
+                                                проблеми на локації/платформі/в онлайні з якими ви стикнулись на
+                                                уроці</label>
+                                            <textarea class="form-control" id="technical_problems"
+                                                      rows="3" name="technical_problems">{% if form_data.technical_problems %}{{form_data.technical_problems}}{% endif %}</textarea>
+                                        </div>
+                                        <div class="form-group row mb-25">
+                                            <label for="km_work_mark"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть роботу КМ від
+                                                1 до
+                                                10 <span class="color-danger">(*обов'язково)</span></label>
+                                            <input type="number"
+                                                   class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                   id="km_work_mark" placeholder="10" min="1" max="10"
+                                                   name="km_work_mark" required
+                                                   {% if form_data.km_work_mark %}
+                                                   value="{{form_data.km_work_mark}}"
+                                                   {% endif %}
+                                            >
+
+
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="km_work_comment"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Коментар по роботі з
+                                                КМ</label>
+                                            <textarea class="form-control" id="km_work_comment"
+                                                      rows="3" name="km_work_comment"
+
+                                            >{% if form_data.km_work_comment %}{{form_data.km_work_comment}}{% endif %}</textarea>
+                                        </div>
+                                        <div class="form-group row mb-25">
+                                            <label for="tutor_work_mark"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оцініть роботу тьютора
+                                                від 1 до
+                                                10 <span class="color-danger">(*обов'язково)</span></label>
+                                            <input type="number"
+                                                   class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                   id="tutor_work_mark" placeholder="10" name="tutor_work_mark" min="1"
+                                                   max="10" required
+                                                   {% if form_data.tutor_work_mark %}
+                                                   value="{{form_data.tutor_work_mark}}"
+                                                   {% endif %}
+                                            >
+
+
+                                        </div>
+                                        <div class="form-group form-element-textarea">
+                                            <label for="tutor_work_comment"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Коментар по роботі з
+                                                тьютором</label>
+                                            <textarea class="form-control" id="tutor_work_comment"
+                                                      rows="3" name="tutor_work_comment"
+                                            >{% if form_data.tutor_work_comment %}{{form_data.tutor_work_comment}}{% endif %}</textarea>
+                                        </div>
+
+                                        <div class="form-group row mb-0">
+                                            <div class="layout-button mt-25">
+                                                <button type="submit"
+                                                        class="btn btn-primary btn-default btn-squared px-30">Відправити
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const sliderInput = document.getElementById('sliderInput');
+    const sliderValueDisplay = document.getElementById('sliderValueDisplay');
+
+    sliderInput.addEventListener('input', function () {
+        sliderValueDisplay.innerText = sliderInput.value;
+    });
+</script>
+{% endblock %}

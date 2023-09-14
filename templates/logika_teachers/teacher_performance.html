@@ -1,0 +1,146 @@
+{% extends 'layout/app.html' %} {% block title %} Skeleton {% endblock %} {%
+load i18n %} {% load static %} {% block content %}
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="note-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="note-contents">
+                        <div class="note-sidebar-wrapper mb-30">
+                            <div class="note-sidebar">
+                                <div class="card border-0 shadow-none">
+                                    <div class="card-body px-15 pt-30">
+
+                                        <div class="card-header">
+                                            <h6>Успішність викладача {{teacher.user.get_full_name}}</h6>
+                                        </div>
+                                        <form action="{% url 'logika_teachers:teacher-performance' teacher.id %}"
+                                            method="post">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <label for="month"
+                                                    class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                                    місяць</label>
+                                                <select class="form-control px-15 select2-hidden-accessible" id="month"
+                                                    data-select2-id="exampleFormControlSelect1" tabindex="-1"
+                                                    aria-hidden="true" name="month">
+                                                    <option data-select2-id="1">Січень</option>
+                                                    <option data-select2-id="2">Лютий</option>
+                                                    <option data-select2-id="3">Березень</option>
+                                                    <option data-select2-id="4">Квітень</option>
+                                                    <option data-select2-id="5">Травень</option>
+                                                    <option data-select2-id="6">Червень</option>
+                                                    <option data-select2-id="7">Липень</option>
+                                                    <option data-select2-id="8">Серпень</option>
+                                                    <option data-select2-id="9">Вересень</option>
+                                                    <option data-select2-id="10">Жовтень</option>
+                                                    <option data-select2-id="11">Листопад</option>
+                                                    <option data-select2-id="12">Грудень</option>
+                                                </select>
+                                            </div>
+                                            <hr>
+                                            <label for="locations"
+                                                class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                                локації</label>
+                                            {% for location in teachers_locations%}
+                                            <div class="checkbox-theme-default custom-checkbox ">
+
+                                                <input class="checkbox" type="checkbox"
+                                                    id="check-un{{ forloop.counter }}" name="locations"
+                                                    value="{{location}}">
+                                                <label for="check-un{{ forloop.counter }}">
+                                                    <span class="checkbox-text">
+                                                        {{location}}
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            {% endfor %}
+                                            <hr>
+                                            <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="note-grid-wrapper mb-30">
+                            <div class="notes-wrapper">
+                                <div class="card card-default card-md mb-4">
+                                    <div class="card-header  py-20">
+                                        <h6>Результати</h6>
+                                    </div>
+                                    <form action="{% url 'logika_teachers:add-performance-to-report' teacher.id %}"
+                                        method="post">
+                                        {%csrf_token%}
+                                        <input type="hidden" name="month" value="{{form_data.month}}">
+                                        <input type="hidden" name="performance" value="{{groups_data.teacher_average}}">
+                                        <button type="submit" class="btn btn-lg btn-primary btn-submit">Додати
+                                            успішність до звіту
+                                        </button>
+
+                                    </form>
+
+                                    <div class="card-body">
+                                        <div class="dm-statistics-wrap d-flex">
+                                            <div class="statistics-item {%if groups_data.teacher_average < 50 %}statistics-danger{%endif%}
+                                            {%if groups_data.teacher_average < 80 and groups_data.teacher_average >= 50 %}statistics-warning{%endif%}
+                                            {%if groups_data.teacher_average <= 100 and groups_data.teacher_average >= 80 %}statistics-success{%endif%}
+                                        ">
+                                                <span class="statistics-item__title">Середня успішність викладача за
+                                                    {{form_data.month}} по локації(ям) {{form_data.locations}} </span>
+                                                <p class="statistics-item__number">
+                                                    {{groups_data.teacher_average}}%
+                                                </p>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="note-grid">
+                                    {% for group, data in groups_data.items %}
+                                    {% if group != "teacher_average" %}
+                                    <div class="note-single">
+                                        <div class="note-card
+                                        {% if data.average < 50%}
+                                        note-social
+                                        {%endif%}
+
+                                        {% if data.average < 80 and data.average >= 50%}
+                                        note-social
+                                        {%endif%}
+
+                                        {% if data.average <= 100 and data.average >= 80%}
+                                        note-work
+                                        {%endif%}
+">
+                                            <div class="card border-0">
+                                                <div class="card-body">
+                                                    <a href="https://lms.logikaschool.com/group/view/{{group}}"
+                                                        target="_blank">
+                                                        <h4 class="note-title">{{data.title}}<span
+                                                                class="note-status"></span></h4>
+                                                    </a>
+                                                    <p class="note-excerpt">Середня успішність по групі (за уроки в
+                                                        {{month}}: {{data.average}}%</p>
+                                                    <p class="note-excerpt">Мінімальна успішність по групі (за урок):
+                                                        {{data.min}}%</p>
+                                                    <p class="note-excerpt">Максимальна успішність по групі (за урок):
+                                                        {{data.max}}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
