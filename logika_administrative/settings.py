@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "logika_teachers.apps.LogikaTeachersConfig",
     "logika_auth.apps.LogikaAuthConfig",
     "logika_statistics.apps.LogikaStatisticsConfig",
-    "logika_analytics.apps.LogikaAnalyticsConfig",
     "django_sass",
     "sass_processor",
     "django_extensions",

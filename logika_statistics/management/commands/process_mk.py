@@ -12,6 +12,7 @@ from logika_administrative.settings import BASE_DIR
 from pathlib import Path
 import pandas as pd
 import logging
+from utils.lms_authentication import get_authenticated_session
 
 
 parsing_results = {}
@@ -42,7 +43,7 @@ class Command(BaseCommand):
         print("Finished loading global students" + " " + str(datetime.now()))
         global parsing_results
         parsing_results = {}
-        self.session = library.lms_auth()
+        self.session = get_authenticated_session()
 
     def add_arguments(self, parser):
         parser.add_argument(
