@@ -4,11 +4,12 @@ import requests
 import csv
 import pprint
 import library
+from utils.lms_authentication import get_authenticated_session
 
 ok_status = 200
 result = []
 result_extended = []
-auth = library.lms_auth()
+auth = get_authenticated_session()
 
 
 def retrieve_group_ids_from_csv(

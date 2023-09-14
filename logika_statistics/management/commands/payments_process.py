@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 import library
 import logging
+from utils.lms_authentication import get_authenticated_session
 parsing_results = {}
 
 
@@ -44,7 +45,7 @@ class Command(BaseCommand):
             return paym
 
     def handle(self, *args, **options):
-        lms_session = library.lms_auth()
+        lms_session = get_authenticated_session()
         start_date = os.environ.get("start_date")
         end_date = os.environ.get("end_date")
         month = os.environ.get("month")
