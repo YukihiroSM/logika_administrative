@@ -8,6 +8,6 @@ from logika_statistics import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('programming_new', views.programming_report_updated, name='home'),
+    path('programming_updated', views.programming_report_updated, name='home'),
 ]
 app_name = "logika_statistics"

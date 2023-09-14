@@ -6,7 +6,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
 from datetime import datetime, timedelta, timezone
 from logika_teachers.models import TutorProfile, TeacherProfile, RegionalTutorProfile
-from logika_analytics.models import ClientManagerProfile, RegionalManagerProfile, TerritorialManagerProfile
 from utils.get_user_role import get_user_role
 
 
@@ -42,19 +41,6 @@ def create_user(request):
             profile.save()
         elif role == "general_tutor":
             profile = RegionalTutorProfile(user=user)
-            profile.save()
-        elif role == "regional":
-            profile = RegionalManagerProfile(user=user)
-            profile.save()
-        elif role == "territorial_manager":
-            profile = TerritorialManagerProfile(user=user)
-            profile.save()
-        elif role == "territorial_manager_km":
-            profile = ClientManagerProfile(user=user)
-            territorial_manager_username = f"{territorial_manager.split()[0]}_{territorial_manager.split()[1]}"
-            territorial_manager_user = User.objects.filter(username=territorial_manager_username).first()
-            if territorial_manager_user:
-                profile.related_territorial_manager.add(territorial_manager_user)
             profile.save()
         user.save()
         return JsonResponse({"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})

@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 import library
 import logging
+from dotenv import load_dotenv
 from utils.lms_authentication import get_authenticated_session
 parsing_results = {}
 
@@ -45,6 +46,7 @@ class Command(BaseCommand):
             return paym
 
     def handle(self, *args, **options):
+        load_dotenv(Path(BASE_DIR, ".env"))
         lms_session = get_authenticated_session()
         start_date = os.environ.get("start_date")
         end_date = os.environ.get("end_date")
@@ -56,7 +58,7 @@ class Command(BaseCommand):
             one_c_host = "school.cloud24.com.ua"
         else:
             one_c_host = "localhost"
-        url = f"https://localhost:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={url_start}&till={url_end}&businessDirection={course}&firstPayment=true"
+        url = f"https://{one_c_host}:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={url_start}&till={url_end}&businessDirection={course}&firstPayment=true"
 
         response = requests.get(url, headers=library.payments_headers, verify=False)
         payments_data = response.json()
