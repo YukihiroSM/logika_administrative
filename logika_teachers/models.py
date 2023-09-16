@@ -41,6 +41,9 @@ class RegionalTutorProfile(models.Model):
         "TutorProfile", related_name="related_regional_tutors"
     )
 
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
 
 class TeacherFeedback(models.Model):
     teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
