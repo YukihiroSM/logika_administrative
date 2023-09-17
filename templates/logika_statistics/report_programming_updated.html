@@ -121,7 +121,17 @@
                                 {% with outer_loop_counter=forloop.counter %}
                                 <div class="card card-default card-md mb-4">
                                   <div class="card-header py-20">
-                                    <h6>{{ manager }}</h6>
+                                    <h6>{{ manager }} | 
+
+                                      {% for rm, rm_data in totals_rm.items %}
+                                        {%if rm == manager%}
+                                          Усього записано: <i>{{rm_data.enrolled}} | </i>
+                                          Усього прийшло: <i>{{rm_data.attended}} | </i>
+                                          Усього оплат: <i>{{rm_data.payments}} | </i>
+                                          Конверсія: <i>{{rm_data|count_conversion}} | </i>
+                                        {% endif %}
+                                      {% endfor %}
+                                    </h6>
                                   </div>
                                   <div class="card-body">
                                     <div class="dm-collapse">
