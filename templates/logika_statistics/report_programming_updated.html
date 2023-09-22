@@ -119,6 +119,7 @@
                               >
                                 {% for manager, tms in managers.items%}
                                 {% with outer_loop_counter=forloop.counter %}
+                                {% if manager != "None" %}
                                 <div class="card card-default card-md mb-4">
                                   <div class="card-header py-20">
                                     <h6>{{ manager }} | 
@@ -255,6 +256,7 @@
                                     </div>
                                   </div>
                                 </div>
+                                {% endif %}
                                 {% endwith %}
                                 {% endfor %}
                               </div>
