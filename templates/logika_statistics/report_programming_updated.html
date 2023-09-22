@@ -126,10 +126,10 @@
 
                                       {% for rm, rm_data in totals_rm.items %}
                                         {%if rm == manager%}
-                                          Усього записано: <i>{{rm_data.enrolled}} | </i>
-                                          Усього прийшло: <i>{{rm_data.attended}} | </i>
-                                          Усього оплат: <i>{{rm_data.payments}} | </i>
-                                          Конверсія: <i>{{rm_data|count_conversion}} | </i>
+                                          Усього записано: {{rm_data.enrolled}} | 
+                                          Усього прийшло: {{rm_data.attended}} | 
+                                          Усього оплат: {{rm_data.payments}} | 
+                                          Конверсія: {{rm_data|count_conversion}} | 
                                         {% endif %}
                                       {% endfor %}
                                     </h6>
@@ -269,9 +269,18 @@
                               >
                               {% for manager, tms in managers.items%}
                               {% with outer_loop_counter=forloop.counter %}
+                              {% if manager != "None" %}
                               <div class="card card-default card-md mb-4">
                                 <div class="card-header py-20">
-                                  <h6>{{ manager }}</h6>
+                                  <h6>{{ manager }} | </h6>
+                                  {% for rm, rm_data in totals_rm.items %}
+                                        {%if rm == manager%}
+                                          Усього записано: {{rm_data.enrolled}} |
+                                          Усього прийшло: {{rm_data.attended}} |
+                                          Усього оплат: {{rm_data.payments}} |
+                                          Конверсія: {{rm_data|count_conversion}} |
+                                        {% endif %}
+                                      {% endfor %}
                                 </div>
                                 <div class="card-body">
                                   <div class="dm-collapse">
@@ -286,7 +295,15 @@
                                           aria-expanded="false"
                                         >
                                           <i class="la la-angle-right"></i>
-                                          <h6>{{tm}}</h6>
+                                          <h6>{{tm}} | </h6>
+                                          {%for terr_man, terr_man_data in totals_tm.items%}
+                                              {%if terr_man == tm%}
+                                                Усього записано: {{terr_man_data.enrolled}} | 
+                                                Усього прийшло: {{terr_man_data.attended}} | 
+                                                Усього оплат: {{terr_man_data.payments}} | 
+                                                Конверсія: {{terr_man_data|count_conversion}} | 
+                                              {% endif %}
+                                            {%endfor%}
                                         </a>
                                       </div>
                                       <div
@@ -387,6 +404,7 @@
                                   </div>
                                 </div>
                               </div>
+                              {% endif %}
                               {% endwith %}
                               {% endfor %}
                               </div>
