@@ -146,7 +146,15 @@
                                             aria-expanded="false"
                                           >
                                             <i class="la la-angle-right"></i>
-                                            <h6>{{tm}}</h6>
+                                            <h6>{{tm}} | </h6>
+                                            {%for terr_man, terr_man_data in totals_tm.items%}
+                                              {%if terr_man == tm%}
+                                                Усього записано: {{terr_man_data.enrolled}} | 
+                                                Усього прийшло: {{terr_man_data.attended}} | 
+                                                Усього оплат: {{terr_man_data.payments}} | 
+                                                Конверсія: {{terr_man_data|count_conversion}} | 
+                                              {% endif %}
+                                            {%endfor%}
                                           </a>
                                         </div>
                                         <div
