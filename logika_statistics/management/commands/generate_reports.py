@@ -32,9 +32,9 @@ class Command(BaseCommand):
         return conversion if conversion else 0
 
     @staticmethod
-    def get_rm_by_cm(client_manager, start_date, end_date):
+    def get_rm_by_cm(client_manager, start_date, end_date, territorial_manager):
         regionals = StudentReport.objects.filter(
-            start_date__gte=start_date, end_date__lte=end_date, business="programming", client_manager=client_manager).values_list("regional_manager", flat=True).distinct()
+            start_date__gte=start_date, end_date__lte=end_date, business="programming", client_manager=client_manager, territorial_manager=territorial_manager).values_list("regional_manager", flat=True).distinct()
         return set(regionals)
 
     @staticmethod
@@ -44,9 +44,9 @@ class Command(BaseCommand):
         return set(regionals)
 
     @staticmethod
-    def get_rm_by_location(location, start_date, end_date):
+    def get_rm_by_location(location, start_date, end_date, territorial_manager):
         regionals = StudentReport.objects.filter(
-            start_date__gte=start_date, end_date__lte=end_date, business="programming", location=location).values_list("regional_manager", flat=True).distinct()
+            start_date__gte=start_date, end_date__lte=end_date, business="programming", location=location, territorial_manager=territorial_manager).values_list("regional_manager", flat=True).distinct()
         return set(regionals)
 
     def handle(self, *args, **options):
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 if not (regional_manager in self.get_rm_by_tm(territorial_manager, start_date, end_date)):
                     continue
                 for client_manager in client_managers:
-                    if not (regional_manager in self.get_rm_by_cm(client_manager, start_date, end_date)):
+                    if not (regional_manager in self.get_rm_by_cm(client_manager, start_date, end_date, territorial_manager)):
                         continue
                     payments = len(reports.filter(business="programming", client_manager=client_manager,
                                                   territorial_manager=territorial_manager,
@@ -100,7 +100,7 @@ class Command(BaseCommand):
                     new_report.save()
 
                 for location in locations:
-                    if not (regional_manager in self.get_rm_by_location(location, start_date, end_date)):
+                    if not (regional_manager in self.get_rm_by_location(location, start_date, end_date, territorial_manager)):
                         continue
                     payments = len(reports.filter(business="programming", location=location,
                                                   territorial_manager=territorial_manager,
