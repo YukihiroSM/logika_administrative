@@ -20,10 +20,6 @@ class Command(BaseCommand):
         self.logger.debug(str(msg) + " " + str(datetime.now()))
 
     @staticmethod
-    def process_lms_report():
-        pass
-
-    @staticmethod
     def get_conversion(payments, attended):
         conversion = None
         if payments == 0 and attended == 0:
@@ -36,22 +32,22 @@ class Command(BaseCommand):
         return conversion if conversion else 0
 
     @staticmethod
-    def get_rm_by_cm(client_manager):
-        location_regionals = Location.objects.filter(client_manager=client_manager).values_list("regional_manager",
-                                                                                                flat=True).distinct()
-        return location_regionals
+    def get_rm_by_cm(client_manager, start_date, end_date):
+        regionals = StudentReport.objects.filter(
+            start_date__gte=start_date, end_date__lte=end_date, business="programming", client_manager=client_manager).values_list("regional_manager", flat=True).distinct()
+        return regionals
 
     @staticmethod
-    def get_rm_by_tm(tm):
-        location_regionals = Location.objects.filter(territorial_manager=tm).values_list("regional_manager",
-                                                                                         flat=True).distinct()
-        return location_regionals
+    def get_rm_by_tm(tm, start_date, end_date):
+        regionals = StudentReport.objects.filter(
+            start_date__gte=start_date, end_date__lte=end_date, business="programming", territorial_manager=tm).values_list("regional_manager", flat=True).distinct()
+        return regionals
 
     @staticmethod
-    def get_rm_by_location(location):
-        location_regionals = Location.objects.filter(
-            lms_location_name=location).values_list("regional_manager", flat=True).distinct()
-        return location_regionals
+    def get_rm_by_location(location, start_date, end_date):
+        regionals = StudentReport.objects.filter(
+            start_date__gte=start_date, end_date__lte=end_date, business="programming", location=location).values_list("regional_manager", flat=True).distinct()
+        return regionals
 
     def handle(self, *args, **options):
         start_date = datetime.strptime(
@@ -71,13 +67,10 @@ class Command(BaseCommand):
         all_teachers = reports.values_list("teacher", flat=True).distinct()
         for regional_manager in regional_managers:
             for territorial_manager in territorial_managers:
-                if not (regional_manager in self.get_rm_by_tm(territorial_manager)):
+                if not (regional_manager in self.get_rm_by_tm(territorial_manager, start_date, end_date)):
                     continue
                 for client_manager in client_managers:
-                    if not (regional_manager in self.get_rm_by_cm(client_manager)):
-                        continue
-                    if not territorial_manager in Location.objects.filter(client_manager=client_manager).values_list(
-                            "territorial_manager", flat=True).distinct():
+                    if not (regional_manager in self.get_rm_by_cm(client_manager, start_date, end_date)):
                         continue
                     payments = len(reports.filter(business="programming", client_manager=client_manager,
                                                   territorial_manager=territorial_manager,
@@ -109,10 +102,7 @@ class Command(BaseCommand):
                     new_report.save()
 
                 for location in locations:
-                    if not (regional_manager in self.get_rm_by_location(location)):
-                        continue
-                    if not (territorial_manager in Location.objects.filter(lms_location_name=location).values_list(
-                            "territorial_manager", flat=True).distinct()):
+                    if not (regional_manager in self.get_rm_by_location(location, start_date, end_date)):
                         continue
                     payments = len(reports.filter(business="programming", location=location,
                                                   territorial_manager=territorial_manager,
@@ -142,36 +132,3 @@ class Command(BaseCommand):
                         f"Regional Manager: {regional_manager}, Territorial Manager: {territorial_manager}, Location: {location}"
                         f"Payments: {payments}, Attended: {attended_mc}, Enrolled: {enrolled_mc}, Conversion: {conversion}")
                     new_report.save()
-
-                for course in all_courses:
-                    payments = len(reports.filter(business="programming", course=course,
-                                                  territorial_manager=territorial_manager,
-                                                  regional_manager=regional_manager, payment=1).all())
-                    attended_mc = len(reports.filter(business="programming", course=course,
-                                                     territorial_manager=territorial_manager,
-                                                     regional_manager=regional_manager, attended_mc=1).exclude(
-                        amo_id__isnull=True, is_duplicate=1).all())
-                    enrolled_mc = len(reports.filter(business="programming", course=course,
-                                                     territorial_manager=territorial_manager,
-                                                     regional_manager=regional_manager, enrolled_mc=1).exclude(
-                        amo_id__isnull=True, is_duplicate=1).all())
-                    conversion = self.get_conversion(payments, attended_mc)
-                    new_report = CourseReport(
-                        course=library.get_course_by_course_name(
-                            course, translate=True),
-                        territorial_manager=territorial_manager,
-                        regional_manager=regional_manager,
-                        business="programming",
-                        total_attended=attended_mc,
-                        total_payments=payments,
-                        conversion=conversion,
-                        total_enrolled=enrolled_mc,
-                        start_date=start_date,
-                        end_date=end_date
-                    )
-                    print(
-                        f"Regional Manager: {regional_manager}, Territorial Manager: {territorial_manager}, Course: {library.get_course_by_course_name(course, translate=True)}"
-                        f"Payments: {payments}, Attended: {attended_mc}, Enrolled: {enrolled_mc}, Conversion: {conversion}")
-                    new_report.save()
-
-                
