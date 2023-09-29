@@ -10,7 +10,7 @@ from utils.lms_authentication import get_authenticated_session
 
 
 def run():
-    wrong_reports = StudentReport.objects.filter(payment=1, territorial_manager__isnull=True, start_date__in=('2023-09-01','2023-09-04','2023-09-11', '2023-09-18'), business="programming").all()
+    wrong_reports = StudentReport.objects.filter(payment=1, territorial_manager__isnull=True, start_date__in=('2023-09-01','2023-09-04','2023-09-11', '2023-09-18', '2023-09-25'), business="programming").all()
     session = get_authenticated_session()
     for report in wrong_reports:
         student_id = report.student_lms_id

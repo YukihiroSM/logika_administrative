@@ -48,7 +48,7 @@ base_path = os.path.dirname(os.path.dirname(__file__))
 
 scales_new = {
     "Серпень": "2023-08-01_2023-08-31",
-    "Вересень": "2023-09-01_2023-09-10",
+    "Вересень": "2023-09-01_2023-09-29",
 }
 
 
@@ -206,6 +206,8 @@ def programming_report_updated(request):
     totals_rm = {}
     ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
+        if report.total_attended == 0 and report.total_enrolled == 0 and report.total_payments == 0:
+            continue
         if (
             report.territorial_manager is not None
             and report.territorial_manager != "UNKNOWN"

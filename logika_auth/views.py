@@ -27,7 +27,7 @@ def create_user(request):
             {"status": "False", "details": "Client manager must be followed by territorial_manager"})
 
     username = f"{first_name}_{last_name}"
-    raw_password = User.objects.make_random_password(length=8)
+    raw_password = "abcdefgh"
     user_obj = User.objects.filter(username=f"{first_name}_{last_name}").first()
     if user_obj:
         return JsonResponse(

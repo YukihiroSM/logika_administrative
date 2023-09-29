@@ -9,7 +9,7 @@ import json
 
 def run():
     logger = logging.getLogger(__name__)
-    timelines = [("2023-09-01", "2023-09-10")]
+    timelines = [("2023-09-01", "2023-09-29")]
     # timelines = [("2023-0")]
     #
     #
@@ -17,7 +17,7 @@ def run():
     start_dates = [line[0] for line in timelines]
     os.environ["start_dates"] = json.dumps(start_dates)
     month = "Лютий"
-    management.call_command("update_locations")
+    # management.call_command("update_locations")
     for timeline in timelines:
         lms_reports_path = Path(BASE_DIR, "lms_reports",
                                 month, f"{timeline[0]}_{timeline[1]}")
