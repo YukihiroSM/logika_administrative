@@ -96,6 +96,8 @@ load i18n %} {% load static %} {% block content %}
 
                         <div class="note-grid-wrapper mb-30">
                             <div class="notes-wrapper">
+                                
+
                                 <div class="card card-default card-md mb-4">
                                     <div class="card-header  py-20">
                                         <h6>Результати</h6>
@@ -163,6 +165,71 @@ load i18n %} {% load static %} {% block content %}
                                     </div>
                                     {% endif %}
                                     {% endfor %}
+                                </div>
+                                <div class="card card-default card-md mb-4">
+                                    <div class="card-header  py-20">
+                                        <h6>Уроки з нульовою успішністю</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="dm-statistics-wrap d-flex">
+                                            <div class="table4 p-25 mb-30">
+                                                <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                <thead>
+                                                    <tr class="userDatatable-header">
+                                                    <th>
+                                                        <span class="userDatatable-title">ID групи</span>
+                                                    </th>
+                                                    <th>
+                                                        <span class="userDatatable-title">Урок</span>
+                                                    </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for group_id, lesson_data in zero_performance_lessons.items %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="userDatatable-content">
+                                                                {{group_id}}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                        <table class="table table-bordered">
+                                                        <thead>
+                                                            <th>
+                                                                <span class="userDatatable-title">Назва уроку</span>
+                                                            </th>
+                                                            <th>
+                                                                <span class="userDatatable-title">Посилання на успішність на уроці</span>
+                                                            </th>
+                                                        </thead>
+                                                        {% for lesson in lesson_data %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="userDatatable-content">
+                                                                    {{lesson.lesson_title}}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="userDatatable-content">
+                                                                    <a href="https://lms.logikaschool.com/group/view/{{group_id}}?progressLessonId={{lesson.lesson_id}}#group-progress-tab" target="_blank">
+                                                                        Перейти до уроку
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                        <td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                                </table>
+                                                </div>
+                                                </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

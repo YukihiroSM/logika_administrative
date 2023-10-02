@@ -417,7 +417,7 @@ def teacher_performance(request, teacher_id):
         month = request.POST.get("month")
         teacher_groups = request.POST.getlist("groups")
         if month and locations:
-            result = get_teacher_performance_by_month(
+            result, zero_performance_lessons = get_teacher_performance_by_month(
                 teacher_id, locations, month_dict[month], teacher_groups
             )
             groups_data = {}
@@ -452,6 +452,7 @@ def teacher_performance(request, teacher_id):
                     groups_data["teacher_average"] / group_count if group_count else 0,
                     1,
                 )
+            print(zero_performance_lessons)
             return render(
                 request,
                 "logika_teachers/teacher_performance.html",
@@ -460,6 +461,7 @@ def teacher_performance(request, teacher_id):
                     "teachers_locations": get_teacher_locations(teacher_id),
                     "teacher_groups": get_teacher_groups(teacher_id),
                     "teacher": teacher,
+                    "zero_performance_lessons": zero_performance_lessons,
                     "form_data": {"month": month, "locations": locations, "chosen_groups": teacher_groups},
                 },
             )

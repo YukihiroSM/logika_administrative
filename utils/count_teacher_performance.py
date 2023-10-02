@@ -18,16 +18,17 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
             venue__in=locations,
             teacher_id=teacher.lms_id,
             type__in=["regular", "individual"],
-            title__in=teacher_groups
+            title__in=teacher_groups,
         )
     else:
         groups = Group.objects.filter(
             venue__in=locations,
             teacher_id=teacher.lms_id,
-            type__in=["regular", "individual"]
+            type__in=["regular", "individual"],
         )
     session = get_authenticated_session()
     results = {}
+    zero_performance_lessons = {}
     for group in groups:
         month_performance = []
         group_performance_resp = session.get(
@@ -46,13 +47,20 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
                 if lesson.get("startTime") and is_lesson_in_month(
                     lesson.get("startTime"), month
                 ):
-                    month_performance.append(
-                        lesson.get("regularTaskScoreSumPercent")
-                        if lesson.get("regularTaskScoreSumPercent")
-                        else 0
-                    )
+                    perf = lesson.get("regularTaskScoreSumPercent")
+                    if not perf:
+                        if not group.lms_id in zero_performance_lessons:
+                            zero_performance_lessons[group.lms_id] = []
+                        lesson_id = lesson.get("id")
+                        lesson_title = lesson["title"]
+                        lesson_report = {"lesson_id": lesson_id, "lesson_title": lesson_title}
+                        if lesson_report not in zero_performance_lessons[group.lms_id]:
+                            zero_performance_lessons[group.lms_id].append(lesson_report)
+                        
+                    else:
+                        month_performance.append(perf)
         results[group.lms_id] = month_performance
-    return results
+    return results, zero_performance_lessons
 
 
 def get_resulting_teacher_performance(teacher_id, locations, month):
