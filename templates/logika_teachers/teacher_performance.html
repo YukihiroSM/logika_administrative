@@ -21,21 +21,20 @@ load i18n %} {% load static %} {% block content %}
                                                 <label for="month"
                                                     class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
                                                     місяць</label>
-                                                <select class="form-control px-15 select2-hidden-accessible" id="month"
-                                                    data-select2-id="exampleFormControlSelect1" tabindex="-1"
-                                                    aria-hidden="true" name="month">
-                                                    <option data-select2-id="1">Січень</option>
-                                                    <option data-select2-id="2">Лютий</option>
-                                                    <option data-select2-id="3">Березень</option>
-                                                    <option data-select2-id="4">Квітень</option>
-                                                    <option data-select2-id="5">Травень</option>
-                                                    <option data-select2-id="6">Червень</option>
-                                                    <option data-select2-id="7">Липень</option>
-                                                    <option data-select2-id="8">Серпень</option>
-                                                    <option data-select2-id="9">Вересень</option>
-                                                    <option data-select2-id="10">Жовтень</option>
-                                                    <option data-select2-id="11">Листопад</option>
-                                                    <option data-select2-id="12">Грудень</option>
+                                                <select id="month"
+                                                    name="month">
+                                                    <option {% if form_data.month == "Січень" %} selected {% endif %}>Січень</option>
+                                                    <option {% if form_data.month == "Лютий" %} selected {% endif %}>Лютий</option>
+                                                    <option {% if form_data.month == "Березень" %} selected {% endif %}>Березень</option>
+                                                    <option {% if form_data.month == "Квітень" %} selected {% endif %}>Квітень</option>
+                                                    <option {% if form_data.month == "Травень" %} selected {% endif %}>Травень</option>
+                                                    <option {% if form_data.month == "Червень" %} selected {% endif %}>Червень</option>
+                                                    <option {% if form_data.month == "Липень" %} selected {% endif %}>Липень</option>
+                                                    <option {% if form_data.month == "Серпень" %} selected {% endif %}>Серпень</option>
+                                                    <option {% if form_data.month == "Вересень" %} selected {% endif %}>Вересень</option>
+                                                    <option {% if form_data.month == "Жовтень" %} selected {% endif %}>Жовтень</option>
+                                                    <option {% if form_data.month == "Листопад" %} selected {% endif %}>Листопад</option>
+                                                    <option {% if form_data.month == "Грудень" %} selected {% endif %}>Грудень</option>
                                                 </select>
                                             </div>
                                             <hr>
@@ -47,7 +46,13 @@ load i18n %} {% load static %} {% block content %}
 
                                                 <input class="checkbox" type="checkbox"
                                                     id="check-un{{ forloop.counter }}" name="locations"
-                                                    value="{{location}}">
+                                                    value="{{location}}" 
+                                                    {% for loc in form_data.locations %}
+                                                        {% if loc == location %}
+                                                        checked
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    >
                                                 <label for="check-un{{ forloop.counter }}">
                                                     <span class="checkbox-text">
                                                         {{location}}
@@ -66,7 +71,13 @@ load i18n %} {% load static %} {% block content %}
 
                                                 <input class="checkbox" type="checkbox"
                                                     id="check-gr{{ forloop.counter }}" name="groups"
-                                                    value="{{group}}">
+                                                    value="{{group}}"
+                                                    {% for gr in form_data.chosen_groups %}
+                                                        {% if gr == group %}
+                                                        checked
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    >
                                                 <label for="check-gr{{ forloop.counter }}">
                                                     <span class="checkbox-text">
                                                         {{group}}

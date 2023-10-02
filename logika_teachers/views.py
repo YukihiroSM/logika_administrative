@@ -460,7 +460,7 @@ def teacher_performance(request, teacher_id):
                     "teachers_locations": get_teacher_locations(teacher_id),
                     "teacher_groups": get_teacher_groups(teacher_id),
                     "teacher": teacher,
-                    "form_data": {"month": month, "locations": locations},
+                    "form_data": {"month": month, "locations": locations, "chosen_groups": teacher_groups},
                 },
             )
     return render(
