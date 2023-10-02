@@ -57,6 +57,24 @@ load i18n %} {% load static %} {% block content %}
 
                                             {% endfor %}
                                             <hr>
+                                            <label for="groups"
+                                            class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                            групи</label>
+                                            {% for group in teacher_groups%}
+                                            
+                                            <div class="checkbox-theme-default custom-checkbox ">
+
+                                                <input class="checkbox" type="checkbox"
+                                                    id="check-gr{{ forloop.counter }}" name="groups"
+                                                    value="{{group}}">
+                                                <label for="check-gr{{ forloop.counter }}">
+                                                    <span class="checkbox-text">
+                                                        {{group}}
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            {% endfor %}
                                             <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
                                             </button>
                                         </form>

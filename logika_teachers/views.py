@@ -24,6 +24,7 @@ from utils.get_user_role import get_user_role
 from utils.lms_authentication import get_authenticated_session
 from utils.count_teacher_performance import get_teacher_performance_by_month
 from utils.get_teacher_locations import get_teacher_locations
+from utils.get_teacher_groups import get_teacher_groups
 
 
 @login_required
@@ -414,9 +415,10 @@ def teacher_performance(request, teacher_id):
         }
         locations = request.POST.getlist("locations")
         month = request.POST.get("month")
+        teacher_groups = request.POST.getlist("groups")
         if month and locations:
             result = get_teacher_performance_by_month(
-                teacher_id, locations, month_dict[month]
+                teacher_id, locations, month_dict[month], teacher_groups
             )
             groups_data = {}
 
@@ -456,6 +458,7 @@ def teacher_performance(request, teacher_id):
                 {
                     "groups_data": groups_data,
                     "teachers_locations": get_teacher_locations(teacher_id),
+                    "teacher_groups": get_teacher_groups(teacher_id),
                     "teacher": teacher,
                     "form_data": {"month": month, "locations": locations},
                 },
@@ -465,6 +468,7 @@ def teacher_performance(request, teacher_id):
         "logika_teachers/teacher_performance.html",
         {
             "teachers_locations": get_teacher_locations(teacher_id),
+            "teacher_groups": get_teacher_groups(teacher_id),
             "teacher": teacher,
         },
     )
