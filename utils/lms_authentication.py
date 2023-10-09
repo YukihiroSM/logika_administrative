@@ -25,14 +25,14 @@ def get_authenticated_session():
         )
     except Exception as auth_exception:
         raise LmsAuthenticationFailed(
-            "Unable to authenticate. Something gone wrong in auth process"
+            "LMS: Unable to authenticate. Something gone wrong in auth process"
         ) from auth_exception
 
     if resp.ok:
-        print("Session creation is successful!")
+        print("LMS: Session creation is successful!")
         return session
 
     else:
         raise LmsAuthenticationFailed(
-            "Unable to renew cookies. Something gone wrong in auth process"
+            "LMS: Unable to renew cookies. Something gone wrong in auth process"
         )
