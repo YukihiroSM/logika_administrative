@@ -11,8 +11,8 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 
 session = get_authenticated_session()
-start_date = "2023-09-18"
-end_date = "2023-09-24"
+start_date = "2023-09-25"
+end_date = "2023-09-30"
 updated_students_count = 0
 def process_one_group(group_id):
     print(f"Starting processing {str(group_id)}" + " " + str(datetime.datetime.now()))
@@ -72,6 +72,7 @@ def process_one_group(group_id):
                                                 if student_report:
                                                     student_report.attended_mc = 1
                                                     student_report.save()
+                                                    global updated_students_count
                                                     updated_students_count += 1
                                                 else:
                                                     print(f"NO STUDENT REPORT FOR {student['id']}")
@@ -105,8 +106,6 @@ def parse_in_threads(group_ids):
 
 
 def run():
-<<<<<<< Updated upstream
-    
     month = "Лютий"
     collect_groups_link = f"https://lms.logikaschool.com/group/default/schedule?GroupLessonSearch%5Bstart_time%5D={start_date}+-+{end_date}&GroupLessonSearch%5Bgroup_id%5D=&GroupLessonSearch%5Bgroup.title%5D=&GroupLessonSearch%5Bgroup.venue%5D=&GroupLessonSearch%5Bgroup.active_student_count%5D=&GroupLessonSearch%5Bteacher.name%5D=&GroupLessonSearch%5Bgroup.curator.name%5D=&GroupLessonSearch%5Bgroup.type%5D=&GroupLessonSearch%5Bgroup.type%5D%5B%5D=masterclass&GroupLessonSearch%5Bgroup.course.name%5D=&GroupLessonSearch%5Bgroup.branch.title%5D=&export=true&name=default&exportType=csv"
     response = session.get(collect_groups_link)
@@ -133,49 +132,3 @@ def run():
     group_ids = list(set(mk_df['group_id'].tolist()))
     parse_students_in_groups(group_ids)
     print(f"Total updated students_count: {updated_students_count}")
-=======
-    wrong_reports = StudentReport.objects.filter(payment=1, territorial_manager__isnull=True, start_date__in=('2023-09-01','2023-09-04','2023-09-11', '2023-09-18'), business="programming").all()
-    session = get_authenticated_session()
-    for report in wrong_reports:
-        student_id = report.student_lms_id
-        student_details_url = f"https://lms.logikaschool.com/api/v2/student/default/view/{student_id}?id={student_id}&expand=lastGroup%2Cwallet%2Cbranch%2ClastGroup.branch%2CamoLead%2Cgroups%2Cgroups.b2bPartners"
-        student_details_resp = session.get(student_details_url)
-        if student_details_resp.status_code == 200:
-            student_groups = student_details_resp.json()["data"]["groups"][::-1]
-            for group in student_groups: 
-                if "МК" in group["title"]:
-                    group_details_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch")
-                    if group_details_resp.status_code == 200:
-                        group_data = group_details_resp.json()["data"]
-                        location = group_data["venue"].get("title")
-                        location_obj = Location.objects.filter(lms_location_name=location).first()
-                        if location_obj:
-                            report.location = location
-                            report.client_manager = location_obj.client_manager
-                            report.territorial_manager = location_obj.territorial_manager
-                            report.regional_manager = location_obj.regional_manager
-                            report.save()
-                            break
-            group = student_groups[0]
-            group_details_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch")
-            if group_details_resp.status_code == 200:
-                group_data = group_details_resp.json()["data"]
-                location = group_data["venue"]
-                if location:
-                    location = group_data["venue"].get("title")
-                else:
-                    location = None
-                location_obj = Location.objects.filter(lms_location_name=location).first()
-                if location_obj:
-                    report.location = location
-                    report.client_manager = location_obj.client_manager
-                    report.territorial_manager = location_obj.territorial_manager
-                    report.regional_manager = location_obj.regional_manager
-                    report.save()
-                else:
-                    report.location = location
->>>>>>> Stashed changes
-                    
-
-
-
