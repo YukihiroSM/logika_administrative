@@ -29,6 +29,8 @@ from .utils import (
 )
 from logika_administrative.settings import BASE_DIR
 from utils.lms_authentication import get_authenticated_session
+from utils.get_user_role import get_user_role
+from logika_general.models import ClientManagerProfile, RegionalManagerProfile, TerritorialManagerProfile
 
 
 def is_member(user, group_name):
@@ -198,10 +200,60 @@ def programming_report_updated(request):
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-    else:
-        context = {}
-        html_template = loader.get_template("logika_statistics/page-403.html")
-        return HttpResponse(html_template.render(context, request))
+
+    if user_role == "client_manager":
+        client_manager_profile = ClientManagerProfile.objects.filter(user=request.user).first()
+        client_manager_name = request.user.get_full_name()
+        related_tms = client_manager_profile.related_tms.all()
+        territorial_managers = [tm.user.get_full_name() for tm in related_tms]
+        location_reports = (
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, client_manager=client_manager_name)
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+        client_manager_reports = (
+            ClientManagerReport.objects.filter(
+                start_date=report_start, end_date=report_end,
+                client_manager=client_manager_name
+            )
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+    if user_role == "territorial_manager":
+        territorial_managers = [request.user.get_full_name()]
+        location_reports = (
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager=request.user.get_full_name())
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+        client_manager_reports = (
+            ClientManagerReport.objects.filter(
+                start_date=report_start, end_date=report_end,
+                territorial_manager=request.user.get_full_name()
+            )
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+    if user_role == "regional_manager":
+        regional_manager_profile = RegionalManagerProfile.objects.get(user=request.user)
+        territorial_managers_objects = regional_manager_profile.territorial_managers.all()
+        territorial_managers = [tm.user.get_full_name() for tm in territorial_managers_objects]
+
+        location_reports = (
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers, regional_manager=request.user.get_full_name())
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+        client_manager_reports = (
+            ClientManagerReport.objects.filter(
+                start_date=report_start, end_date=report_end,
+                territorial_manager__in=territorial_managers, regional_manager=request.user.get_full_name()
+            )
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
+        )
+
+
     managers = {}
     totals_tm = {}
     totals_rm = {}
@@ -263,7 +315,6 @@ def programming_report_updated(request):
         "totals_tm": totals_tm,
         "totals_rm": totals_rm,
         "ukrainian_totals": ukrainian_totals,
-        "course_reports": course_report
         # "reports_by_course": formatted_courses
     }
     html_template = loader.get_template(
@@ -278,18 +329,6 @@ def get_rm_tm_by_tutor(tutor):
         location = Location.objects.filter(tutor_english=tutor).first()
     return location.regional_manager, location.territorial_manager
 
-
-def get_user_role(user):
-    if is_member(user, "admin"):
-        return "admin"
-    elif is_member(user, "regional"):
-        return "regional"
-    elif is_member(user, "territorial_manager"):
-        return "territorial_manager"
-    elif is_member(user, "tutor"):
-        return "tutor"
-    elif is_member(user, "territorial_manager_km"):
-        return "territorial_manager_km"
 
 
 def get_rm_by_tm(tm):

