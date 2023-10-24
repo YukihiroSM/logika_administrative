@@ -199,7 +199,7 @@ def update_user(request):
         first_name = request_data_GET.get("first_name_new")[0]
         last_name = request_data_GET.get("last_name_new")[0]
         role = request_data_GET.get("role_new")[0]
-        territorial_manager = request_data_GET.get("territorial_manager")
+        territorial_manager = request_data_GET.get("territorial_manager_new")
         if territorial_manager:
             territorial_manager = territorial_manager[0]
         if role == "territorial_manager_km" and not territorial_manager:
