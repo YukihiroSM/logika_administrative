@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, Group
 from datetime import datetime, timedelta, timezone
 from logika_teachers.models import TutorProfile, TeacherProfile, RegionalTutorProfile
 from utils.get_user_role import get_user_role
+from logika_general.models import ClientManagerProfile, TerritorialManagerProfile, RegionalManagerProfile
 
 
 @csrf_exempt
@@ -42,6 +43,23 @@ def create_user(request):
         elif role == "general_tutor":
             profile = RegionalTutorProfile(user=user)
             profile.save()
+        elif role == "regional":
+            profile = RegionalManagerProfile(user=user)
+            profile.save()
+        elif role == "territorial_manager":
+            profile = TerritorialManagerProfile(user=user)
+            profile.save()
+        elif role == "territorial_manager_km":
+            profile = ClientManagerProfile(user=user)
+            profile.save()
+            if territorial_manager:
+                tm_first_name, tm_second_name = territorial_manager.split()[:2]
+                tm_user = User.objects.filter(first_name=tm_first_name, last_name=tm_second_name).first()
+                if tm_user:
+                    tm_profile = TerritorialManagerProfile.objects.filter(user=tm_user).first()
+                    if tm_profile:
+                        profile.related_tms.add(tm_profile)
+                        profile.save()
         user.save()
         return JsonResponse({"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
     else:
@@ -88,6 +106,12 @@ def auth_user(request):
             profile = TutorProfile.objects.filter(user=user_obj).first()
         elif user_role == "regional_tutor":
             profile = RegionalTutorProfile.objects.filter(user=user_obj).first()
+        elif user_role == "regional":
+            profile = RegionalManagerProfile.objects.filter(user=user_obj).first()
+        elif user_role == "territorial_manager":
+            profile = TerritorialManagerProfile.objects.filter(user=user_obj).first()
+        elif user_role == "territorial_manager_km":
+            profile = ClientManagerProfile.objects.filter(user=user_obj).first()
         user = None
         if token != profile.auth_token:
             if request.META["REMOTE_ADDR"] != "127.0.0.1":
@@ -130,20 +154,20 @@ def update_user(request):
     user_obj = User.objects.filter(username=f"{first_name}_{last_name}").first()
     user_role = get_user_role(user_obj)
     if user_obj:
-        if user_role == "tutor":
+        if role_new == "tutor":
             profile_class = TutorProfile
-        elif user_role == "general_tutor":
+        elif role_new == "general_tutor":
             profile_class = RegionalTutorProfile
-        else:
-            return JsonResponse(
-                {"status": "False", "details": "Temporarily unavailable for this role"}
-            )
-        if role_new == "general_tutor":
-            profile_class = RegionalTutorProfile
-            profile = profile_class.objects.filter(user=user_obj).first()
-            if not profile:
-                profile = profile_class(user=user_obj)
-                profile.save()
+        elif role_new == "regional":
+            profile_class = RegionalManagerProfile
+        elif role_new == "territorial_manager":
+            profile_class = TerritorialManagerProfile
+        elif role_new == "territorial_manager_km":
+            profile_class = ClientManagerProfile
+        profile = profile_class.objects.filter(user=user_obj).first()
+        if not profile:
+            profile = profile_class(user=user_obj)
+            profile.save()
         profile = profile_class.objects.filter(user=user_obj).first()
         user_obj.first_name = first_name_new
         user_obj.last_name = last_name_new
@@ -157,57 +181,14 @@ def update_user(request):
             tm_first_name = territorial_new.split()[0]
             tm_last_name = territorial_new.split()[1]
             tm_user = User.objects.get(first_name=tm_first_name, last_name=tm_last_name)
+            if tm_user:
+                tm_profile = TerritorialManagerProfile.objects.filter(user=tm_user).first()
+                if tm_profile:
+                    profile.related_tms.add(tm_profile)
         user_obj.save()
+        profile.save()
+
         return JsonResponse(
             {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
     else:
-        request_data_GET = dict(request.GET)
-        request_data_POST = dict(request.POST)
-        if request.META["REMOTE_ADDR"] != "127.0.0.1":
-            return JsonResponse(
-                {"status": "False", "details": "Request received from not authorized IP"})
-        first_name = request_data_GET.get("first_name_new")[0]
-        last_name = request_data_GET.get("last_name_new")[0]
-        role = request_data_GET.get("role_new")[0]
-        territorial_manager = request_data_GET.get("territorial_manager_new")
-        if territorial_manager:
-            territorial_manager = territorial_manager[0]
-        if role == "territorial_manager_km" and not territorial_manager:
-            return JsonResponse(
-                {"status": "False", "details": "Client manager must be followed by territorial_manager"})
-
-        username = f"{first_name}_{last_name}"
-        raw_password = "abcdefgh"
-        user_obj = User.objects.filter(username=f"{first_name}_{last_name}").first()
-        if user_obj:
-            return JsonResponse(
-                {"status": "False", "details": "User already exists."})
-        user = User.objects.create_user(username=username, password=raw_password)
-        if user:
-            user.first_name = first_name
-            user.last_name = last_name
-            if role == "tutor":
-                profile = TutorProfile(user=user)
-                profile.save()
-            elif role == "general_tutor":
-                profile = RegionalTutorProfile(user=user)
-                profile.save()
-            else:
-                group = Group.objects.get(name=role)
-                group.user_set.add(user)
-                group.save()
-            # if role == "territorial_manager_km":
-            #     tm_first_name = territorial_manager.split()[0]
-            #     tm_last_name = territorial_manager.split()[1]
-            #     tm_user = User.objects.filter(first_name=tm_first_name, last_name=tm_last_name).first()
-            #
-            #     if tm_user:
-            #         user_mapping.related_to = tm_user
-            # user_mapping.save()
-            # group.save()
-            # user.save()
-            return JsonResponse(
-                {"status": "True", "request_data_GET": request_data_GET, "request_data_POST": request_data_POST})
-        else:
-            return JsonResponse(
-                {"status": "False", "details": "Unable to create user"})
+        return create_user(request)
