@@ -94,7 +94,7 @@ def auth_user(request):
     first_name = request_data_GET.get("first_name")[0]
     last_name = request_data_GET.get("last_name")[0]
     token = request_data_GET.get("token")[0]
-    user_obj = User.objects.filter(username=f"{first_name}_{last_name}").first()
+    user_obj = User.objects.filter(first_name=first_name, last_name=last_name).first()
     user_role = get_user_role(user_obj)
     if not user_obj.is_active:
         return JsonResponse(
@@ -106,13 +106,13 @@ def auth_user(request):
             profile = TutorProfile.objects.filter(user=user_obj).first()
         elif user_role == "regional_tutor":
             profile = RegionalTutorProfile.objects.filter(user=user_obj).first()
-        elif user_role == "regional":
+        elif user_role == "regional_manager":
             profile = RegionalManagerProfile.objects.filter(user=user_obj).first()
         elif user_role == "territorial_manager":
             profile = TerritorialManagerProfile.objects.filter(user=user_obj).first()
-        elif user_role == "territorial_manager_km":
+        elif user_role == "client_manager":
             profile = ClientManagerProfile.objects.filter(user=user_obj).first()
-        user = None
+
         if token != profile.auth_token:
             if request.META["REMOTE_ADDR"] != "127.0.0.1":
                 return JsonResponse(
