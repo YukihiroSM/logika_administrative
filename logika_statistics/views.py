@@ -51,7 +51,7 @@ base_path = os.path.dirname(os.path.dirname(__file__))
 scales_new = {
     "Серпень": "2023-08-01_2023-08-31",
     "Вересень": "2023-09-01_2023-09-30",
-    "Жовтень": "2023-10-01_2023-10-15",
+    "Жовтень": "2023-10-01_2023-10-22",
 }
 
 
@@ -205,8 +205,14 @@ def programming_report_updated(request):
         client_manager_profile = ClientManagerProfile.objects.filter(user=request.user).first()
         client_manager_name = f"{request.user.last_name} {request.user.first_name}"
         related_tms = client_manager_profile.related_tms.all()
+<<<<<<< Updated upstream
         territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms]
         client_manager_locations = Location.objects.filter(client_manager=client_manager_name).all().values_list("lms_location_name", flat=True)
+=======
+        territorial_managers = [tm.user.get_full_name() for tm in related_tms]
+        print(client_manager_name)
+        print(territorial_managers)
+>>>>>>> Stashed changes
         location_reports = (
             LocationReport.objects.filter(start_date=report_start, end_date=report_end, location_name__in=client_manager_locations)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
