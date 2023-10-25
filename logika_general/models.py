@@ -51,7 +51,7 @@ class Location(models.Model):
 class ClientManagerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     auth_token = models.TextField(null=True, blank=True)
-    login_timestamp = models.DateTimeField()
+    login_timestamp = models.DateTimeField(null=True, default=None)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     related_tms = models.ManyToManyField("TerritorialManagerProfile", related_name="client_managers")
 
@@ -62,7 +62,7 @@ class ClientManagerProfile(models.Model):
 class TerritorialManagerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     auth_token = models.TextField(null=True, blank=True)
-    login_timestamp = models.DateTimeField()
+    login_timestamp = models.DateTimeField(null=True, default=None)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     related_rms = models.ManyToManyField("RegionalManagerProfile", related_name="territorial_managers")
 
@@ -72,7 +72,7 @@ class TerritorialManagerProfile(models.Model):
 
 class RegionalManagerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    login_timestamp = models.DateTimeField()
+    login_timestamp = models.DateTimeField(null=True, default=None)
     auth_token = models.TextField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
