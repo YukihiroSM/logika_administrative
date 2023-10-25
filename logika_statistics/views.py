@@ -206,8 +206,9 @@ def programming_report_updated(request):
         client_manager_name = f"{request.user.last_name} {request.user.first_name}"
         related_tms = client_manager_profile.related_tms.all()
         territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms]
+        client_manager_locations = Location.objects.filter(client_manager=client_manager_name).all().values_list("lms_location_name", flat=True)
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, client_manager=client_manager_name)
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, location_name__in=client_manager_locations)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
