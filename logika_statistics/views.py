@@ -203,9 +203,9 @@ def programming_report_updated(request):
 
     if user_role == "client_manager":
         client_manager_profile = ClientManagerProfile.objects.filter(user=request.user).first()
-        client_manager_name = request.user.get_full_name()
+        client_manager_name = f"{request.user.last_name} {request.user.first_name}"
         related_tms = client_manager_profile.related_tms.all()
-        territorial_managers = [tm.user.get_full_name() for tm in related_tms]
+        territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms]
         location_reports = (
             LocationReport.objects.filter(start_date=report_start, end_date=report_end, client_manager=client_manager_name)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
@@ -220,16 +220,16 @@ def programming_report_updated(request):
             .all()
         )
     if user_role == "territorial_manager":
-        territorial_managers = [request.user.get_full_name()]
+        territorial_managers = [f"{request.user.last_name} {request.user.first_name}"]
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager=request.user.get_full_name())
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
         client_manager_reports = (
             ClientManagerReport.objects.filter(
                 start_date=report_start, end_date=report_end,
-                territorial_manager=request.user.get_full_name()
+                territorial_manager__in=territorial_managers
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
@@ -237,17 +237,17 @@ def programming_report_updated(request):
     if user_role == "regional_manager":
         regional_manager_profile = RegionalManagerProfile.objects.get(user=request.user)
         territorial_managers_objects = regional_manager_profile.territorial_managers.all()
-        territorial_managers = [tm.user.get_full_name() for tm in territorial_managers_objects]
+        territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in territorial_managers_objects]
 
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers, regional_manager=request.user.get_full_name())
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers, regional_manager=f"{request.user.last_name} {request.user.first_name}")
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
         client_manager_reports = (
             ClientManagerReport.objects.filter(
                 start_date=report_start, end_date=report_end,
-                territorial_manager__in=territorial_managers, regional_manager=request.user.get_full_name()
+                territorial_manager__in=territorial_managers, regional_manager=f"{request.user.last_name} {request.user.first_name}"
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
