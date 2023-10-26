@@ -37,6 +37,11 @@ urlpatterns = [
         views.tutor_results_report,
         name="tutor-results-report"
     ),
+    path(
+        "unsub-teacher/<int:teacher_id>",
+        views.unsub_teacher,
+        name="unsub-teacher"
+    ),
 ]
 
 app_name = "logika_teachers"

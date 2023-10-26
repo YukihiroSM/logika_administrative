@@ -7,137 +7,177 @@
 {% load static %}
 
 {% block content %}
-<div class="dm-page-content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="breadcrumb-main">
-                    <h4 class="text-capitalize breadcrumb-title">Головна</h4>
-                    <h4 class="text-capitalize breadcrumb-title">Вітаю, {{user.get_full_name}}</h4>
-                </div>
-            </div>
-            <div class="col-12">
-                {%if user_role == "teacher" %}
-                {% for tutor in tutors%}
-                <a href="{% url 'logika_teachers:teacher-feedback' user.id tutor.user.id %}">
-                    <h1>Форма ЗЗ для
-                        {{tutor.user.get_full_name}}</h1>
-                </a>
-                {% endfor %}
-                <hr>
-                <h2>Відправлені форми:</h2>
-                {% for feedback in feedbacks %}
-                <a href="{% url 'logika_teachers:view-forms' feedback.id %}">
-                    <h1> Форма для
-                        {{feedback.tutor.user.get_full_name}} від {{ feedback.created_at }}</h1>
-                </a>
-                {% endfor %}
-                {% elif user_role == "tutor" %}
-                <div class="action-btn">
-                    <a href="{% url 'logika_teachers:tutor-month-report' user.id %}" class="btn px-15 btn-primary">
-                        <i class="las la-plus fs-16"></i>Місячний звіт</a>
-                    <br>
-
-
-                    <a href="{% url 'logika_teachers:create-teacher' %}" class="btn px-15 btn-primary">
-                        <i class="las la-plus fs-16"></i>Створити викладача</a>
-                    <br>
-
-                    <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
-                        <i class="las la-plus fs-16"></i>Звіт по роботі</a>
-                    <br>
-
-
-
-                </div>
-                {% for teacher in teachers %}
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-25">
-                        <div class="media  py-30  ps-30 pe-20 bg-white radius-xl users-list ">
-
-                            <img class=" me-20 rounded-circle wh-80 bg-opacity-primary  "
-                                src="{% static 'img/author/profile.png' %}" alt="Generic placeholder image">
-                            <div class="media-body d-xl-flex users-list-body">
-                                <div class="flex-1 pe-xl-30 users-list-body__title">
-                                    <h6 class="mt-0 fw-500">{{teacher.user.get_full_name}}</h6>
-                                    <!--                                    <span>Graphic Designer/ UI &amp; UX </span>-->
-                                    {% for feedback in feedbacks %}
-                                    {% if feedback.teacher == teacher %}
-                                    <p class="mb-0">Остання форма ЗЗ: Форма від {{feedback.created_at }}</p>
-                                    {% endif %}
-                                    {% endfor %}
-                                    <div class="users-list-body__bottom">
-                                        <span><span class="fw-600">Успішність:</span> -% </span>
-                                        <span class="ms-15"><span class="fw-600">Конверсія </span> -% </span>
-                                    </div>
-                                </div>
-                                <div class="users-list__button mt-xl-0 mt-15">
-                                    <a href="{% url 'logika_teachers:teacher-profile' teacher.id %}">
-                                        <button
-                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
-                                            переглянути профіль
-                                        </button>
-                                    </a>
-                                    <a href="{% url 'logika_teachers:teacher-performance' teacher.id %}">
-                                        <button
-                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
-                                            підрахунок успішності
-                                        </button>
-                                    </a>
-                                    {% for feedback in feedbacks %}
-                                    {% if feedback.teacher == teacher %}
-                                    <a href="{% url 'logika_teachers:view-forms' feedback.id %}">
-                                        <button type="button"
-                                            class="border text-capitalize px-25 color-gray transparent shadow2 follow my-xl-0 radius-md">
-                                            остання форма
-                                        </button>
-                                    </a>
-                                    {% endif %}
-                                    {% endfor %}
-
-                                </div>
-                            </div>
-                        </div>
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="breadcrumb-main">
+                        <h4 class="text-capitalize breadcrumb-title">Головна</h4>
+                        <h4 class="text-capitalize breadcrumb-title">Вітаю, {{ user.get_full_name }}</h4>
                     </div>
                 </div>
-                {%endfor%}
-                {% elif user_role == "regional_tutor" %}
-                <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
-                    <i class="las la-plus fs-16"></i>Звіт роботи тьюторів</a>
-                <br>
-                {% for tutor in tutors %}
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-25">
-                        <div class="media  py-30  ps-30 pe-20 bg-white radius-xl users-list ">
+                <div class="col-12">
+                    {% if user_role == "teacher" %}
+                        {% for tutor in tutors %}
+                            <a href="{% url 'logika_teachers:teacher-feedback' user.id tutor.user.id %}">
+                                <h1>Форма ЗЗ для
+                                    {{ tutor.user.get_full_name }}</h1>
+                            </a>
+                        {% endfor %}
+                        <hr>
+                        <h2>Відправлені форми:</h2>
+                        {% for feedback in feedbacks %}
+                            <a href="{% url 'logika_teachers:view-forms' feedback.id %}">
+                                <h1> Форма для
+                                    {{ feedback.tutor.user.get_full_name }} від {{ feedback.created_at }}</h1>
+                            </a>
+                        {% endfor %}
+                    {% elif user_role == "tutor" %}
+                        <div class="action-btn">
+                            <a href="{% url 'logika_teachers:tutor-month-report' user.id %}"
+                               class="btn px-15 btn-primary">
+                                <i class="las la-plus fs-16"></i>Місячний звіт</a>
+                            <br>
 
-                            <img class=" me-20 rounded-circle wh-80 bg-opacity-primary  "
-                                src="{% static 'img/author/profile.png' %}" alt="Generic placeholder image">
-                            <div class="media-body d-xl-flex users-list-body">
-                                <div class="flex-1 pe-xl-30 users-list-body__title">
-                                    <h6 class="mt-0 fw-500">{{tutor.user.get_full_name}}</h6>
 
-                                    <div class="users-list-body__bottom">
-                                        <span><span class="fw-600">Успішність:</span> -% </span>
-                                        <span class="ms-15"><span class="fw-600">Конверсія </span> -% </span>
+                            <a href="{% url 'logika_teachers:create-teacher' %}" class="btn px-15 btn-primary">
+                                <i class="las la-plus fs-16"></i>Створити викладача</a>
+                            <br>
+
+                            <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
+                                <i class="las la-plus fs-16"></i>Звіт по роботі</a>
+                            <br>
+
+
+                        </div>
+                        {% for teacher in teachers %}
+                            <div class="row">
+                                <div class="col-md-6 col-sm-12 mb-25">
+                                    <div class="media  py-30  ps-30 pe-20 bg-white radius-xl users-list ">
+
+                                        <img class=" me-20 rounded-circle wh-80 bg-opacity-primary  "
+                                             src="{% static 'img/author/profile.png' %}"
+                                             alt="Generic placeholder image">
+                                        <div class="media-body d-xl-flex users-list-body">
+                                            <div class="flex-1 pe-xl-30 users-list-body__title">
+                                                <h6 class="mt-0 fw-500">{{ teacher.user.get_full_name }}</h6>
+                                                <!--                                    <span>Graphic Designer/ UI &amp; UX </span>-->
+                                                {% for feedback in feedbacks %}
+                                                    {% if feedback.teacher == teacher %}
+                                                        <p class="mb-0">Остання форма ЗЗ: Форма
+                                                            від {{ feedback.created_at }}</p>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <div class="users-list-body__bottom">
+                                                    <span><span class="fw-600">Успішність:</span> -% </span>
+                                                    <span class="ms-15"><span
+                                                            class="fw-600">Конверсія </span> -% </span>
+                                                </div>
+                                            </div>
+                                            <div class="users-list__button mt-xl-0 mt-15">
+                                                <a href="{% url 'logika_teachers:teacher-profile' teacher.id %}">
+                                                    <button
+                                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
+                                                        переглянути профіль
+                                                    </button>
+                                                </a>
+                                                <a href="{% url 'logika_teachers:teacher-performance' teacher.id %}">
+                                                    <button
+                                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
+                                                        підрахунок успішності
+                                                    </button>
+                                                </a>
+                                                {% for feedback in feedbacks %}
+                                                    {% if feedback.teacher == teacher %}
+                                                        <a href="{% url 'logika_teachers:view-forms' feedback.id %}">
+                                                            <button type="button"
+                                                                    class="border text-capitalize px-25 color-gray transparent shadow2 follow my-xl-0 radius-md">
+                                                                остання форма
+                                                            </button>
+                                                        </a>
+
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <button type="button" class="btn btn-primary" data-toggle="modal"
+                                                        data-target="#exampleModal{{ teacher.id }}">
+                                                    Відв`язати викладача
+                                                </button>
+
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="exampleModal{{ teacher.id }}" tabindex="-1" role="dialog"
+                                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="exampleModalLabel">Відв'язка викладача</h5>
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                        aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Ви впевнені, що ви бажаєте відв'язати від себе викладача {{ teacher.user.get_full_name }}?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                        data-dismiss="modal">Відмінити
+                                                                </button>
+                                                                <a href="{% url 'logika_teachers:unsub-teacher' teacher.id %}">
+                                                                    <button type="button" class="btn btn-primary">Підтвердити
+                                                                    </button>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="users-list__button mt-xl-0 mt-15">
-                                    <a href="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}">
-                                        <button
-                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
-                                            переглянути місячний звіт
-                                        </button>
-                                    </a>
+                            </div>
+                        {% endfor %}
+                        <!-- Button trigger modal -->
 
+                    {% elif user_role == "regional_tutor" %}
+                        <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
+                            <i class="las la-plus fs-16"></i>Звіт роботи тьюторів</a>
+                        <br>
+                        {% for tutor in tutors %}
+                            <div class="row">
+                                <div class="col-md-6 col-sm-12 mb-25">
+                                    <div class="media  py-30  ps-30 pe-20 bg-white radius-xl users-list ">
+
+                                        <img class=" me-20 rounded-circle wh-80 bg-opacity-primary  "
+                                             src="{% static 'img/author/profile.png' %}"
+                                             alt="Generic placeholder image">
+                                        <div class="media-body d-xl-flex users-list-body">
+                                            <div class="flex-1 pe-xl-30 users-list-body__title">
+                                                <h6 class="mt-0 fw-500">{{ tutor.user.get_full_name }}</h6>
+
+                                                <div class="users-list-body__bottom">
+                                                    <span><span class="fw-600">Успішність:</span> -% </span>
+                                                    <span class="ms-15"><span
+                                                            class="fw-600">Конверсія </span> -% </span>
+                                                </div>
+                                            </div>
+                                            <div class="users-list__button mt-xl-0 mt-15">
+                                                <a href="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}">
+                                                    <button
+                                                            class="btn btn-primary btn-default btn-squared text-capitalize px-20 mb-10 global-shadow">
+                                                        переглянути місячний звіт
+                                                    </button>
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
-                {% endfor %}
-                {%endif%}
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

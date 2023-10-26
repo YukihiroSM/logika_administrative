@@ -626,3 +626,17 @@ def tutor_results_report(request):
             },
         )
     return render(request, "logika_teachers/weekly_tutors_result.html")
+
+
+@login_required
+def unsub_teacher(request, teacher_id):
+    current_user = request.user
+    user_role = get_user_role(current_user)
+    if not user_role == "tutor":
+        return render(request, "error_403.html")
+
+    tutor_profile = TutorProfile.objects.get(user=current_user)
+    teacher_profile = TeacherProfile.objects.get(id=teacher_id)
+    teacher_profile.related_tutors.remove(tutor_profile)
+
+    return redirect("logika_general:index")
