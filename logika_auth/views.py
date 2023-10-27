@@ -94,12 +94,13 @@ def auth_user(request):
     first_name = request_data_GET.get("first_name")[0]
     last_name = request_data_GET.get("last_name")[0]
     token = request_data_GET.get("token")[0]
-    user_obj = User.objects.filter(first_name=first_name, last_name=last_name).first()
+    user_obj = User.objects.filter(first_name=first_name, last_name=last_name, username__contains=first_name.strip()).first()
     user_role = get_user_role(user_obj)
-    if not user_obj.is_active:
-        return JsonResponse(
-                    {"status": "False", "details": "User is out of activity."})
+    
     if user_obj:
+        if not user_obj.is_active:
+            return JsonResponse(
+                        {"status": "False", "details": "User is out of activity."})
         username = user_obj.username
         profile = None
         if user_role == "tutor":
