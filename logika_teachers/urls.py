@@ -4,6 +4,7 @@ from logika_teachers import views
 urlpatterns = [
     path("teacher-profile/<int:id>/", views.teacher_profile, name="teacher-profile"),
     path("create-teacher/", views.create_teacher, name="create-teacher"),
+    path("edit-teacher-profile/<int:id>/", views.edit_teacher_profile, name="edit-teacher-profile"),
     path(
         "teacher-feedback/<int:teacher_id>/<int:tutor_id>/",
         views.teacher_feedback_form,

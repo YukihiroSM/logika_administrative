@@ -14,6 +14,7 @@
                     <div class="breadcrumb-main">
                         <h4 class="text-capitalize breadcrumb-title">Головна</h4>
                         <h4 class="text-capitalize breadcrumb-title">Вітаю, {{ user.get_full_name }}</h4>
+                        <h4><a href="{% url 'logika_teachers:edit-teacher-profile' user.teacher_profile.id %}">Редагувати профіль</a></h4>
                     </div>
                 </div>
                 <div class="col-12">
