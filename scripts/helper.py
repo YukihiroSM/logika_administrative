@@ -14,6 +14,8 @@ session = get_authenticated_session()
 start_date = "2023-09-25"
 end_date = "2023-09-30"
 updated_students_count = 0
+
+
 def process_one_group(group_id):
     print(f"Starting processing {str(group_id)}" + " " + str(datetime.datetime.now()))
     group_data_url = f"https://lms.logikaschool.com/api/v1/group/{group_id}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
@@ -32,7 +34,9 @@ def process_one_group(group_id):
                         redirected_student_resp = session.get(redirected_student_link)
                         if redirected_student_resp.status_code == 200:
                             print("Inside redirected student")
-                            redirected_student_data = redirected_student_resp.json()["data"]
+                            redirected_student_data = redirected_student_resp.json()[
+                                "data"
+                            ]
                             student_groups = redirected_student_data["groups"]
                             for number, group in enumerate(student_groups):
                                 if group["id"] == group_id:
@@ -44,7 +48,9 @@ def process_one_group(group_id):
                                 next_group_resp = session.get(next_group_link)
                                 if next_group_resp.status_code == 200:
                                     print(f"Inside next group {next_group_id}")
-                                    next_group_type = next_group_resp.json()["data"]["type"]["value"]
+                                    next_group_type = next_group_resp.json()["data"][
+                                        "type"
+                                    ]["value"]
                                     print(next_group_type)
                                     if next_group_type != "regular":
                                         continue
@@ -55,35 +61,59 @@ def process_one_group(group_id):
                                     print("Getting attendance")
                                     att_json = attendance_resp.json()
                                     try:
-                                        student_attendance_data = attendance_resp.json()["data"][0]["attendance"]
+                                        student_attendance_data = (
+                                            attendance_resp.json()["data"][0][
+                                                "attendance"
+                                            ]
+                                        )
                                     except IndexError:
                                         student_attendance_data = []
                                         print("Attendance is empty")
                                     for lesson in student_attendance_data:
                                         lesson_datetime = lesson["start_time_formatted"]
                                         date_format = "%d.%m.%y %H:%M"
-                                        date_object = datetime.datetime.strptime(lesson_datetime[3:], date_format)
-                                        start_date_time = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-                                        end_date_time = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-                                        if start_date_time <= date_object <= end_date_time:
+                                        date_object = datetime.datetime.strptime(
+                                            lesson_datetime[3:], date_format
+                                        )
+                                        start_date_time = datetime.datetime.strptime(
+                                            start_date, "%Y-%m-%d"
+                                        )
+                                        end_date_time = datetime.datetime.strptime(
+                                            end_date, "%Y-%m-%d"
+                                        )
+                                        if (
+                                            start_date_time
+                                            <= date_object
+                                            <= end_date_time
+                                        ):
                                             student_status = lesson["status"]
                                             if student_status == "present":
-                                                student_report = StudentReport.objects.filter(student_lms_id=student["id"], start_date=start_date, end_date=end_date).first()
+                                                student_report = (
+                                                    StudentReport.objects.filter(
+                                                        student_lms_id=student["id"],
+                                                        start_date=start_date,
+                                                        end_date=end_date,
+                                                    ).first()
+                                                )
                                                 if student_report:
                                                     student_report.attended_mc = 1
                                                     student_report.save()
                                                     global updated_students_count
                                                     updated_students_count += 1
                                                 else:
-                                                    print(f"NO STUDENT REPORT FOR {student['id']}")
-
-
+                                                    print(
+                                                        f"NO STUDENT REPORT FOR {student['id']}"
+                                                    )
 
 
 def parse_students_in_groups(group_ids):
     i = 1
     for group_id in group_ids:
-        print(f"Processing {str(group_id)} ({str(i)}/{str(len(group_ids))})" + " " + str(datetime.datetime.now()))
+        print(
+            f"Processing {str(group_id)} ({str(i)}/{str(len(group_ids))})"
+            + " "
+            + str(datetime.datetime.now())
+        )
         process_one_group(group_id)
         i += 1
 
@@ -96,39 +126,51 @@ def parse_in_threads(group_ids):
     args = []
     for i in range(0, num_of_threads):
         if i == num_of_threads - 1:
-            arg = group_ids[i * separator:]
+            arg = group_ids[i * separator :]
         else:
-            arg = group_ids[i * separator:(i + 1) * separator]
+            arg = group_ids[i * separator : (i + 1) * separator]
         args.append(arg)
     with ThreadPoolExecutor(max_workers=num_of_threads) as executor:
         executor.map(parse_students_in_groups, args)
-
 
 
 def run():
     month = "Лютий"
     collect_groups_link = f"https://lms.logikaschool.com/group/default/schedule?GroupLessonSearch%5Bstart_time%5D={start_date}+-+{end_date}&GroupLessonSearch%5Bgroup_id%5D=&GroupLessonSearch%5Bgroup.title%5D=&GroupLessonSearch%5Bgroup.venue%5D=&GroupLessonSearch%5Bgroup.active_student_count%5D=&GroupLessonSearch%5Bteacher.name%5D=&GroupLessonSearch%5Bgroup.curator.name%5D=&GroupLessonSearch%5Bgroup.type%5D=&GroupLessonSearch%5Bgroup.type%5D%5B%5D=masterclass&GroupLessonSearch%5Bgroup.course.name%5D=&GroupLessonSearch%5Bgroup.branch.title%5D=&export=true&name=default&exportType=csv"
     response = session.get(collect_groups_link)
-    output_file_path = Path(BASE_DIR, "lms_reports", month, f"{start_date}_{end_date}", "schedule_cl.csv")
+    output_file_path = Path(
+        BASE_DIR, "lms_reports", month, f"{start_date}_{end_date}", "schedule_cl.csv"
+    )
     with open(output_file_path, "w", encoding="UTF-8") as file_obj:
         for line in response.text:
             file_obj.write(line)
     print("Got groups from lms. Written to file." + " " + str(datetime.datetime.now()))
     mk_df = pd.read_csv(output_file_path, delimiter=";")
-    mk_df = mk_df.drop(["Время след. урока", "S Статус урока", "Уч-ки",
-                        " Отчисленные и переведенные", "Тип группы",
-                                                                "Присутствовали"], axis=1)
-    mk_df.rename(columns={
-        'Group ID': 'group_id',
-        'Название группы': 'group_name',
-        'Площадка': 'group_location',
-        'Преп. на занятии': 'group_teacher',
-        'Куратор': 'client_manager',
-        'Курс': 'course',
-        'Офис': 'region'
-    }, inplace=True)
+    mk_df = mk_df.drop(
+        [
+            "Время след. урока",
+            "S Статус урока",
+            "Уч-ки",
+            " Отчисленные и переведенные",
+            "Тип группы",
+            "Присутствовали",
+        ],
+        axis=1,
+    )
+    mk_df.rename(
+        columns={
+            "Group ID": "group_id",
+            "Название группы": "group_name",
+            "Площадка": "group_location",
+            "Преп. на занятии": "group_teacher",
+            "Куратор": "client_manager",
+            "Курс": "course",
+            "Офис": "region",
+        },
+        inplace=True,
+    )
     mk_df = mk_df.where(pd.notnull(mk_df), None)
     mk_df.replace("", None, inplace=True)
-    group_ids = list(set(mk_df['group_id'].tolist()))
+    group_ids = list(set(mk_df["group_id"].tolist()))
     parse_students_in_groups(group_ids)
     print(f"Total updated students_count: {updated_students_count}")

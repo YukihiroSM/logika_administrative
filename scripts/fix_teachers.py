@@ -1,6 +1,7 @@
 from logika_statistics.models import Group
 from utils.lms_authentication import get_authenticated_session
 
+
 def run():
     groups = Group.objects.filter(teacher_id=None).exclude(teacher_name=None).all()
     session = get_authenticated_session()

@@ -1,5 +1,9 @@
 from logika_teachers.models import TeacherProfile, TutorProfile, RegionalTutorProfile
-from logika_general.models import RegionalManagerProfile, TerritorialManagerProfile, ClientManagerProfile
+from logika_general.models import (
+    RegionalManagerProfile,
+    TerritorialManagerProfile,
+    ClientManagerProfile,
+)
 
 
 def get_user_role(user):

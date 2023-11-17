@@ -1,5 +1,12 @@
 from django.contrib import admin
-from logika_general.models import Group, Location, Notification, ClientManagerProfile, TerritorialManagerProfile, RegionalManagerProfile
+from logika_general.models import (
+    Group,
+    Location,
+    Notification,
+    ClientManagerProfile,
+    TerritorialManagerProfile,
+    RegionalManagerProfile,
+)
 
 admin.site.site_header = "Logika Administrative"
 admin.site.site_title = "Logika Administrative"

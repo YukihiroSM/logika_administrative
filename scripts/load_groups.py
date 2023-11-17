@@ -10,8 +10,8 @@ groups_file_path = Path(BASE_DIR, "lms_reports", "Группы.csv")
 
 
 def run():
-    with open(groups_file_path, 'r', encoding="UTF-8") as file:
-        reader = csv.reader(file, delimiter=';')
+    with open(groups_file_path, "r", encoding="UTF-8") as file:
+        reader = csv.reader(file, delimiter=";")
         next(reader)
 
         for row in reader:
@@ -35,14 +35,16 @@ def run():
                 global_group.course = course
                 global_group.full_course = row[7]
             else:
-                global_group = GlobalGroup(lms_id=row[0],
-                                           group_name=row[1],
-                                           location=location,
-                                           teacher=row[3],
-                                           client_manager=row[4],
-                                           group_type=row[5],
-                                           status=row[6],
-                                           region=row[8],
-                                           course=course,
-                                           full_course=row[7])
+                global_group = GlobalGroup(
+                    lms_id=row[0],
+                    group_name=row[1],
+                    location=location,
+                    teacher=row[3],
+                    client_manager=row[4],
+                    group_type=row[5],
+                    status=row[6],
+                    region=row[8],
+                    course=course,
+                    full_course=row[7],
+                )
             global_group.save()

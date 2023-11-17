@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from logika_teachers.forms import (
     TeacherCreateForm,
+    TeacherEditProfileForm,
     TeacherFeedbackForm,
     TeacherCommentForm,
     TeacherPerformanceForm,
@@ -49,7 +50,7 @@ def teacher_profile(request, id):
         teacher_tutors = teacher.related_tutors.all()
         user_profile = RegionalTutorProfile.objects.get(user=request.user)
         rt_tutors = user_profile.related_tutors.all()
-        tutor=None
+        tutor = None
         for one_tutor in rt_tutors:
             if one_tutor in teacher_tutors:
                 tutor_profile = one_tutor
@@ -99,6 +100,45 @@ def teacher_profile(request, id):
             "lesson_comments": lesson_comments,
             "all_comments": all_comments,
             "recent_feedback_churn": recent_predicted_churns,
+        },
+    )
+
+
+@login_required
+def edit_teacher_profile(request, id):
+    teacher_profile = TeacherProfile.objects.filter(id=id).first()
+
+    if request.method == "POST":
+        form = TeacherEditProfileForm(request.POST)
+        if form.is_valid():
+            teacher_profile.user.first_name = form.cleaned_data["first_name"]
+            teacher_profile.user.last_name = form.cleaned_data["last_name"]
+            teacher_profile.phone_number = form.cleaned_data["phone_number"]
+            teacher_profile.lms_id = form.cleaned_data["lms_id"]
+            teacher_profile.telegram_nickname = form.cleaned_data["telegram_nickname"]
+            teacher_profile.one_c_ids = form.cleaned_data["one_c_ids"]
+            teacher_profile.user.save()
+            teacher_profile.save()
+            return redirect("logika_teachers:teacher-profile", id=id)
+    else:
+        initial_data = {
+            "teacher_id": id,
+            "first_name": teacher_profile.user.first_name,
+            "last_name": teacher_profile.user.first_name,
+            "phone_number": teacher_profile.phone_number,
+            "lms_id": teacher_profile.lms_id,
+            "telegram_nickname": teacher_profile.telegram_nickname,
+            "one_c_ids": teacher_profile.one_c_ids,
+        }
+        form = TeacherEditProfileForm(initial=initial_data)
+
+    return render(
+        request,
+        "logika_teachers/edit_teacher_profile.html",
+        {
+            "form": form,
+            "teacher_id": id,
+            "teacher_profile": teacher_profile,
         },
     )
 
@@ -462,7 +502,11 @@ def teacher_performance(request, teacher_id):
                     "teacher_groups": get_teacher_groups(teacher_id),
                     "teacher": teacher,
                     "zero_performance_lessons": zero_performance_lessons,
-                    "form_data": {"month": month, "locations": locations, "chosen_groups": teacher_groups},
+                    "form_data": {
+                        "month": month,
+                        "locations": locations,
+                        "chosen_groups": teacher_groups,
+                    },
                 },
             )
     return render(
@@ -613,7 +657,7 @@ def tutor_results_report(request):
             data[tutor]["total"] = {
                 "total_calls": call_summ,
                 "total_lessons": lesson_summ,
-                "total_teachers": len(data[tutor])
+                "total_teachers": len(data[tutor]),
             }
 
         return render(
