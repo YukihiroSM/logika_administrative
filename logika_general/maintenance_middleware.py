@@ -8,7 +8,7 @@ class MaintenanceMiddleware:
 
     def __call__(self, request):
         if settings.MAINTENANCE_MODE:  # Check your maintenance mode flag here
-            return render(request, 'maintenance.html', status=503)
+            return render(request, "maintenance.html", status=503)
 
         response = self.get_response(request)
         return response

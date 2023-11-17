@@ -8,9 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
 from django.urls import reverse
-from .forms import (
-    ReportDateForm
-)
+from .forms import ReportDateForm
 import datetime
 import library
 from .models import (
@@ -30,7 +28,11 @@ from .utils import (
 from logika_administrative.settings import BASE_DIR
 from utils.lms_authentication import get_authenticated_session
 from utils.get_user_role import get_user_role
-from logika_general.models import ClientManagerProfile, RegionalManagerProfile, TerritorialManagerProfile
+from logika_general.models import (
+    ClientManagerProfile,
+    RegionalManagerProfile,
+    TerritorialManagerProfile,
+)
 
 
 def is_member(user, group_name):
@@ -202,21 +204,34 @@ def programming_report_updated(request):
         )
 
     if user_role == "client_manager":
-        client_manager_profile = ClientManagerProfile.objects.filter(user=request.user).first()
+        client_manager_profile = ClientManagerProfile.objects.filter(
+            user=request.user
+        ).first()
         client_manager_name = f"{request.user.last_name} {request.user.first_name}"
         related_tms = client_manager_profile.related_tms.all()
-        territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms]
-        client_manager_locations = Location.objects.filter(client_manager=client_manager_name).all().values_list("lms_location_name", flat=True)
+        territorial_managers = [
+            f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms
+        ]
+        client_manager_locations = (
+            Location.objects.filter(client_manager=client_manager_name)
+            .all()
+            .values_list("lms_location_name", flat=True)
+        )
 
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, location_name__in=client_manager_locations)
+            LocationReport.objects.filter(
+                start_date=report_start,
+                end_date=report_end,
+                location_name__in=client_manager_locations,
+            )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
         client_manager_reports = (
             ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end,
-                client_manager=client_manager_name
+                start_date=report_start,
+                end_date=report_end,
+                client_manager=client_manager_name,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
@@ -224,44 +239,64 @@ def programming_report_updated(request):
     if user_role == "territorial_manager":
         territorial_managers = [f"{request.user.last_name} {request.user.first_name}"]
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers)
+            LocationReport.objects.filter(
+                start_date=report_start,
+                end_date=report_end,
+                territorial_manager__in=territorial_managers,
+            )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
         client_manager_reports = (
             ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end,
-                territorial_manager__in=territorial_managers
+                start_date=report_start,
+                end_date=report_end,
+                territorial_manager__in=territorial_managers,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
     if user_role == "regional_manager":
         regional_manager_profile = RegionalManagerProfile.objects.get(user=request.user)
-        territorial_managers_objects = regional_manager_profile.territorial_managers.all()
-        territorial_managers = [f"{tm.user.last_name} {tm.user.first_name}" for tm in territorial_managers_objects]
+        territorial_managers_objects = (
+            regional_manager_profile.territorial_managers.all()
+        )
+        territorial_managers = [
+            f"{tm.user.last_name} {tm.user.first_name}"
+            for tm in territorial_managers_objects
+        ]
 
         location_reports = (
-            LocationReport.objects.filter(start_date=report_start, end_date=report_end, territorial_manager__in=territorial_managers, regional_manager=f"{request.user.last_name} {request.user.first_name}")
+            LocationReport.objects.filter(
+                start_date=report_start,
+                end_date=report_end,
+                territorial_manager__in=territorial_managers,
+                regional_manager=f"{request.user.last_name} {request.user.first_name}",
+            )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
         client_manager_reports = (
             ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end,
-                territorial_manager__in=territorial_managers, regional_manager=f"{request.user.last_name} {request.user.first_name}"
+                start_date=report_start,
+                end_date=report_end,
+                territorial_manager__in=territorial_managers,
+                regional_manager=f"{request.user.last_name} {request.user.first_name}",
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-
 
     managers = {}
     totals_tm = {}
     totals_rm = {}
     ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
-        if report.total_attended == 0 and report.total_enrolled == 0 and report.total_payments == 0:
+        if (
+            report.total_attended == 0
+            and report.total_enrolled == 0
+            and report.total_payments == 0
+        ):
             continue
         if (
             report.territorial_manager is not None
@@ -330,7 +365,6 @@ def get_rm_tm_by_tutor(tutor):
     if not location:
         location = Location.objects.filter(tutor_english=tutor).first()
     return location.regional_manager, location.territorial_manager
-
 
 
 def get_rm_by_tm(tm):

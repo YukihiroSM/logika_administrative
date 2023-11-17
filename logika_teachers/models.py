@@ -7,9 +7,7 @@ import uuid
 class TeacherProfile(models.Model):
     lms_id = models.CharField(max_length=16)
     user = models.ForeignKey(
-        User,
-        on_delete=models.DO_NOTHING,
-        related_name="teacher_profile"
+        User, on_delete=models.DO_NOTHING, related_name="teacher_profile"
     )
     related_tutors = models.ManyToManyField(
         "TutorProfile", related_name="related_teachers"

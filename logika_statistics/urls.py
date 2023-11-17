@@ -7,7 +7,7 @@ from django.urls import path, re_path
 from logika_statistics import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('programming_updated', views.programming_report_updated, name='home'),
+    path("", views.home, name="home"),
+    path("programming_updated", views.programming_report_updated, name="home"),
 ]
 app_name = "logika_statistics"

@@ -10,7 +10,7 @@ import json
 def run():
     logger = logging.getLogger(__name__)
     timelines = [("2023-10-01", "2023-10-22")]
-    # 
+    #
     #
     #
 
@@ -19,14 +19,18 @@ def run():
     month = "Лютий"
     # management.call_command("update_locations")
     for timeline in timelines:
-        lms_reports_path = Path(BASE_DIR, "lms_reports",
-                                month, f"{timeline[0]}_{timeline[1]}")
+        lms_reports_path = Path(
+            BASE_DIR, "lms_reports", month, f"{timeline[0]}_{timeline[1]}"
+        )
         one_c_reports_path = Path(
-            BASE_DIR, "1c_reports", month, f"{timeline[0]}_{timeline[1]}")
+            BASE_DIR, "1c_reports", month, f"{timeline[0]}_{timeline[1]}"
+        )
         lms_reports_path.mkdir(parents=True, exist_ok=True)
         one_c_reports_path.mkdir(parents=True, exist_ok=True)
         logger.debug(
-            f"STARTING GETTING REPORT FOR {str(timeline)}" + str(datetime.datetime.now()))
+            f"STARTING GETTING REPORT FOR {str(timeline)}"
+            + str(datetime.datetime.now())
+        )
         os.environ["start_date"] = timeline[0]
         os.environ["end_date"] = timeline[1]
         os.environ["month"] = month

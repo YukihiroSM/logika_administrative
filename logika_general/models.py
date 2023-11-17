@@ -53,7 +53,9 @@ class ClientManagerProfile(models.Model):
     auth_token = models.TextField(null=True, blank=True)
     login_timestamp = models.DateTimeField(null=True, default=None)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    related_tms = models.ManyToManyField("TerritorialManagerProfile", related_name="client_managers")
+    related_tms = models.ManyToManyField(
+        "TerritorialManagerProfile", related_name="client_managers"
+    )
 
     class Meta:
         ordering = ["user__date_joined"]
@@ -67,7 +69,9 @@ class TerritorialManagerProfile(models.Model):
     auth_token = models.TextField(null=True, blank=True)
     login_timestamp = models.DateTimeField(null=True, default=None)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    related_rms = models.ManyToManyField("RegionalManagerProfile", related_name="territorial_managers")
+    related_rms = models.ManyToManyField(
+        "RegionalManagerProfile", related_name="territorial_managers"
+    )
 
     class Meta:
         ordering = ["user__date_joined"]
