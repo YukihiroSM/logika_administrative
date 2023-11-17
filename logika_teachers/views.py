@@ -106,7 +106,6 @@ def teacher_profile(request, id):
 
 @login_required
 def edit_teacher_profile(request, id):
-    user_role = get_user_role(request.user)
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
 
     if request.method == "POST":
@@ -120,11 +119,7 @@ def edit_teacher_profile(request, id):
             teacher_profile.one_c_ids = form.cleaned_data["one_c_ids"]
             teacher_profile.user.save()
             teacher_profile.save()
-            return (
-                redirect("logika_teachers:teacher-profile", id=id)
-                if user_role in ("tutor", "regional_tutor")
-                else redirect("logika_general:index")
-            )
+            return redirect("logika_teachers:teacher-profile", id=id)
     else:
         initial_data = {
             "teacher_id": id,
