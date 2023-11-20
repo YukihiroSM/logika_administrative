@@ -165,3 +165,6 @@ staticfiles/
 fixture.json
 groups.json
 session.pickle
+
+#VS Code
+.vscode/
