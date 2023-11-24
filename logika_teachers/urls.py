@@ -2,8 +2,16 @@ from django.urls import path
 from logika_teachers import views
 
 urlpatterns = [
-    path("teacher-profile/<int:id>/", views.teacher_profile, name="teacher-profile"),
-    path("create-teacher/", views.create_teacher, name="create-teacher"),
+    path(
+        "teacher-profile/<int:id>/",
+        views.teacher_profile,
+        name="teacher-profile"
+    ),
+    path(
+        "create-teacher/",
+        views.create_teacher,
+        name="create-teacher"
+    ),
     path(
         "edit-teacher-profile/<int:id>/",
         views.edit_teacher_profile,
@@ -14,8 +22,16 @@ urlpatterns = [
         views.teacher_feedback_form,
         name="teacher-feedback",
     ),
-    path("view-forms/<int:feedback_id>/", views.view_forms, name="view-forms"),
-    path("create-comment/", views.create_comment, name="create-comment"),
+    path(
+        "view-forms/<int:feedback_id>/",
+        views.view_forms,
+        name="view-forms"
+    ),
+    path(
+        "create-comment/",
+        views.create_comment,
+        name="create-comment"
+    ),
     path(
         "refresh-credentials/<int:user_id>/",
         views.refresh_credentials,
@@ -26,7 +42,11 @@ urlpatterns = [
         views.teacher_performance,
         name="teacher-performance",
     ),
-    path("tutor-results/", views.tutor_results, name="tutor-results"),
+    path(
+        "tutor-results/",
+        views.tutor_results,
+        name="tutor-results"
+    ),
     path(
         "tutor-month-report/<int:user_id>",
         views.tutor_month_report,
@@ -38,9 +58,20 @@ urlpatterns = [
         name="add-performance-to-report",
     ),
     path(
-        "tutor-results-report", views.tutor_results_report, name="tutor-results-report"
+        "tutor-results-report/",
+        views.tutor_results_report,
+        name="tutor-results-report"
     ),
-    path("unsub-teacher/<int:teacher_id>", views.unsub_teacher, name="unsub-teacher"),
+    path(
+        "unsub-teacher/<int:teacher_id>",
+        views.unsub_teacher,
+        name="unsub-teacher"
+    ),
+    path(
+        "estimated-fall-off/",
+        views.estimated_fall_off,
+        name="estimated-fall-off"
+    )
 ]
 
 app_name = "logika_teachers"

@@ -684,3 +684,14 @@ def unsub_teacher(request, teacher_id):
     teacher_profile.related_tutors.remove(tutor_profile)
 
     return redirect("logika_general:index")
+
+
+@login_required
+def estimated_fall_off(request):
+    current_user = request.user
+    user_role = get_user_role(current_user)
+    if not user_role == "regional_tutor":
+        return render(request, "error_403.html")
+    
+    
+    return render(request, "logika_teachers/estimated_fall_off.html")
