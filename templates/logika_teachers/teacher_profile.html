@@ -82,6 +82,13 @@
                             </div>
                         </div>
                         <br>
+                        <a href="{% url 'logika_teachers:teacher-performance' teacher_profile.id %}">
+                            <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
+                                <i class="fas fa-chart-line"></i>
+                                Підрахунок успішності
+                            </button>
+                        </a>
+                        <br>
                         <a href="{% url 'logika_teachers:refresh-credentials' teacher_profile.user.id %}">
                             <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
                                 <i class="uil uil-refresh"></i>
