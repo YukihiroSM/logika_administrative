@@ -1,18 +1,20 @@
 {% load i18n %} {% load static %}
 <div class="sidebar__menu-group">
   <ul class="sidebar_nav">
-    <a href="/programming_updated">
-      <span class="nav-icon uil uil-create-dashboard"></span>
-      <span class="menu-text">Звіт програмування</span>
-      <span class="toggle-icon"></span>
-    </a>
-     {% if user_role == "tutor" %}
+    {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "client_manager" or user_role == "admin"%}
+      <a href="/programming_updated">
+        <span class="nav-icon uil uil-create-dashboard"></span>
+        <span class="menu-text">Звіт програмування</span>
+        <span class="toggle-icon"></span>
+      </a>
+    {% endif %}
+    {% comment %} {% if user_role == "tutor" %}
     <a href="">
       <span class="nav-icon uil uil-create-dashboard"></span>
       <span class="menu-text">Мій профіль</span>
       <span class="toggle-icon"></span>
     </a>
-    {% endif %}
+    {% endif %} {% endcomment %}
     <!--            <ul>-->
     <!--                <li class="{% if path_name == 'demo_one' %}active{% endif %}">-->
     <!--                    <a href="#">{% translate "dashboard-demo-one" %}</a>-->
