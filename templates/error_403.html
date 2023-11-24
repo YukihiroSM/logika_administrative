@@ -1,0 +1,21 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Error 403 {% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="min-vh-100 content-center">
+                <div class="maintenance-page text-center">
+                    <img src="{% static 'img/svg/maintenance.svg' %}" alt="maintenance" class="svg" />
+                    <h5 class="maintenance-page__title">403 Вибачте! Доступ заборонено</h5>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
