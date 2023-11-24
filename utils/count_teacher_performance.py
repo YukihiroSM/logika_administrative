@@ -53,10 +53,13 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
                             zero_performance_lessons[group.lms_id] = []
                         lesson_id = lesson.get("id")
                         lesson_title = lesson["title"]
-                        lesson_report = {"lesson_id": lesson_id, "lesson_title": lesson_title}
+                        lesson_report = {
+                            "lesson_id": lesson_id,
+                            "lesson_title": lesson_title,
+                        }
                         if lesson_report not in zero_performance_lessons[group.lms_id]:
                             zero_performance_lessons[group.lms_id].append(lesson_report)
-                        
+
                     else:
                         month_performance.append(perf)
         results[group.lms_id] = month_performance

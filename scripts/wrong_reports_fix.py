@@ -10,7 +10,12 @@ from utils.lms_authentication import get_authenticated_session
 
 
 def run():
-    wrong_reports = StudentReport.objects.filter(payment=1, territorial_manager__isnull=True, start_date__in=("2023-10-01",), business="programming").all()
+    wrong_reports = StudentReport.objects.filter(
+        payment=1,
+        territorial_manager__isnull=True,
+        start_date__in=("2023-10-01",),
+        business="programming",
+    ).all()
     session = get_authenticated_session()
     for report in wrong_reports:
         student_id = report.student_lms_id
@@ -18,22 +23,30 @@ def run():
         student_details_resp = session.get(student_details_url)
         if student_details_resp.status_code == 200:
             student_groups = student_details_resp.json()["data"]["groups"][::-1]
-            for group in student_groups: 
+            for group in student_groups:
                 if "МК" in group["title"]:
-                    group_details_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch")
+                    group_details_resp = session.get(
+                        f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
+                    )
                     if group_details_resp.status_code == 200:
                         group_data = group_details_resp.json()["data"]
                         location = group_data["venue"].get("title")
-                        location_obj = Location.objects.filter(lms_location_name=location).first()
+                        location_obj = Location.objects.filter(
+                            lms_location_name=location
+                        ).first()
                         if location_obj:
                             report.location = location
                             report.client_manager = location_obj.client_manager
-                            report.territorial_manager = location_obj.territorial_manager
+                            report.territorial_manager = (
+                                location_obj.territorial_manager
+                            )
                             report.regional_manager = location_obj.regional_manager
                             report.save()
                             break
             group = student_groups[0]
-            group_details_resp = session.get(f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch")
+            group_details_resp = session.get(
+                f"https://lms.logikaschool.com/api/v1/group/{group['id']}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
+            )
             if group_details_resp.status_code == 200:
                 group_data = group_details_resp.json()["data"]
                 location = group_data["venue"]
@@ -41,7 +54,9 @@ def run():
                     location = group_data["venue"].get("title")
                 else:
                     location = None
-                location_obj = Location.objects.filter(lms_location_name=location).first()
+                location_obj = Location.objects.filter(
+                    lms_location_name=location
+                ).first()
                 if location_obj:
                     report.location = location
                     report.client_manager = location_obj.client_manager
@@ -50,4 +65,3 @@ def run():
                     report.save()
                 else:
                     report.location = location
-                    
