@@ -8,8 +8,8 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.urls import reverse
 
 regions = [
@@ -180,10 +180,8 @@ class GlobalGroup(models.Model):
     full_course = models.CharField(max_length=512, default=None, null=True)
 
 
-businesses = [("programming", "programming"), ("english", "english")]
-
-
 class StudentReport(models.Model):
+    businesses = [("programming", "programming"), ("english", "english")]
     student_lms_id = models.CharField(max_length=16, null=True)
     student_first_name = models.CharField(max_length=128, null=True)
     student_last_name = models.CharField(max_length=128, null=True)
@@ -291,3 +289,21 @@ class TeacherReportNew(models.Model):
     total_enrolled = models.IntegerField()
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+
+
+class MasterClassRecord(models.Model):
+    BUSINESS_CHOICES = (
+        ("programming", "Програмування"),
+        ("english", "Англійська"),
+    )
+    student_lms_id = models.CharField(max_length=16)
+    student_lms_name = models.CharField(max_length=128)
+    mc_lms_id = models.CharField(max_length=16)
+    mc_date = models.DateField()
+    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES)
+    location = models.CharField(max_length=128)
+    teacher = models.CharField(max_length=128)
+    tutor = models.CharField(max_length=128)
+    client_manager = models.CharField(max_length=128)
+    territorial_manager = models.CharField(max_length=128)
+    regional_manager = models.CharField(max_length=128)

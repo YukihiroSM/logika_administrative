@@ -1,0 +1,97 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Локації {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-main">
+                    <div class="breadcrumb-action justify-content-center flex-wrap">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 mb-30">
+                <a href="{% url 'logika_statistics:create-location' %}">
+                    <button class="btn btn-primary">Створити локацію</button>
+                </a>
+                <br>
+                <table id="locations_table" class="display" style="width:100%">
+                    <thead>
+                    <tr>
+                        <th>Назва локації в БО</th>
+                        <th>Територіальний менеджер</th>
+                        <th>Регіональний менеджер</th>
+                        <th>Тьютор</th>
+                        <th>Тьютор англійської</th>
+                        <th class="actions">
+                            Дії
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for location in locations %}
+                    <tr>
+                        <td>{{location.lms_location_name}}</td>
+                        <td>{{location.territorial_manager}}</td>
+                        <td>{{location.regional_manager}}</td>
+                        <td>{{location.tutor}}</td>
+                        <td>{{location.tutor_english}}</td>
+                        <td>
+                            <a href="{% url 'logika_statistics:edit-location' location.id %}" class="edit">
+                                <button class="btn btn-primary">
+                                    <i class="uil uil-edit"></i> Редагувати
+                                </button>
+
+                            </a>
+
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#locationDelete{{location.id}}">
+                                <i class="uil uil-trash-alt"></i> Видалити
+                            </button>
+                            <!-- Location delete Modal -->
+                            <div class="modal fade" id="locationDelete{{location.id}}" tabindex="-1"
+                                 aria-labelledby="modalLabel{{location.id}}"
+                                 aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modalLabel{{location.id}}">Видалення
+                                                локації</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Ви точно хочете видалити локацію {{location.lms_location_name}}?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ні
+                                            </button>
+                                            <a href="{% url 'logika_statistics:delete-location' location.id %}">
+                                                <button type="button" class="btn btn-primary">Так, видалити</button>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

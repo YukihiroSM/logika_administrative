@@ -1,10 +1,3 @@
-from django.core import management
-from logika_administrative.settings import BASE_DIR
-import os
-import logging
-import datetime
-from pathlib import Path
-import json
 from logika_statistics.models import StudentReport, Location
 from utils.lms_authentication import get_authenticated_session
 
@@ -54,6 +47,11 @@ def run():
                     location = group_data["venue"].get("title")
                 else:
                     location = None
+                teacher = group_data.get("teacher")
+                if teacher:
+                    teacher = group_data["teacher"].get("id")
+                    report.teacher = teacher
+                    report.save()
                 location_obj = Location.objects.filter(
                     lms_location_name=location
                 ).first()
@@ -65,3 +63,4 @@ def run():
                     report.save()
                 else:
                     report.location = location
+                    report.save()

@@ -1,10 +1,4 @@
 import os
-import pickle
-from pathlib import Path
-
-import requests
-
-from logika_administrative.settings import BASE_DIR
 
 REGIONS = {
     "chernivtsi_region": {
@@ -301,18 +295,90 @@ COURSES_READABLE = {
 
 COURSES_IDS = {
     "programming": {
-        "python start": [2510, 2066, 1765, 1600, 1493, 853, 816, 796, 733, 706, 686, 683, 633, 410, 406, 361, 305, 277, 248],
-        "python pro": [2120, 2051, 1996, 1554, 1459, 854, 817, 783, 734, 405, 389, 2120],
-        "scratch": [810, 799, 582, 563, 468, 467, 466, 390, 385, ],
-        "gamedesign": [1962, 1948, 1602, 1601, 1371, 902, 901, 809, 707,  2299],
-        "graphdesign": [2078, 1995, 1543, 1484, 1387, ],
-        "websites": [1957, 1818, 1604, 1603, 797, 716,2298, 2602, 2597],
+        "python start": [
+            2510,
+            2066,
+            1765,
+            1600,
+            1493,
+            853,
+            816,
+            796,
+            733,
+            706,
+            686,
+            683,
+            633,
+            410,
+            406,
+            361,
+            305,
+            277,
+            248,
+        ],
+        "python pro": [
+            2120,
+            2051,
+            1996,
+            1554,
+            1459,
+            854,
+            817,
+            783,
+            734,
+            405,
+            389,
+            2120,
+        ],
+        "scratch": [
+            810,
+            799,
+            582,
+            563,
+            468,
+            467,
+            466,
+            390,
+            385,
+        ],
+        "gamedesign": [1962, 1948, 1602, 1601, 1371, 902, 901, 809, 707, 2299],
+        "graphdesign": [
+            2078,
+            1995,
+            1543,
+            1484,
+            1387,
+        ],
+        "websites": [1957, 1818, 1604, 1603, 797, 716, 2298, 2602, 2597],
         "comp_gram": [1398, 897, 896, 777, 729, 606, 603, 465, 417, 408, 2503],
-        "video_blogging": [1571, 1570, 1386, ],
-        "unity": [1710, 1688, 1686, ]
+        "video_blogging": [
+            1571,
+            1570,
+            1386,
+        ],
+        "unity": [
+            1710,
+            1688,
+            1686,
+        ],
     },
-    "english": [2184, 2069, 2054, 1865, 1864, 1833, 1825, 1809, 1805, 2333, 2292, 2184, 2574,
-                2631, 2393]
+    "english": [
+        2184,
+        2069,
+        2054,
+        1865,
+        1864,
+        1833,
+        1825,
+        1809,
+        1805,
+        2333,
+        2292,
+        2184,
+        2574,
+        2631,
+        2393,
+    ],
 }
 
 month = "Вересень"
@@ -330,7 +396,7 @@ payments_headers = {
     "cache-control": "max-age=0",
     "connection": "keep-alive",
     "cookie": "SLG_G_WPT_TO=en; SLG_GWPT_Show_Hide_tmp=1; SLG_wptGlobTipTmp=1; csrftoken=gfZZJ3uWgMOXlexBXJ6pqVtrMU3CPDv1; sessionid=41iyy49951eqdehv5ge9je2cjem2fmu1",
-    "host": "localhost:22443",
+    "host": "school.cloud24.com.ua:22443",
     "sec-ch-ua": '"Google Chrome";v="105", "Not)A;Brand";v="8", "Chromium";v="105"',
     "sec-ch-ua-mobile": "?1",
     "sec-ch-ua-platform": "Android",

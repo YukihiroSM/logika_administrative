@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm
+
 from logika_statistics.models import Location
 
 
@@ -58,35 +58,45 @@ regions = [
     ("UA_Dnepropetrovskaya oblast2", "UA_Dnepropetrovskaya oblast2"),
 ]
 
-# CLIENT_MANAGERS_PROGRAMMING = list(
-#     Location.objects.exclude(client_manager__isnull=True).values_list("client_manager", flat=True))
-# CLIENT_MANAGERS_ENGLISH = list(
-#     Location.objects.exclude(client_manager_english__isnull=True).values_list("client_manager_english", flat=True))
-# CLIENT_MANAGERS = list(
-#     set(CLIENT_MANAGERS_PROGRAMMING + CLIENT_MANAGERS_ENGLISH))
-# CLIENT_MANAGERS.sort()
-# CLIENT_MANAGERS = [(cm, cm) for cm in CLIENT_MANAGERS]
-#
-# TERRITORIAL_MANAGERS = list(
-#     set(Location.objects.values_list("territorial_manager", flat=True)))
-# TERRITORIAL_MANAGERS.sort()
-# TERRITORIAL_MANAGERS = [(tm, tm) for tm in TERRITORIAL_MANAGERS]
-#
-# LOCATIONS = list(Location.objects.values_list("lms_location_name", flat=True))
-# LOCATIONS.sort()
-# LOCATIONS = [(location, location) for location in LOCATIONS]
-#
-# TUTORS_PROGRAMMING = list(Location.objects.exclude(
-#     tutor__isnull=True).values_list("tutor", flat=True))
-# TUTORS_ENGLISH = list(Location.objects.exclude(
-#     tutor_english__isnull=True).values_list("tutor_english", flat=True))
-# TUTORS = list(set(TUTORS_PROGRAMMING + TUTORS_ENGLISH))
-# TUTORS.sort()
-# TUTORS = [(tutor, tutor) for tutor in TUTORS]
-TUTORS = []
-CLIENT_MANAGERS = []
-TERRITORIAL_MANAGERS = []
-LOCATIONS = []
+CLIENT_MANAGERS_PROGRAMMING = list(
+    Location.objects.exclude(client_manager__isnull=True).values_list(
+        "client_manager", flat=True
+    )
+)
+CLIENT_MANAGERS_ENGLISH = list(
+    Location.objects.exclude(client_manager_english__isnull=True).values_list(
+        "client_manager_english", flat=True
+    )
+)
+CLIENT_MANAGERS = list(set(CLIENT_MANAGERS_PROGRAMMING + CLIENT_MANAGERS_ENGLISH))
+CLIENT_MANAGERS.sort()
+CLIENT_MANAGERS = [(cm, cm) for cm in CLIENT_MANAGERS]
+
+TERRITORIAL_MANAGERS = list(
+    set(Location.objects.values_list("territorial_manager", flat=True))
+)
+TERRITORIAL_MANAGERS.sort()
+TERRITORIAL_MANAGERS = [(tm, tm) for tm in TERRITORIAL_MANAGERS]
+
+LOCATIONS = list(Location.objects.values_list("lms_location_name", flat=True))
+LOCATIONS.sort()
+LOCATIONS = [(location, location) for location in LOCATIONS]
+
+TUTORS_PROGRAMMING = list(
+    Location.objects.exclude(tutor__isnull=True).values_list("tutor", flat=True)
+)
+TUTORS_ENGLISH = list(
+    Location.objects.exclude(tutor_english__isnull=True).values_list(
+        "tutor_english", flat=True
+    )
+)
+TUTORS = list(set(TUTORS_PROGRAMMING + TUTORS_ENGLISH))
+TUTORS.sort()
+TUTORS = [(tutor, tutor) for tutor in TUTORS]
+# TUTORS = []
+# CLIENT_MANAGERS = []
+# TERRITORIAL_MANAGERS = []
+# LOCATIONS = []
 
 
 class LocationCreateForm(forms.Form):
@@ -134,3 +144,15 @@ class ReasonForRevert(forms.Form):
     reason = forms.CharField(
         label="Причина повернення незбіжності", max_length=1024, required=True
     )
+
+
+class UpdateLocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = [
+            "lms_location_name",
+            "territorial_manager",
+            "regional_manager",
+            "tutor",
+            "tutor_english",
+        ]
