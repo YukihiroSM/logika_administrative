@@ -6,6 +6,7 @@ from logika_teachers.forms import (
     TeacherFeedbackForm,
     TeacherCommentForm,
     TeacherPerformanceForm,
+    EstimatedFallOffForm
 )
 from logika_teachers.models import (
     TeacherProfile,
@@ -26,6 +27,21 @@ from utils.lms_authentication import get_authenticated_session
 from utils.count_teacher_performance import get_teacher_performance_by_month
 from utils.get_teacher_locations import get_teacher_locations
 from utils.get_teacher_groups import get_teacher_groups
+
+MONTH_DICT = {
+            "Січень": 1,
+            "Лютий": 2,
+            "Березень": 3,
+            "Квітень": 4,
+            "Травень": 5,
+            "Червень": 6,
+            "Липень": 7,
+            "Серпень": 8,
+            "Вересень": 9,
+            "Жовтень": 10,
+            "Листопад": 11,
+            "Грудень": 12,
+        }
 
 
 @login_required
@@ -439,20 +455,7 @@ def refresh_credentials(request, user_id):
 def teacher_performance(request, teacher_id):
     teacher = TeacherProfile.objects.filter(id=teacher_id).first()
     if request.method == "POST":
-        month_dict = {
-            "Січень": 1,
-            "Лютий": 2,
-            "Березень": 3,
-            "Квітень": 4,
-            "Травень": 5,
-            "Червень": 6,
-            "Липень": 7,
-            "Серпень": 8,
-            "Вересень": 9,
-            "Жовтень": 10,
-            "Листопад": 11,
-            "Грудень": 12,
-        }
+        month_dict = MONTH_DICT
         locations = request.POST.getlist("locations")
         month = request.POST.get("month")
         teacher_groups = request.POST.getlist("groups")
@@ -525,20 +528,7 @@ def tutor_results(request):
 
 
 def tutor_month_report(request, user_id):
-    month_dict = {
-        "Січень": 1,
-        "Лютий": 2,
-        "Березень": 3,
-        "Квітень": 4,
-        "Травень": 5,
-        "Червень": 6,
-        "Липень": 7,
-        "Серпень": 8,
-        "Вересень": 9,
-        "Жовтень": 10,
-        "Листопад": 11,
-        "Грудень": 12,
-    }
+    month_dict = MONTH_DICT
     user = User.objects.get(id=user_id)
     tutor = TutorProfile.objects.get(user=user)
     if request.method == "POST":
@@ -688,10 +678,41 @@ def unsub_teacher(request, teacher_id):
 
 @login_required
 def estimated_fall_off(request):
+    month_dict = MONTH_DICT
     current_user = request.user
     user_role = get_user_role(current_user)
     if not user_role == "regional_tutor":
         return render(request, "error_403.html")
-    
-    
-    return render(request, "logika_teachers/estimated_fall_off.html")
+
+    regional_tutor_profile = RegionalTutorProfile.objects.get(user=current_user)
+    tutors = regional_tutor_profile.related_tutors.all().prefetch_related("user__teacher_profile")
+
+    if request.method == 'POST':
+        form = EstimatedFallOffForm(request.POST)
+        if form.is_valid():
+            month = form.cleaned_data['month']
+            selected_teachers = request.POST.getlist('teachers[]')
+            selected_teachers_profiles = TeacherProfile.objects.filter(id__in=selected_teachers)
+            estimated_fall_off_data = {}
+            for teacher in selected_teachers_profiles:
+                teacher_feedbacks = teacher.related_teacher_feedback.all()
+                for feedback in teacher_feedbacks:
+                    if feedback.created_at.month != month_dict[month]:
+                        continue
+                    estimated_fall_offs = pickle.loads(feedback.predicted_churn_object)
+                    estimated_fall_off_data.update(estimated_fall_offs)
+            context = {
+                "tutors": tutors,
+                "form": form,
+                "estimated_fall_off_data": estimated_fall_off_data,
+            }
+            return render(request, "logika_teachers/estimated_fall_off.html", context=context)
+    else:
+        form = EstimatedFallOffForm()
+
+    context = {
+        "tutors": tutors,
+        "form": form,
+    }
+
+    return render(request, "logika_teachers/estimated_fall_off.html", context=context)

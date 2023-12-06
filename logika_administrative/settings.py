@@ -32,6 +32,10 @@ DEBUG = os.environ.get("DEBUG") == "TRUE"
 ALLOWED_HOSTS = ["*"]
 ADMIN_ENABLED = os.environ.get("ADMIN_ENABLED") == "TRUE"
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,10 +52,12 @@ INSTALLED_APPS = [
     "django_sass",
     "sass_processor",
     "django_extensions",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

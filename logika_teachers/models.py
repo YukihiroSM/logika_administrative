@@ -48,7 +48,11 @@ class RegionalTutorProfile(models.Model):
 
 
 class TeacherFeedback(models.Model):
-    teacher = models.ForeignKey(TeacherProfile, on_delete=models.DO_NOTHING)
+    teacher = models.ForeignKey(
+        TeacherProfile,
+        on_delete=models.DO_NOTHING,
+        related_name="related_teacher_feedback"
+    )
     tutor = models.ForeignKey(TutorProfile, on_delete=models.DO_NOTHING)
     lesson_mark = models.IntegerField()
     mistakes = models.TextField()

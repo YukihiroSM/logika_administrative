@@ -26,7 +26,9 @@ urlpatterns = [
     path("", include("logika_general.urls", namespace="logika_general")),
     path("", include("logika_auth.urls")),
     path(
-        "logika-teachers/", include("logika_teachers.urls", namespace="logika_teachers")
+        "logika-teachers/",
+        include("logika_teachers.urls", namespace="logika_teachers")
     ),
     path("", include("logika_statistics.urls", namespace="logika_statistics")),
+    path("__debug__/", include("debug_toolbar.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

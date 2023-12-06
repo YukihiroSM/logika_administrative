@@ -8,9 +8,61 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-12">
-            <div class="min-vh-100 content-center">
+            <div class="min-vh-50 content-center">
                 <h1>Передбачувані відвали</h1>
             </div>
+            
+            <form action="{% url 'logika_teachers:estimated-fall-off'%}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="month" class="il-gray fs-14 fw-500 align-center mb-10">Оберіть місяць</label>
+                    <select id="month" name="month">
+                        <option {% if form_data.month == "Січень" %} selected {% endif %}>Січень</option>
+                        <option {% if form_data.month == "Лютий" %} selected {% endif %}>Лютий</option>
+                        <option {% if form_data.month == "Березень" %} selected {% endif %}>Березень</option>
+                        <option {% if form_data.month == "Квітень" %} selected {% endif %}>Квітень</option>
+                        <option {% if form_data.month == "Травень" %} selected {% endif %}>Травень</option>
+                        <option {% if form_data.month == "Червень" %} selected {% endif %}>Червень</option>
+                        <option {% if form_data.month == "Липень" %} selected {% endif %}>Липень</option>
+                        <option {% if form_data.month == "Серпень" %} selected {% endif %}>Серпень</option>
+                        <option {% if form_data.month == "Вересень" %} selected {% endif %}>Вересень</option>
+                        <option {% if form_data.month == "Жовтень" %} selected {% endif %}>Жовтень</option>
+                        <option {% if form_data.month == "Листопад" %} selected {% endif %}>Листопад</option>
+                        <option {% if form_data.month == "Грудень" %} selected {% endif %}>Грудень</option>
+                    </select>
+                </div>
+                <button type='button' id='selectAll'>Обрати всіх вчителів</button>
+                <button type='button' id='deselectAll'>Прибрати виділення</button>
+                <ol>
+                    {% for tutor in tutors %}
+                        <li>{{ tutor.user.get_full_name }}</li>
+                        <label for="teachers">Обрати вчителя/-ів:</label>
+                        <select multiple multiple name="teachers[]" id="teachers">
+                        {% for teacher in tutor.related_teachers.all %}
+                            <option value="{{ teacher.id }}">{{ teacher.user.get_full_name }}</option>
+                        {% endfor %}
+                        </select>
+                    {% endfor %}
+                </ol>
+                <button type="submit">Submit</button>
+            </form>
+            {% if form.errors %}
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.name }} - {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if estimated_fall_off_data %}
+                <h2>Estimated Fall Off Data</h2>
+                <ul>
+                    {% for student_id, fall_off_data in estimated_fall_off_data.items %}
+                        <li>{{ student_id }} - {{ fall_off_data }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
     </div>
 </div>

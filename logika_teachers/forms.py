@@ -75,3 +75,10 @@ class TeacherEditProfileForm(forms.Form):
         max_length=64, required=False, label="Нікнейм в Telegram"
     )
     one_c_ids = forms.CharField(max_length=64, label="ID в 1С")
+
+class EstimatedFallOffForm(forms.Form):
+    month = forms.CharField(max_length=1024, required=True)
+    teachers = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
