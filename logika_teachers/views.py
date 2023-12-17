@@ -45,7 +45,7 @@ def teacher_profile(request, id):
             if feedbacks and feedbacks[0].predicted_churn_object
             else None
         )
-    if user_role == "regional_tutor":
+    if user_role == "regional_tutor" or user_role == "admin":
         teacher = TeacherProfile.objects.filter(id=id).first()
         teacher_tutors = teacher.related_tutors.all()
         user_profile = RegionalTutorProfile.objects.get(user=request.user)
@@ -611,7 +611,7 @@ def tutor_results_report(request):
     if request.method == "POST":
         report_start = request.POST.get("report_start")
         report_end = request.POST.get("report_end")
-        if current_user_role == "regional_tutor":
+        if current_user_role == "regional_tutor" or current_user_role == "admin":
             regional_tutor_profile = RegionalTutorProfile.objects.get(user=request.user)
             tutors = regional_tutor_profile.related_tutors.all()
         elif current_user_role == "tutor":

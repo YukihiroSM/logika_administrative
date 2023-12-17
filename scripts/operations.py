@@ -9,10 +9,8 @@ import json
 
 def run():
     logger = logging.getLogger(__name__)
-    timelines = [("2023-10-01", "2023-10-22")]
-    #
-    #
-    #
+    timelines = [("2023-12-01", "2023-12-03"), ("2023-12-04", "2023-12-10"), ("2023-12-01", "2023-12-10")]
+
 
     start_dates = [line[0] for line in timelines]
     os.environ["start_dates"] = json.dumps(start_dates)

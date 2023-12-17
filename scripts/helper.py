@@ -11,8 +11,8 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 
 session = get_authenticated_session()
-start_date = "2023-09-25"
-end_date = "2023-09-30"
+start_date = "2023-12-04"
+end_date = "2023-12-10"
 updated_students_count = 0
 
 

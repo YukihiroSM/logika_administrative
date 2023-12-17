@@ -32,7 +32,7 @@
                                     {{ feedback.tutor.user.get_full_name }} від {{ feedback.created_at }}</h1>
                             </a>
                         {% endfor %}
-                    {% elif user_role == "tutor" %}
+                    {% elif user_role == "tutor"%}
                         <div class="action-btn">
                             <a href="{% url 'logika_teachers:tutor-month-report' user.id %}"
                                class="btn px-15 btn-primary">
@@ -142,7 +142,7 @@
                         {% endfor %}
                         <!-- Button trigger modal -->
 
-                    {% elif user_role == "regional_tutor" %}
+                    {% elif user_role == "regional_tutor" or user_role == "admin" %}
                         <a href="{% url 'logika_teachers:tutor-results-report' %}" class="btn px-15 btn-primary">
                             <i class="las la-plus fs-16"></i>Звіт роботи тьюторів</a>
                         <br>
