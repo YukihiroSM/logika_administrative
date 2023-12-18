@@ -22,6 +22,7 @@ def run():
         ("2023-12-11", "2023-12-17"),
     ]
 
+
     start_dates = [line[0] for line in timelines]
     os.environ["start_dates"] = json.dumps(start_dates)
     month = "Лютий"

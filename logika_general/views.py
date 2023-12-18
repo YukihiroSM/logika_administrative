@@ -43,6 +43,7 @@ def index(request):
         regional_tutor_profile = RegionalTutorProfile.objects.filter(
             user=request.user
         ).first()
+
         tutors = regional_tutor_profile.related_tutors.all()
         teachers = {}
         for tutor in tutors:

@@ -3,12 +3,14 @@ from utils.lms_authentication import get_authenticated_session
 
 
 def run():
+
     wrong_reports = StudentReport.objects.filter(
         payment=1,
         territorial_manager__isnull=True,
         start_date__in=("2023-10-01",),
         business="programming",
     ).all()
+
     session = get_authenticated_session()
     for report in wrong_reports:
         student_id = report.student_lms_id
@@ -23,10 +25,12 @@ def run():
                     )
                     if group_details_resp.status_code == 200:
                         group_data = group_details_resp.json()["data"]
-                        location = group_data["venue"].get("title")
-                        location_obj = Location.objects.filter(
-                            lms_location_name=location
-                        ).first()
+
+                        try:
+                            location = group_data["venue"].get("title")
+                        except:
+                            continue
+                        location_obj = Location.objects.filter(lms_location_name=location).first()
                         if location_obj:
                             report.location = location
                             report.client_manager = location_obj.client_manager

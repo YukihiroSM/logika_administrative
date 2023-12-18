@@ -40,15 +40,18 @@ class Command(BaseCommand):
                 group_status = group["status"]["value"]
                 group_type = group["type"]["value"]
                 group_venue = group.get("venue", "not_set")
-                group_obj, created = Group.objects.get_or_create(
-                    lms_id=group_id,
-                    title=group_name,
-                    status=group_status,
-                    type=group_type,
-                    venue=group_venue,
-                    teacher_name=teacher_name,
-                    teacher_id=teacher_id,
-                )
+                try:
+                    group_obj, created = Group.objects.get_or_create(
+                        lms_id=group_id,
+                        title=group_name,
+                        status=group_status,
+                        type=group_type,
+                        venue=group_venue,
+                        teacher_name=teacher_name,
+                        teacher_id=teacher_id,
+                    )
+                except:
+                    self.stdout.write(self.style.ERROR(f"Group {group_name} duplicated"))
                 group_obj.save()
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Group {group_name} created"))
