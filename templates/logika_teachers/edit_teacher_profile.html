@@ -7,130 +7,156 @@
 {% load static %}
 
 {% block content %}
-<div class="dm-page-content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="breadcrumb-main">
-                    <!--                    <h4 class="text-capitalize breadcrumb-title">Створення викладача</h4>-->
-                    <div class="breadcrumb-action justify-content-center flex-wrap">
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="breadcrumb-main">
+                        <!--                    <h4 class="text-capitalize breadcrumb-title">Створення викладача</h4>-->
+                        <div class="breadcrumb-action justify-content-center flex-wrap">
 
-                        {% if alerts %}
-                        {% for alert in alerts %}
-                        <div class="alert-big alert alert-danger  alert-dismissible fade show " role="alert">
-                            <div class="alert-content">
-                                <h6 class="alert-heading">{{alert.title}}</h6>
-                                {% for field in form.visible_fields %}
-                                <div>
-                                    {% if field.errors %}
-                                    <ul class="errorlist">
-                                        {% for error in field.errors %}
-                                        <li>{{ field.label }} - {{ error }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                    {% endif %}
-                                </div>
+                            {% if alerts %}
+                                {% for alert in alerts %}
+                                    <div class="alert-big alert alert-danger  alert-dismissible fade show "
+                                         role="alert">
+                                        <div class="alert-content">
+                                            <h6 class="alert-heading">{{ alert.title }}</h6>
+                                            {% for field in form.visible_fields %}
+                                                <div>
+                                                    {% if field.errors %}
+                                                        <ul class="errorlist">
+                                                            {% for error in field.errors %}
+                                                                <li>{{ field.label }} - {{ error }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                            <button type="button" class="btn-close text-capitalize"
+                                                    data-bs-dismiss="alert"
+                                                    aria-label="Close">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                     viewBox="0 0 24 24"
+                                                     fill="none" stroke="currentColor" stroke-width="2"
+                                                     stroke-linecap="round"
+                                                     stroke-linejoin="round" class="svg replaced-svg">
+                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 {% endfor %}
-                                <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert"
-                                        aria-label="Close">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="svg replaced-svg">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% endif %}
-                        <div class="col-lg-12">
-                            <div class="card card-Vertical card-default card-md mb-4">
-                                <div class="card-header">
-                                    <h6>Редагування викладача</h6>
-                                </div>
-                                <div class="card-body py-md-30">
-                                    <form action="{% url 'logika_teachers:edit-teacher-profile' teacher_id %}" method="post">
-                                        {% csrf_token %}
-                                        <div class="row">
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="Ім'я"
-                                                    id="first_name"
-                                                    name="first_name"
-                                                    value="{{ teacher_profile.user.first_name }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="Прізвище"
-                                                    id="last_name"
-                                                    name="last_name"
-                                                    value="{{ teacher_profile.user.last_name }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="Номер телефону (380...)"
-                                                    id="phone_number"
-                                                    name="phone_number"
-                                                    value="{{ teacher_profile.phone_number }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="ID в LMS"
-                                                    id="lms_id"
-                                                    name="lms_id"
-                                                    value="{{ teacher_profile.lms_id }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="Телеграм"
-                                                    id="telegram_nickname"
-                                                    name="telegram_nickname"
-                                                    value="{{ teacher_profile.telegram_nickname }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6 mb-25">
-                                                <input type="text"
-                                                    class="form-control ih-medium ip-gray radius-xs b-light px-15"
-                                                    placeholder="ID в 1С (через кому)"
-                                                    id="one_c_ids"
-                                                    name="one_c_ids"
-                                                    value="{{ teacher_profile.one_c_ids }}"
-                                                    required
-                                                >
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="layout-button mt-0">
-                                                    <input type="submit"
-                                                        class="btn btn-primary btn-default btn-squared px-30"
-                                                        value="Зберегти">
+                            {% endif %}
+                            <div class="col-lg-12">
+                                <div class="card card-Vertical card-default card-md mb-4">
+                                    <div class="card-header">
+                                        <h6>Редагування викладача</h6>
+                                    </div>
+                                    <div class="card-body py-md-30">
+                                        <form action="{% url 'logika_teachers:edit-teacher-profile' teacher_id %}"
+                                              method="post">
+                                            {% csrf_token %}
+                                            <div class="row">
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="first_name"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">Ім'я</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="Ім'я"
+                                                           id="first_name"
+                                                           name="first_name"
+                                                           value="{{ teacher_profile.user.first_name }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="last_name"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">Прізвище</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="Прізвище"
+                                                           id="last_name"
+                                                           name="last_name"
+                                                           value="{{ teacher_profile.user.last_name }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="phone_number"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">Номер
+                                                        телефону (380...)</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="Номер телефону (380...)"
+                                                           id="phone_number"
+                                                           name="phone_number"
+                                                           value="{{ teacher_profile.phone_number }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="lms_id"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">ID
+                                                        в LMS</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="ID в LMS"
+                                                           id="lms_id"
+                                                           name="lms_id"
+                                                           value="{{ teacher_profile.lms_id }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="telegram_nickname"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">Телеграм</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="Телеграм"
+                                                           id="telegram_nickname"
+                                                           name="telegram_nickname"
+                                                           value="{{ teacher_profile.telegram_nickname }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6 mb-25">
+                                                    <label for="one_c_ids"
+                                                           class="text-capitalize fw-medium color-light mt-20 d-block">ID
+                                                        в 1С (через кому)</label>
+                                                    <input type="text"
+                                                           class="form-control ih-medium ip-gray radius-xs b-light px-15 border-footer-dark"
+                                                           placeholder="ID в 1С (через кому)"
+                                                           id="one_c_ids"
+                                                           name="one_c_ids"
+                                                           value="{{ teacher_profile.one_c_ids }}"
+                                                           required
+                                                    >
+
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="layout-button mt-0">
+                                                        <input type="submit"
+                                                               class="btn btn-primary btn-default btn-squared px-30"
+                                                               value="Зберегти">
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
+
                             </div>
 
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

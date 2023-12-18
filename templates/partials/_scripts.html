@@ -47,3 +47,38 @@
 <script src="{% static 'js/custom/leaflet-init.js' %}"></script>
 <script src="{% static 'js/custom/main.js' %}"></script>
 <script src="{% static 'js/custom/change-color-of-progress-percentage.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTablesScript for list_locations.html -->
+<script>
+    new DataTable('#locations_table', {
+        order: [],
+        language: {
+            "decimal":        "",
+            "emptyTable":     "У таблиці немає даних",
+            "info":           "Показано з _START_ по _END_ із _TOTAL_ рядків",
+            "infoEmpty":      "Показано з 0 по 0 із 0 рядків",
+            "infoFiltered":   "(відфільтровано із _MAX_ рядків)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Показувати _MENU_ рядків",
+            "loadingRecords": "Завантаження...",
+            "processing":     "",
+            "search":         "Пошук:",
+            "zeroRecords":    "Збігів не знайдено",
+            "paginate": {
+                "first":      "Перша",
+                "last":       "Остання",
+                "next":       "Наступна",
+                "previous":   "Попередня"
+            },
+            "aria": {
+                "sortAscending":  ": активуйте, щоб відсортувати колонки за зростанням",
+                "sortDescending": ": активуйте, щоб відсортувати колонки за спаданням"
+            }
+        }
+
+    });
+</script>

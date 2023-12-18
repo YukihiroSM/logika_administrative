@@ -8,8 +8,8 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.urls import reverse
 
 regions = [
@@ -180,10 +180,8 @@ class GlobalGroup(models.Model):
     full_course = models.CharField(max_length=512, default=None, null=True)
 
 
-businesses = [("programming", "programming"), ("english", "english")]
-
-
 class StudentReport(models.Model):
+    businesses = [("programming", "programming"), ("english", "english")]
     student_lms_id = models.CharField(max_length=16, null=True)
     student_first_name = models.CharField(max_length=128, null=True)
     student_last_name = models.CharField(max_length=128, null=True)
@@ -291,3 +289,51 @@ class TeacherReportNew(models.Model):
     total_enrolled = models.IntegerField()
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+
+
+class MasterClassRecord(models.Model):
+    BUSINESS_CHOICES = (
+        ("programming", "Програмування"),
+        ("english", "Англійська"),
+        ("unknown", "Невідомий"),
+    )
+    student_lms_id = models.CharField(max_length=16)
+    student_lms_name = models.CharField(max_length=128)
+    mc_lms_id = models.CharField(max_length=16)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES, null=True)
+    location = models.CharField(max_length=128, null=True)
+    teacher = models.CharField(max_length=128, null=True)
+    teacher_lms_id = models.CharField(max_length=16, null=True)
+    tutor = models.CharField(max_length=128, null=True)
+    client_manager = models.CharField(max_length=128, null=True)
+    territorial_manager = models.CharField(max_length=128, null=True)
+    regional_manager = models.CharField(max_length=128, null=True)
+    course_title = models.CharField(max_length=128, null=True)
+    course_id = models.CharField(max_length=16, null=True)
+    attended = models.BooleanField()
+    is_uk = models.BooleanField()
+
+
+class PaymentRecord(models.Model):
+    BUSINESS_CHOICES = (
+        ("programming", "Програмування"),
+        ("english", "Англійська"),
+        ("unknown", "Невідомий"),
+    )
+    student_lms_id = models.CharField(max_length=16)
+    student_lms_name = models.CharField(max_length=128)
+    recent_group_lms_id = models.CharField(max_length=16)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES, null=True)
+    location = models.CharField(max_length=128, null=True)
+    teacher = models.CharField(max_length=128, null=True)
+    teacher_lms_id = models.CharField(max_length=16, null=True)
+    client_manager = models.CharField(max_length=128, null=True)
+    territorial_manager = models.CharField(max_length=128, null=True)
+    regional_manager = models.CharField(max_length=128, null=True)
+    course_title = models.CharField(max_length=128, null=True)
+    course_id = models.CharField(max_length=16, null=True)
+    payment_amount = models.CharField(max_length=16, null=True)

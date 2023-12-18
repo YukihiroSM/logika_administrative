@@ -1,0 +1,91 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Локації {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="dm-page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-main">
+                    <div class="breadcrumb-action justify-content-center flex-wrap">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="card card-default card-md mb-30">
+                <div class="card-header">
+                    <h6>Зміна локації <span style="color: red;">(всі поля обовʼязкові!)</span></h6>
+                </div>
+                <div class="card-body">
+                    <div class="basic-form-wrapper">
+                        <form method="post" action="{% url 'logika_statistics:edit-location' location.id %}">
+                            {% csrf_token %}
+
+                            <div class="form-group mb-30">
+                                <label for="lms_location_name" class="form-label">Назва локації в LMS</label>
+                                <input class="form-control" type="text" id="lms_location_name" name="lms_location_name"
+                                       value="{{location.lms_location_name}}">
+
+                                <label for="territorial_managers" class="form-label">Територіальний менеджер</label>
+                                <input class="form-control" list="territorial_managers_list" id="territorial_managers"
+                                       placeholder="Почніть введення" name="territorial_manager"
+                                       value="{{location.territorial_manager}}">
+                                <datalist id="territorial_managers_list">
+                                    {% for territorial_manager in territorial_managers %}
+                                    <option value="{{territorial_manager.user.last_name}} {{territorial_manager.user.first_name}}">
+                                        {% endfor %}
+                                </datalist>
+
+                                <label for="regional_manager" class="form-label">Регіональний менеджер</label>
+                                <input class="form-control" list="regional_managers_list" id="regional_manager"
+                                       placeholder="Почніть введення" name="regional_manager"
+                                       value="{{location.regional_manager}}">
+                                <datalist id="regional_managers_list">
+                                    {% for regional_manager in regional_managers %}
+                                    <option value="{{regional_manager.user.last_name}} {{regional_manager.user.first_name}}">
+                                        {% endfor %}
+                                </datalist>
+
+                                <label for="tutor" class="form-label">Тьютор програмування</label>
+                                <input class="form-control" list="tutors_list" id="tutor" name="tutor"
+                                       placeholder="Почніть введення" value="{{location.tutor}}">
+                                <datalist id="tutors_list">
+                                    {% for tutor in tutors %}
+                                    <option value="{{tutor.user.last_name}} {{tutor.user.first_name}}">
+                                        {% endfor %}
+                                </datalist>
+
+                                <label for="tutor_english" class="form-label">Тьютор англійської</label>
+                                <input class="form-control" list="tutors_english_list" id="tutor_english"
+                                       name="tutor_english"
+                                       placeholder="Почніть введення" value="{{location.tutor_english}}">
+                                <datalist id="tutors_english_list">
+                                    {% for tutor in tutors %}
+                                    <option value="{{tutor.user.last_name}} {{tutor.user.first_name}}">
+                                        {% endfor %}
+                                </datalist>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary">Оновити</button>
+                        </form>
+                        <hr>
+                        <a href="{% url 'logika_statistics:list-locations' %}">
+                            <button class="btn btn-secondary">Повернутись до списку локацій</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

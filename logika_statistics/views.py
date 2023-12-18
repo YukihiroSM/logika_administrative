@@ -1,16 +1,25 @@
 import csv
+import datetime
 import os
 
-import pandas as pd
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.template import loader
 from django.urls import reverse
-from .forms import ReportDateForm
-import datetime
-import library
+from django.views.decorators.csrf import csrf_exempt
+
+from logika_administrative.settings import BASE_DIR
+from logika_general.models import (
+    ClientManagerProfile,
+    RegionalManagerProfile,
+    TerritorialManagerProfile,
+)
+from logika_teachers.models import TutorProfile
+from utils.get_user_role import get_user_role
+from utils.lms_authentication import get_authenticated_session
+from .forms import ReportDateForm, UpdateLocationForm
 from .models import (
     Location,
     StudentReport,
@@ -18,20 +27,9 @@ from .models import (
     LocationReport,
     CourseReport,
 )
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from .utils import (
     retrieve_group_ids_from_csv,
-    get_lessons_links,
     get_lessons_links_extended,
-)
-from logika_administrative.settings import BASE_DIR
-from utils.lms_authentication import get_authenticated_session
-from utils.get_user_role import get_user_role
-from logika_general.models import (
-    ClientManagerProfile,
-    RegionalManagerProfile,
-    TerritorialManagerProfile,
 )
 
 
@@ -443,3 +441,64 @@ def pages(request):
     except:
         html_template = loader.get_template("logika_statistics/page-500.html")
         return HttpResponse(html_template.render(context, request))
+
+
+@login_required(login_url="/login/")
+def edit_location(request, location_id):
+    location = Location.objects.get(id=location_id)
+    if request.method == "POST":
+        form = UpdateLocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return redirect("logika_statistics:list-locations")
+    territorial_managers = TerritorialManagerProfile.objects.all()
+    regional_managers = RegionalManagerProfile.objects.all()
+    tutors = TutorProfile.objects.all()
+    return render(
+        request,
+        template_name="logika_statistics/update_location.html",
+        context={
+            "location": location,
+            "territorial_managers": territorial_managers,
+            "regional_managers": regional_managers,
+            "tutors": tutors,
+        },
+    )
+
+
+@login_required(login_url="/login/")
+def list_locations(request):
+    locations = Location.objects.all()
+    context = {
+        "locations": locations,
+    }
+    html_template = loader.get_template("logika_statistics/list_locations.html")
+    return HttpResponse(html_template.render(context, request))
+
+
+@login_required(login_url="/login/")
+def delete_location(request, location_id):
+    location = Location.objects.get(id=location_id)
+    location.delete()
+    return redirect("logika_statistics:list-locations")
+
+
+@login_required(login_url="/login/")
+def create_location(request):
+    if request.method == "POST":
+        form = UpdateLocationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("logika_statistics:list-locations")
+    territorial_managers = TerritorialManagerProfile.objects.all()
+    regional_managers = RegionalManagerProfile.objects.all()
+    tutors = TutorProfile.objects.all()
+    return render(
+        request,
+        template_name="logika_statistics/create_location.html",
+        context={
+            "territorial_managers": territorial_managers,
+            "regional_managers": regional_managers,
+            "tutors": tutors,
+        },
+    )

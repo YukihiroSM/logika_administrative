@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from utils.get_user_role import get_user_role
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
 from logika_teachers.models import (
     TeacherProfile,
     TutorProfile,
     TeacherFeedback,
     RegionalTutorProfile,
 )
+from utils.get_user_role import get_user_role
 
 
 @login_required(login_url="/login")
@@ -44,9 +45,9 @@ def index(request):
         ).first()
 
         tutors = regional_tutor_profile.related_tutors.all()
-        teachers = []
+        teachers = {}
         for tutor in tutors:
-            teachers += tutor.related_teachers.all()
+            teachers[tutor.id] = tutor.related_teachers.all()
 
     return render(
         request,
