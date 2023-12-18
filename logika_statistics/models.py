@@ -295,15 +295,45 @@ class MasterClassRecord(models.Model):
     BUSINESS_CHOICES = (
         ("programming", "Програмування"),
         ("english", "Англійська"),
+        ("unknown", "Невідомий"),
     )
     student_lms_id = models.CharField(max_length=16)
     student_lms_name = models.CharField(max_length=128)
     mc_lms_id = models.CharField(max_length=16)
-    mc_date = models.DateField()
-    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES)
-    location = models.CharField(max_length=128)
-    teacher = models.CharField(max_length=128)
-    tutor = models.CharField(max_length=128)
-    client_manager = models.CharField(max_length=128)
-    territorial_manager = models.CharField(max_length=128)
-    regional_manager = models.CharField(max_length=128)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES, null=True)
+    location = models.CharField(max_length=128, null=True)
+    teacher = models.CharField(max_length=128, null=True)
+    teacher_lms_id = models.CharField(max_length=16, null=True)
+    tutor = models.CharField(max_length=128, null=True)
+    client_manager = models.CharField(max_length=128, null=True)
+    territorial_manager = models.CharField(max_length=128, null=True)
+    regional_manager = models.CharField(max_length=128, null=True)
+    course_title = models.CharField(max_length=128, null=True)
+    course_id = models.CharField(max_length=16, null=True)
+    attended = models.BooleanField()
+    is_uk = models.BooleanField()
+
+
+class PaymentRecord(models.Model):
+    BUSINESS_CHOICES = (
+        ("programming", "Програмування"),
+        ("english", "Англійська"),
+        ("unknown", "Невідомий"),
+    )
+    student_lms_id = models.CharField(max_length=16)
+    student_lms_name = models.CharField(max_length=128)
+    recent_group_lms_id = models.CharField(max_length=16)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    business = models.CharField(max_length=16, choices=BUSINESS_CHOICES, null=True)
+    location = models.CharField(max_length=128, null=True)
+    teacher = models.CharField(max_length=128, null=True)
+    teacher_lms_id = models.CharField(max_length=16, null=True)
+    client_manager = models.CharField(max_length=128, null=True)
+    territorial_manager = models.CharField(max_length=128, null=True)
+    regional_manager = models.CharField(max_length=128, null=True)
+    course_title = models.CharField(max_length=128, null=True)
+    course_id = models.CharField(max_length=16, null=True)
+    payment_amount = models.CharField(max_length=16, null=True)

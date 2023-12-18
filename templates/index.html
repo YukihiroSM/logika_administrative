@@ -107,26 +107,30 @@
                                                 </button>
 
                                                 <!-- Modal -->
-                                                <div class="modal fade" id="exampleModal{{ teacher.id }}" tabindex="-1" role="dialog"
+                                                <div class="modal fade" id="exampleModal{{ teacher.id }}" tabindex="-1"
+                                                     role="dialog"
                                                      aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog" role="document">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title" id="exampleModalLabel">Відв'язка викладача</h5>
+                                                                <h5 class="modal-title" id="exampleModalLabel">Відв'язка
+                                                                    викладача</h5>
                                                                 <button type="button" class="close" data-dismiss="modal"
                                                                         aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
                                                                 </button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                Ви впевнені, що ви бажаєте відв'язати від себе викладача {{ teacher.user.get_full_name }}?
+                                                                Ви впевнені, що ви бажаєте відв'язати від себе
+                                                                викладача {{ teacher.user.get_full_name }}?
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary"
                                                                         data-dismiss="modal">Відмінити
                                                                 </button>
                                                                 <a href="{% url 'logika_teachers:unsub-teacher' teacher.id %}">
-                                                                    <button type="button" class="btn btn-primary">Підтвердити
+                                                                    <button type="button" class="btn btn-primary">
+                                                                        Підтвердити
                                                                     </button>
                                                                 </a>
                                                             </div>
@@ -174,6 +178,24 @@
                                                         переглянути місячний звіт
                                                     </button>
                                                 </a>
+                                                <div class="container">
+                                                    <button class="btn btn-primary" data-toggle="collapse"
+                                                            data-target="#hiddenContent{{ forloop.counter }}">
+                                                        Список викладачів
+                                                    </button>
+
+                                                    <div id="hiddenContent{{ forloop.counter }}" class="collapse mt-3">
+                                                        {% for teacher_tutor, related_teachers in teachers.items %}
+                                                            {% if teacher_tutor == tutor.id %}
+                                                                {% for teacher in related_teachers %}
+                                                                    <a href="{% url 'logika_teachers:teacher-profile-regional' teacher.id tutor.id %}" target="_blank">
+                                                                    <p>{{ teacher.user.get_full_name }}</p>
+                                                                    </a>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                            {% endfor %}
+                                                    </div>
+                                                </div>
 
                                             </div>
                                         </div>

@@ -1,11 +1,21 @@
+import datetime
+import pickle
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+from transliterate import translit
+
+from logika_administrative.settings import BASE_DIR
+from logika_statistics.forms import ReportDateForm
+from logika_statistics.models import MasterClassRecord, PaymentRecord
 from logika_teachers.forms import (
     TeacherCreateForm,
     TeacherEditProfileForm,
     TeacherFeedbackForm,
-    TeacherCommentForm,
-    TeacherPerformanceForm,
 )
 from logika_teachers.models import (
     TeacherProfile,
@@ -15,21 +25,24 @@ from logika_teachers.models import (
     TutorMonthReport,
     RegionalTutorProfile,
 )
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-import pickle
-from datetime import datetime
-from django.views.decorators.cache import cache_page, never_cache
-from transliterate import translit
+from utils.count_teacher_performance import get_teacher_performance_by_month
+from utils.get_teacher_groups import get_teacher_groups
+from utils.get_teacher_locations import get_teacher_locations
 from utils.get_user_role import get_user_role
 from utils.lms_authentication import get_authenticated_session
-from utils.count_teacher_performance import get_teacher_performance_by_month
-from utils.get_teacher_locations import get_teacher_locations
-from utils.get_teacher_groups import get_teacher_groups
+from utils.logika_scripts import get_conversion
+
+scales_new = {
+    "Серпень": "2023-08-01_2023-08-31",
+    "Вересень": "2023-09-01_2023-09-30",
+    "Жовтень": "2023-10-01_2023-10-31",
+    "Листопад": "2023-11-01_2023-11-30",
+    "Грудень": "2023-12-01_2023-12-31",
+}
 
 
 @login_required
-def teacher_profile(request, id):
+def teacher_profile(request, id, tutor_id=None):
     user_role = get_user_role(request.user)
     if user_role == "tutor":
         tutor_profile = TutorProfile.objects.filter(user=request.user).first()
@@ -47,14 +60,7 @@ def teacher_profile(request, id):
         )
     if user_role == "regional_tutor":
         teacher = TeacherProfile.objects.filter(id=id).first()
-        teacher_tutors = teacher.related_tutors.all()
-        user_profile = RegionalTutorProfile.objects.get(user=request.user)
-        rt_tutors = user_profile.related_tutors.all()
-        tutor = None
-        for one_tutor in rt_tutors:
-            if one_tutor in teacher_tutors:
-                tutor_profile = one_tutor
-                break
+        tutor_profile = TutorProfile.objects.filter(id=tutor_id).first()
 
         feedbacks = (
             TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
@@ -100,6 +106,7 @@ def teacher_profile(request, id):
             "lesson_comments": lesson_comments,
             "all_comments": all_comments,
             "recent_feedback_churn": recent_predicted_churns,
+            "tutor_profile": tutor_profile,
         },
     )
 
@@ -436,6 +443,7 @@ def refresh_credentials(request, user_id):
         )
 
 
+@login_required()
 def teacher_performance(request, teacher_id):
     teacher = TeacherProfile.objects.filter(id=teacher_id).first()
     if request.method == "POST":
@@ -617,7 +625,6 @@ def tutor_results_report(request):
         elif current_user_role == "tutor":
             tutor_profile = TutorProfile.objects.get(user=request.user)
             tutors = [tutor_profile]
-        print(tutors)
         data = {}
         for tutor in tutors:
             data[tutor] = {}
@@ -684,3 +691,171 @@ def unsub_teacher(request, teacher_id):
     teacher_profile.related_tutors.remove(tutor_profile)
 
     return redirect("logika_general:index")
+
+
+def get_possible_report_scales():
+    with open(
+        f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
+    ) as report_scales_fileobj:
+        scales = report_scales_fileobj.readlines()
+    scales_dict = {}
+    for i in range(len(scales)):
+        scales[i] = scales[i].replace("\n", "").replace("_", " - ")
+        month = scales[i].split(":")[0]
+        try:
+            dates = scales[i].split(":")[1]
+        except:
+            dates = None
+        if month not in scales_dict:
+            scales_dict[month] = [dates]
+        else:
+            scales_dict[month].append(dates)
+    possible_report_scales = []
+    for key, value in scales_dict.items():
+        possible_report_scales.append(key)
+        for val in value:
+            if val is not None:
+                possible_report_scales.append(val)
+    return possible_report_scales
+
+
+@login_required
+def get_teacher_conversion(request, teacher_id, tutor_id=None):
+    current_user = request.user
+    user_role = get_user_role(current_user)
+    if not (
+        user_role == "tutor" or user_role == "admin" or user_role == "regional_tutor"
+    ):
+        return render(request, "error_403.html")
+    if user_role == "tutor":
+        tutor_profile = TutorProfile.objects.get(user=current_user)
+    else:
+        tutor_profile = TutorProfile.objects.get(id=tutor_id)
+    teacher_profile = TeacherProfile.objects.get(id=teacher_id)
+    teacher_lms_id = teacher_profile.lms_id
+
+    teacher_locations = list(
+        set(
+            MasterClassRecord.objects.filter(teacher_lms_id=teacher_lms_id).values_list(
+                "location", flat=True
+            )
+        )
+    )
+    possible_report_scales = get_possible_report_scales()
+    if request.method == "POST":
+        month_report = None
+        form = ReportDateForm(request.POST)
+        if form.is_valid():
+            try:
+                report_start, report_end = form.cleaned_data["report_scale"].split(
+                    " - "
+                )
+            except ValueError:
+                month_report = form.cleaned_data["report_scale"]
+        else:
+            report_start, report_end = possible_report_scales[-1].split(" - ")
+
+        if not month_report:
+            report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
+            report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+        else:
+            report_start, report_end = scales_new[month_report].split("_")
+            report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
+            report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+
+        teacher_mc_students_queryset = MasterClassRecord.objects.filter(
+            start_date__gte=report_start,
+            end_date__lte=report_end,
+            teacher_lms_id=teacher_lms_id,
+        )
+
+        teacher_payments_queryset = PaymentRecord.objects.filter(
+            start_date__gte=report_start,
+            end_date__lte=report_end,
+            teacher_lms_id=teacher_lms_id,
+        )
+
+        locations = request.POST.getlist("locations")
+        business = request.POST.get("business")
+
+        if locations:
+            selected_mc_students_queryset = teacher_mc_students_queryset.filter(
+                location__in=locations, business=business
+            )
+
+            selected_payments_queryset = teacher_payments_queryset.filter(
+                location__in=locations, business=business
+            )
+
+            payments_by_location = selected_payments_queryset.values(
+                "location"
+            ).annotate(payment_count=Count("location"))
+
+            enrolled_by_location = selected_mc_students_queryset.values(
+                "location"
+            ).annotate(student_count=Count("location"))
+
+            attended_by_location = (
+                selected_mc_students_queryset.filter(attended=True)
+                .values("location")
+                .annotate(student_count=Count("location"))
+            )
+            conversion_by_location = []
+            for location in attended_by_location:
+                location_name = location["location"]
+                attended_students = location["student_count"]
+                payments_amount = 0
+                for payment in payments_by_location:
+                    if payment["location"] == location_name:
+                        payments_amount = payment["payment_count"]
+                conversion_by_location.append(
+                    {
+                        "location": location_name,
+                        "conversion": get_conversion(
+                            payments_amount, attended_students
+                        ),
+                    }
+                )
+            total_enrolled = sum(
+                student["student_count"] for student in enrolled_by_location
+            )
+            total_payments = sum(
+                payment["payment_count"] for payment in payments_by_location
+            )
+            total_attended = sum(
+                student["student_count"] for student in attended_by_location
+            )
+            total_conversion = get_conversion(total_payments, total_attended)
+
+            return render(
+                request,
+                "logika_teachers/teacher_conversion.html",
+                {
+                    "teachers_locations": teacher_locations,
+                    "teacher": teacher_profile,
+                    "enrolled_by_location": enrolled_by_location,
+                    "attended_by_location": attended_by_location,
+                    "payments_by_location": payments_by_location,
+                    "conversion_by_location": conversion_by_location,
+                    "total_enrolled": total_enrolled,
+                    "total_payments": total_payments,
+                    "total_attended": total_attended,
+                    "total_conversion": total_conversion,
+                    "report_scales": possible_report_scales,
+                    "tutor_profile": tutor_profile,
+                    "form_data": {
+                        "locations": locations,
+                        "report_scale": form.cleaned_data["report_scale"],
+                    },
+                },
+            )
+    return render(
+        request,
+        "logika_teachers/teacher_conversion.html",
+        {
+            "teachers_locations": teacher_locations,
+            "teacher": teacher_profile,
+            "report_scales": possible_report_scales,
+            "tutor_profile": tutor_profile,
+        },
+    )

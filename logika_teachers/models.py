@@ -31,6 +31,9 @@ class TutorProfile(models.Model):
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
+    def get_full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+
 
 class RegionalTutorProfile(models.Model):
     one_c_name = models.CharField(max_length=64, null=True, blank=True)

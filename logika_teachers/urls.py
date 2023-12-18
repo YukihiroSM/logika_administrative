@@ -1,8 +1,14 @@
 from django.urls import path
+
 from logika_teachers import views
 
 urlpatterns = [
     path("teacher-profile/<int:id>/", views.teacher_profile, name="teacher-profile"),
+    path(
+        "teacher-profile/<int:id>/<int:tutor_id>",
+        views.teacher_profile,
+        name="teacher-profile-regional",
+    ),
     path("create-teacher/", views.create_teacher, name="create-teacher"),
     path(
         "edit-teacher-profile/<int:id>/",
@@ -41,6 +47,16 @@ urlpatterns = [
         "tutor-results-report", views.tutor_results_report, name="tutor-results-report"
     ),
     path("unsub-teacher/<int:teacher_id>", views.unsub_teacher, name="unsub-teacher"),
+    path(
+        "teacher-conversion/<int:teacher_id>",
+        views.get_teacher_conversion,
+        name="teacher-conversion",
+    ),
+    path(
+        "teacher-conversion/<int:teacher_id>/<int:tutor_id>",
+        views.get_teacher_conversion,
+        name="teacher-conversion-regional",
+    ),
 ]
 
 app_name = "logika_teachers"
