@@ -39,7 +39,7 @@ def index(request):
                 .order_by("-created_at")
                 .first()
             )
-    if user_role == "regional_tutor":
+    if user_role == "regional_tutor" or user_role == "admin":
         regional_tutor_profile = RegionalTutorProfile.objects.filter(
             user=request.user
         ).first()
