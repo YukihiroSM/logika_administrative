@@ -7,7 +7,7 @@ def run():
     wrong_reports = StudentReport.objects.filter(
         payment=1,
         territorial_manager__isnull=True,
-        start_date__in=("2023-10-01",),
+        start_date__in=("2023-12-11",),
         business="programming",
     ).all()
 

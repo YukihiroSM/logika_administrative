@@ -442,7 +442,7 @@ payments_headers = {
     "cache-control": "max-age=0",
     "connection": "keep-alive",
     "cookie": "SLG_G_WPT_TO=en; SLG_GWPT_Show_Hide_tmp=1; SLG_wptGlobTipTmp=1; csrftoken=gfZZJ3uWgMOXlexBXJ6pqVtrMU3CPDv1; sessionid=41iyy49951eqdehv5ge9je2cjem2fmu1",
-    "host": "school.cloud24.com.ua:22443",
+    "host": "localhost:22443",
     "sec-ch-ua": '"Google Chrome";v="105", "Not)A;Brand";v="8", "Chromium";v="105"',
     "sec-ch-ua-mobile": "?1",
     "sec-ch-ua-platform": "Android",

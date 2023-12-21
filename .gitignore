@@ -169,6 +169,9 @@ session.pickle
 #VS Code
 .vscode/
 
-1c_reports/
-lms_reports/
+
 reports/
+lms_reports/
+1c_reports
+locations_tm_regional_tutor_mapping.csv
+report_scales.txt

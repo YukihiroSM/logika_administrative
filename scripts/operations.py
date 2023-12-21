@@ -12,20 +12,24 @@ from logika_administrative.settings import BASE_DIR
 def run():
     logger = logging.getLogger(__name__)
     timelines = [
-        ("2023-11-01", "2023-11-05"),
-        ("2023-11-06", "2023-11-12"),
-        ("2023-11-13", "2023-11-19"),
-        ("2023-11-20", "2023-11-26"),
-        ("2023-11-27", "2023-11-30"),
         ("2023-12-01", "2023-12-03"),
         ("2023-12-04", "2023-12-10"),
         ("2023-12-11", "2023-12-17"),
+        ("2023-12-18", "2023-12-20")
     ]
+    # ("2023-11-01", "2023-11-05"),
+    #     ("2023-11-06", "2023-11-12"),
+    #     ("2023-11-13", "2023-11-19"),
+    #     ("2023-11-20", "2023-11-26"),
+    #     ("2023-11-27", "2023-11-30"),
+    #     ("2023-12-01", "2023-12-03"),
+    #     ("2023-12-04", "2023-12-10"),
 
 
     start_dates = [line[0] for line in timelines]
     os.environ["start_dates"] = json.dumps(start_dates)
     month = "Лютий"
+    # management.call_command("update_locations")
     for timeline in timelines:
         lms_reports_path = Path(
             BASE_DIR, "lms_reports", month, f"{timeline[0]}_{timeline[1]}"
@@ -50,3 +54,4 @@ def run():
         management.call_command("process_master_classes")
         management.call_command("process_payments", course="programming")
         management.call_command("process_payments", course="english")
+    # management.call_command("collect_groups_data")
