@@ -549,7 +549,10 @@ def tutor_month_report(request, user_id):
     }
     user = User.objects.get(id=user_id)
     tutor = TutorProfile.objects.get(user=user)
+    regional_tutor_profile = None
     if request.method == "POST":
+        if get_user_role(request.user) != "tutor":
+            regional_tutor_profile = RegionalTutorProfile.objects.get(user=request.user)
         month = request.POST.get("month")
         churns_percent = request.POST.get("churns_percent")
         category = request.POST.get("category")
@@ -591,7 +594,11 @@ def tutor_month_report(request, user_id):
             return render(
                 request,
                 "logika_teachers/tutor_month_report.html",
-                {"tutor": tutor, "month_reports": month_reports},
+                {
+                    "tutor": tutor,
+                    "month_reports": month_reports,
+                    "regional_tutor_profile": regional_tutor_profile,
+                },
             )
     return render(request, "logika_teachers/tutor_month_report.html", {"tutor": tutor})
 

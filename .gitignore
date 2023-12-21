@@ -168,3 +168,7 @@ session.pickle
 
 #VS Code
 .vscode/
+
+1c_reports/
+lms_reports/
+reports/
