@@ -624,6 +624,7 @@ def add_performance_to_report(request, teacher_id):
 def tutor_results_report(request):
     current_user_role = get_user_role(request.user)
     if request.method == "POST":
+        regional_tutor_profile = None
         report_start = request.POST.get("report_start")
         report_end = request.POST.get("report_end")
         if current_user_role == "regional_tutor" or current_user_role == "admin":
@@ -681,6 +682,7 @@ def tutor_results_report(request):
                 "data": data,
                 "report_start": report_start,
                 "report_end": report_end,
+                "regional_tutor_profile": regional_tutor_profile,
             },
         )
     return render(request, "logika_teachers/weekly_tutors_result.html")
