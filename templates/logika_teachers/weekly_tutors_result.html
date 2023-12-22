@@ -94,14 +94,16 @@
                                                         </tr>
                                                         {% for key, value in details.items %} {% if key != "total" %}
                                                             <tr>
-                                                            <td>
-                                                                {% if user_role == "tutor" %}
-                                                                    <a href="{% url 'logika_teachers:teacher-profile' value.id %}"
-                                                                       target="_blank">
-                                                                {% else %}
-                                                                    <a href="{% url 'logika_teachers:teacher-profile-regional' value.id regional_tutor_profile.id %}">
-                                                                {% endif %}
-                                                            </td>
+                                                                <td>
+                                                                    {% if user_role == "tutor" %}
+                                                                        <a href="{% url 'logika_teachers:teacher-profile' value.id %}"
+                                                                           target="_blank">
+                                                                    {% else %}
+                                                                        <a href="{% url 'logika_teachers:teacher-profile-regional' value.id regional_tutor_profile.id %}">
+                                                                    {% endif %}
+                                                                    {{ key }} </a>
+                                                                </td>
+
                                                                 <td>{{ value.call_amount }}</td>
                                                                 <td>{{ value.feedbacks_amount }}</td>
                                                                 <td>{{ value.lesson_amount }}</td>
