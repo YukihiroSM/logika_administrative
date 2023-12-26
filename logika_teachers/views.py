@@ -47,32 +47,21 @@ def teacher_profile(request, id, tutor_id=None):
     if user_role == "tutor":
         tutor_profile = TutorProfile.objects.filter(user=request.user).first()
         teacher = TeacherProfile.objects.filter(id=id).first()
-        feedbacks = (
-            TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
-            .order_by("-created_at")
-            .all()
-        )
-
-        recent_predicted_churns = (
-            pickle.loads(feedbacks[0].predicted_churn_object)
-            if feedbacks and feedbacks[0].predicted_churn_object
-            else None
-        )
     if user_role == "regional_tutor" or user_role == "admin":
         teacher = TeacherProfile.objects.filter(id=id).first()
         tutor_profile = TutorProfile.objects.filter(id=tutor_id).first()
 
-        feedbacks = (
-            TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
-            .order_by("-created_at")
-            .all()
-        )
+    feedbacks = (
+        TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
+        .order_by("-created_at")
+        .all()
+    )
 
-        recent_predicted_churns = (
-            pickle.loads(feedbacks[0].predicted_churn_object)
-            if feedbacks and feedbacks[0].predicted_churn_object
-            else None
-        )
+    recent_predicted_churns = (
+        pickle.loads(feedbacks[0].predicted_churn_object)
+        if feedbacks and feedbacks[0].predicted_churn_object
+        else None
+    )
 
     call_comments = (
         TeacherComment.objects.filter(
@@ -683,6 +672,7 @@ def tutor_results_report(request):
                 "report_start": report_start,
                 "report_end": report_end,
                 "regional_tutor_profile": regional_tutor_profile,
+                "tutors": tutors,
             },
         )
     return render(request, "logika_teachers/weekly_tutors_result.html")
