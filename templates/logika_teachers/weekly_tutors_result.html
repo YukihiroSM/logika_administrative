@@ -99,8 +99,10 @@
                                                                         <a href="{% url 'logika_teachers:teacher-profile' value.id %}"
                                                                            target="_blank">
                                                                     {% else %}
-                                                                        <a href="{% url 'logika_teachers:teacher-profile-regional' value.id regional_tutor_profile.id %}"
+
+                                                                        <a href="{% url 'logika_teachers:teacher-profile-regional' value.id tutor.id %}"
                                                                             target="_blank">
+
                                                                     {% endif %}
                                                                     {{ key }} </a>
                                                                 </td>

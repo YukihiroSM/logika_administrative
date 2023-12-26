@@ -89,7 +89,7 @@
                                                         {% if user_role == "tutor" %}
                                                             <a href="{% url 'logika_teachers:teacher-profile' month_report.teacher.id %}">
                                                         {% else %}
-                                                            <a href="{% url 'logika_teachers:teacher-profile-regional' month_report.teacher.id regional_tutor_profile.id%}">
+                                                            <a href="{% url 'logika_teachers:teacher-profile-regional' month_report.teacher.id tutor.id%}">
                                                         {% endif %}
                                                         <b>{{ month_report.teacher.user.get_full_name }}</b>
                                                         </a>
