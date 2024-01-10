@@ -1,10 +1,16 @@
 import csv
 import datetime
+import json
 import os
 
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Min, Max
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 from django.urls import reverse
@@ -26,6 +32,7 @@ from .models import (
     ClientManagerReport,
     LocationReport,
     CourseReport,
+    ConsolidationReport,
 )
 from .utils import (
     retrieve_group_ids_from_csv,
@@ -53,7 +60,7 @@ scales_new = {
     "Вересень": "2023-09-01_2023-09-30",
     "Жовтень": "2023-10-01_2023-10-31",
     "Листопад": "2023-11-01_2023-11-30",
-    "Грудень": "2023-12-01_2023-12-10"
+    "Грудень": "2023-12-01_2023-12-10",
 }
 
 
@@ -502,3 +509,77 @@ def create_location(request):
             "tutors": tutors,
         },
     )
+
+
+class ConsolidationReportEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ConsolidationReport):
+            return {
+                "location": obj.location,
+                "group_id": obj.group_id,
+                "student_id": obj.student_id,
+                "payment_total": obj.payment_total,
+                "lms_total": obj.lms_total,
+                "group_title": obj.group_title,
+                "difference": obj.difference,
+                "start_date": obj.start_date,
+                "end_date": obj.end_date,
+                "status": obj.status,
+                "comment": obj.comment,
+                "type": obj.type,
+                "id": obj.pk,
+            }
+        return super().default(obj)
+
+
+def get_consolidation_reports(request):
+    consolidation_reports = ConsolidationReport.objects.filter(
+        ~Q(difference=0) & Q(status="todo")
+    )
+    minimal_date = consolidation_reports.aggregate(min_value=Min("start_date"))[
+        "min_value"
+    ]
+    maximal_date = consolidation_reports.aggregate(max_value=Max("end_date"))[
+        "max_value"
+    ]
+    consolidation_reports = consolidation_reports.order_by("type")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        # AJAX request, manually create JSON data
+        data = serialize(
+            "json",
+            consolidation_reports,
+            cls=DjangoJSONEncoder,
+        )
+        data = json.loads(data)
+        return JsonResponse({"consolidation_reports": data}, safe=False)
+
+    return render(
+        request,
+        template_name="logika_statistics/payments_consolidation.html",
+        context={
+            "consolidation_reports": consolidation_reports,
+            "start_date": minimal_date,
+            "end_date": maximal_date,
+        },
+    )
+
+
+@login_required(login_url="/login/")
+def resolve_consolidation_report(request, report_id):
+    report = ConsolidationReport.objects.get(id=report_id)
+    report.status = "done"
+    report.save()
+    query_params = request.GET.urlencode()
+
+    target_view_name = "logika_statistics:consolidation-report"
+
+    if "saveSearch" not in query_params:
+        # Add the saveSearch parameter to the query parameters
+        if query_params:
+            redirect_url = f"{reverse(target_view_name)}?{query_params}&saveSearch=true"
+        else:
+            redirect_url = f"{reverse(target_view_name)}?saveSearch=true"
+    else:
+        redirect_url = reverse(target_view_name)
+
+    return redirect(redirect_url)

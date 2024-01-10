@@ -1,0 +1,52 @@
+{% extends 'layout/app.html' %}
+
+{% block title %} Зведення {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="breadcrumb-main">
+                        <div class="breadcrumb-action justify-content-center flex-wrap">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 mb-30">
+                    <h1>Зведення 1С та БО за період: {{ start_date }} - {{ end_date }}</h1>
+                    <br>
+                    <table id="consolidation_table" class="display" style="width:100%">
+                        <thead>
+                        <tr>
+                            <th>Назва локації</th>
+                            <th>ID групи</th>
+                            <th>ID студента</th>
+                            <th>Назва групи</th>
+                            <th>Всього списань в LMS</th>
+                            <th>Всього списань в 1С</th>
+                            <th>Різниця</th>
+                            <th>Коментар</th>
+                            <th>Тип незбіжності</th>
+                            <th class="actions">
+                                Дії
+                            </th>
+                        </tr>
+                        </thead>
+
+                    </table>
+                    <div id="pagination">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

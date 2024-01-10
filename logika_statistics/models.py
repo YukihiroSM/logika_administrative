@@ -337,3 +337,18 @@ class PaymentRecord(models.Model):
     course_title = models.CharField(max_length=128, null=True)
     course_id = models.CharField(max_length=16, null=True)
     payment_amount = models.CharField(max_length=16, null=True)
+
+
+class ConsolidationReport(models.Model):
+    location = models.CharField(max_length=256, null=True, blank=True)
+    group_id = models.CharField(max_length=256, null=True, blank=True)
+    student_id = models.CharField(max_length=256, null=True, blank=True)
+    payment_total = models.IntegerField(null=True)
+    lms_total = models.IntegerField(null=True)
+    group_title = models.CharField(max_length=256, null=True, blank=True)
+    difference = models.IntegerField()
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    status = models.CharField(max_length=256, null=True, default="todo")
+    comment = models.TextField(null=True)
+    type = models.CharField(max_length=256)
