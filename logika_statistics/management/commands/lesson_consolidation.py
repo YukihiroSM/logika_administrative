@@ -151,7 +151,9 @@ class Command(BaseCommand):
                     groups_attendance_data[group_id]["group_venue"] = student[
                         "location"
                     ]
-                if pd.to_numeric(student["student_id"], errors="coerce") is not None:
+                try:
+                    int(student["student_id"])
+                except:
                     ConsolidationReport.objects.create(
                         group_id=group_id,
                         student_id="",
@@ -166,6 +168,7 @@ class Command(BaseCommand):
                         end_date=self.end_date,
                     )
                     continue
+
                 groups_attendance_data[group_id]["one_c"][
                     int(student["student_id"])
                 ] = student["amount"]
