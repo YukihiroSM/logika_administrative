@@ -82,3 +82,75 @@
 
     });
 </script>
+
+<script>
+    var dataTable = new DataTable('#consolidation_table', {
+        order: [],
+        paging: true,
+        ajax: {
+            url: "{% url 'logika_statistics:consolidation-report' %}",
+            type: "GET",
+            dataSrc: "consolidation_reports"  // Data source path in the AJAX response
+        },
+        columns: [
+            { data: 'fields.location' },
+            { data: 'fields.group_id' },
+            { data: 'fields.student_id' },
+            { data: 'fields.group_title' },
+            { data: 'fields.lms_total' },
+            { data: 'fields.payment_total' },
+            { data: 'fields.difference' },
+            { data: 'fields.comment' },
+            { data: 'fields.type' },
+            // Add more columns if needed
+            {
+                data: null,
+                render: function (data, type, row) {
+                    var resolveUrl = "{% url 'logika_statistics:resolve-consolidation-report' 999 %}".replace('999', row.pk);
+                    return '<a href="' + resolveUrl + '" class="edit"><button class="btn btn-primary"><i class="uil uil-trash-alt"></i> Виправлено</button></a>';
+                }
+            }
+        ],
+        language: {
+            "decimal":        "",
+            "emptyTable":     "У таблиці немає даних",
+            "info":           "Показано з _START_ по _END_ із _TOTAL_ рядків",
+            "infoEmpty":      "Показано з 0 по 0 із 0 рядків",
+            "infoFiltered":   "(відфільтровано із _MAX_ рядків)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Показувати _MENU_ рядків",
+            "loadingRecords": "Завантаження...",
+            "processing":     "",
+            "search":         "Пошук:",
+            "zeroRecords":    "Збігів не знайдено",
+            "paginate": {
+                "first":      "Перша",
+                "last":       "Остання",
+                "next":       "Наступна",
+                "previous":   "Попередня"
+            },
+            "aria": {
+                "sortAscending":  ": активуйте, щоб відсортувати колонки за зростанням",
+                "sortDescending": ": активуйте, щоб відсортувати колонки за спаданням"
+            }
+        }
+
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        var urlParams = new URLSearchParams(window.location.search);
+        var saveSearch = urlParams.get('saveSearch');
+
+        if (saveSearch === 'true') {
+            var savedSearchValue = localStorage.getItem('dataTableSearch');
+            if (savedSearchValue) {
+                dataTable.search(savedSearchValue).draw();
+            }
+
+            dataTable.on('search.dt', function () {
+                var currentSearchValue = dataTable.search();
+                localStorage.setItem('dataTableSearch', currentSearchValue);
+            });
+        }
+    });
+</script>

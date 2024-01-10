@@ -22,5 +22,15 @@ urlpatterns = [
     ),
     path("list-locations/", views.list_locations, name="list-locations"),
     path("create-location/", views.create_location, name="create-location"),
+    path(
+        "consolidation-report/",
+        views.get_consolidation_reports,
+        name="consolidation-report",
+    ),
+    path(
+        "resolve-consolidation-report/<int:report_id>/",
+        views.resolve_consolidation_report,
+        name="resolve-consolidation-report",
+    ),
 ]
 app_name = "logika_statistics"

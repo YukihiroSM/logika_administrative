@@ -1,9 +1,11 @@
-import requests
-from pathlib import Path
 import os
-from dotenv import load_dotenv
-from utils.exceptions import LmsAuthenticationFailed
+from pathlib import Path
 
+import requests
+from dotenv import load_dotenv
+from requests.auth import HTTPBasicAuth
+
+from utils.exceptions import LmsAuthenticationFailed
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(Path(BASE_DIR, ".env"))
@@ -19,14 +21,13 @@ def get_one_c_authenticated_session():
         if os.environ.get("ENVIRONMENT") == "development"
         else "localhost"
     )
-    login_payload = {
-        "username": os.environ.get("ONE_C_LOGIN"),
-        "password": os.environ.get("ONE_C_PASSWORD"),
-    }
     try:
-        resp = session.post(
-            f"https://{one_c_host}:22443/SCHOOL/ru_RU/hs/1cData/TeachersWork/?from=20230901&till=20230901&businessDirection=Школы%20Программирования",
-            data=login_payload,
+        resp = session.get(
+            f"https://{one_c_host}:22443/SCHOOL/ru_RU/hs/1cData/TeachersWork/",
+            auth=HTTPBasicAuth(
+                username=os.environ.get("ONE_C_USERNAME"),
+                password=os.environ.get("ONE_C_PASSWORD"),
+            ),
         )
     except Exception as auth_exception:
         raise LmsAuthenticationFailed(
@@ -41,3 +42,6 @@ def get_one_c_authenticated_session():
         raise LmsAuthenticationFailed(
             f"One C: Unable to renew cookies. Something gone wrong in auth process {resp.status_code}: {resp.content}"
         )
+
+
+get_one_c_authenticated_session()
