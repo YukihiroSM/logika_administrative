@@ -19,6 +19,15 @@
       </a>
     </li>
     {% endif %}
+  {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "admin"%}
+    <li>
+      <a href="{% url 'logika_statistics:consolidation-report' %}">
+        <span class="nav-icon uil uil-create-dashboard"></span>
+        <span class="menu-text">Зведення 1С</span>
+        <span class="toggle-icon"></span>
+      </a>
+    </li>
+    {% endif %}
     {% comment %} {% if user_role == "tutor" %}
     <li>
       <a href="">
