@@ -28,6 +28,16 @@
       </a>
     </li>
     {% endif %}
+
+  {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "admin" or user_role == "tutor" or user_role == "regional_tutor"%}
+    <li>
+      <a href="{% url 'logika_teachers:tutor-teachers-statistics' %}">
+        <span class="nav-icon uil uil-create-dashboard"></span>
+        <span class="menu-text">Статистика по тьюторам-викладачам</span>
+        <span class="toggle-icon"></span>
+      </a>
+    </li>
+    {% endif %}
     {% comment %} {% if user_role == "tutor" %}
     <li>
       <a href="">
