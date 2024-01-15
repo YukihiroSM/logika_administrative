@@ -11,7 +11,7 @@ from transliterate import translit
 
 from logika_administrative.settings import BASE_DIR
 from logika_statistics.forms import ReportDateForm
-from logika_statistics.models import MasterClassRecord, PaymentRecord
+from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
 from logika_teachers.forms import (
     TeacherCreateForm,
     TeacherEditProfileForm,
@@ -857,4 +857,170 @@ def get_teacher_conversion(request, teacher_id, tutor_id=None):
             "report_scales": possible_report_scales,
             "tutor_profile": tutor_profile,
         },
+    )
+
+
+@login_required(login_url="/login/")
+def get_tutors_conversion(request):
+    #
+    # possible_report_scales = get_possible_report_scales()
+    business = "programming"
+    month_report = None
+    possible_report_scales = get_possible_report_scales()
+    if request.method == "POST":
+        form = ReportDateForm(request.POST)
+        if form.is_valid():
+            try:
+                report_start, report_end = form.cleaned_data["report_scale"].split(
+                    " - "
+                )
+            except ValueError:
+                month_report = form.cleaned_data["report_scale"]
+        else:
+            report_start, report_end = possible_report_scales[-1].split(" - ")
+    else:
+        report_start, report_end = possible_report_scales[-1].split(" - ")
+    if not month_report:
+        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
+        report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+        report_date_default = f"{report_start} - {report_end}"
+    else:
+        report_start, report_end = scales_new[month_report].split("_")
+        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
+        report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+        report_date_default = f"{report_start} - {report_end}"
+
+    current_user = request.user
+    user_role = get_user_role(current_user)
+    if not (
+        user_role == "tutor"
+        or user_role == "admin"
+        or user_role == "regional_tutor"
+        or user_role == "regional_manager"
+        or user_role == "territorial_manager"
+    ):
+        return render(request, "error_403.html")
+
+    tutor_profiles = []
+
+    if user_role == "tutor":
+        tutor_profiles = [
+            TutorProfile.objects.get(user=current_user),
+        ]
+
+    elif user_role == "regional_tutor":
+        regional_tutor_profile = RegionalTutorProfile.objects.get(user=current_user)
+        tutor_profiles = regional_tutor_profile.related_tutors.all()
+
+    elif user_role == "regional_manager" or user_role == "territorial_manager":
+        if user_role == "regional_manager":
+            regional_manager_name = (
+                f"{current_user.last_name} {current_user.first_name}"
+            )
+            locations = list(
+                set(
+                    Location.objects.filter(
+                        regional_manager=regional_manager_name
+                    ).values_list("lms_location_name", flat=True)
+                )
+            )
+        else:
+            territorial_manager_name = (
+                f"{current_user.last_name} {current_user.first_name}"
+            )
+            locations = list(
+                set(
+                    Location.objects.filter(
+                        territorial_manager=territorial_manager_name
+                    ).values_list("lms_location_name", flat=True)
+                )
+            )
+        teachers = list(
+            set(
+                MasterClassRecord.objects.filter(
+                    location__in=locations,
+                    start_date__gte=report_start,
+                    end_date__lte=report_end,
+                    business=business,
+                ).values_list("teacher_lms_id", flat=True)
+            )
+        )
+        tutor_profiles = []
+        for teacher in teachers:
+            tutor_profile = TutorProfile.objects.filter(
+                related_teachers__lms_id=teacher
+            ).all()
+            for profile in tutor_profile:
+                tutor_profiles.append(profile)
+
+    elif user_role == "admin":
+        tutor_profiles = TutorProfile.objects.all()
+
+    teachers_by_tutors_data = {}
+    for tutor in tutor_profiles:
+        teachers = tutor.related_teachers.all()
+        for teacher in teachers:
+            teacher_locations = list(
+                set(
+                    MasterClassRecord.objects.filter(
+                        teacher_lms_id=teacher.lms_id
+                    ).values_list("location", flat=True)
+                )
+            )
+            teacher_mc_students_queryset = MasterClassRecord.objects.filter(
+                start_date__gte=report_start,
+                end_date__lte=report_end,
+                teacher_lms_id=teacher.lms_id,
+                location__in=teacher_locations,
+                business=business,
+            )
+
+            teacher_payments_queryset = PaymentRecord.objects.filter(
+                start_date__gte=report_start,
+                end_date__lte=report_end,
+                teacher_lms_id=teacher.lms_id,
+                location__in=teacher_locations,
+                business=business,
+            )
+
+            payments_by_location = teacher_payments_queryset.values(
+                "location"
+            ).annotate(payment_count=Count("location"))
+
+            enrolled_by_location = teacher_mc_students_queryset.values(
+                "location"
+            ).annotate(student_count=Count("location"))
+
+            attended_by_location = (
+                teacher_mc_students_queryset.filter(attended=True)
+                .values("location")
+                .annotate(student_count=Count("location"))
+            )
+            if len(attended_by_location) != 0:
+                tutor_name = tutor.user.get_full_name()
+                teacher_name = teacher.user.get_full_name()
+
+                if tutor_name not in teachers_by_tutors_data:
+                    teachers_by_tutors_data[tutor_name] = {
+                        "teachers": {},
+                        "tutor_profile": tutor,
+                    }
+
+                if teacher_name not in teachers_by_tutors_data[tutor_name]:
+                    teachers_by_tutors_data[tutor_name]["teachers"][teacher_name] = {
+                        "enrolled_by_locations": enrolled_by_location,
+                        "attended_by_locations": attended_by_location,
+                        "payments_by_locations": payments_by_location,
+                        "teacher_profile": teacher,
+                    }
+
+    context = {
+        "teachers_tutors_data": teachers_by_tutors_data,
+        "report_date_default": report_date_default,
+        "report_scales": possible_report_scales,
+    }
+    return render(
+        request,
+        template_name="logika_teachers/tutor_teachers_statistics.html",
+        context=context,
     )

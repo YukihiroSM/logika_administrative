@@ -57,6 +57,11 @@ urlpatterns = [
         views.get_teacher_conversion,
         name="teacher-conversion-regional",
     ),
+    path(
+        "tutor-teachers-statistics/",
+        views.get_tutors_conversion,
+        name="tutor-teachers-statistics",
+    ),
 ]
 
 app_name = "logika_teachers"
