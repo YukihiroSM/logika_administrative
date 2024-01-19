@@ -687,11 +687,11 @@ def estimated_fall_off(request):
     regional_tutor_profile = RegionalTutorProfile.objects.get(user=current_user)
     tutors = regional_tutor_profile.related_tutors.all().prefetch_related("user__teacher_profile")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = EstimatedFallOffForm(request.POST)
         if form.is_valid():
-            month = form.cleaned_data['month']
-            selected_teachers = request.POST.getlist('teachers[]')
+            month = form.cleaned_data["month"]
+            selected_teachers = request.POST.getlist("teachers[]")
             selected_teachers_profiles = TeacherProfile.objects.filter(id__in=selected_teachers)
             estimated_fall_off_data = {}
             for teacher in selected_teachers_profiles:
