@@ -169,9 +169,15 @@ session.pickle
 #VS Code
 .vscode/
 
-
+# Project specific ignores
 reports/
 lms_reports/
 1c_reports
 locations_tm_regional_tutor_mapping.csv
 report_scales.txt
+*dump*
+*.sql
+*.db
+*fixture*
+groups_attendance_data
+*.ipynb
