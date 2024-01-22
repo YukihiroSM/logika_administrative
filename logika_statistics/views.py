@@ -61,6 +61,7 @@ scales_new = {
     "Жовтень": "2023-10-01_2023-10-31",
     "Листопад": "2023-11-01_2023-11-30",
     "Грудень": "2023-12-01_2023-12-20",
+    "Січень": "2023-12-21_2024-01-21"
 }
 
 
@@ -169,8 +170,8 @@ def programming_report_updated(request):
     else:
         report_start, report_end = possible_report_scales[-1].split(" - ")
     if not month_report:
-        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
-        report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+        report_start = datetime.datetime.strptime(report_start.strip(), "%Y-%m-%d").date()
+        report_end = datetime.datetime.strptime(report_end.strip(), "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
     else:
         report_start, report_end = scales_new[month_report].split("_")
