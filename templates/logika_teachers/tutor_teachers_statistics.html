@@ -29,7 +29,6 @@
                                 id="report_scale"
                                 class="form-control"
                                 style="width: 250px"
-                                onchange="this.form.submit()"
                         >
                             <option value="none" selected disabled hidden>
                                 Оберіть період
@@ -38,6 +37,24 @@
                                 <option value="{{ scale }}">{{ scale }}</option>
                             {% endfor %}
                         </select>
+                    <br>
+                        <select
+                                name="report_business"
+                                id="report_business"
+                                class="form-control"
+                                style="width: 250px"
+                        >
+                            <option value="programming" selected>
+                                Програмування
+                            </option>
+                            <option value="english">
+                                Англійська
+
+                            </option>
+                        </select>
+                    <br>
+                        <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
+                        </button>
                         <hr/>
                     </form>
 
@@ -48,7 +65,7 @@
                 </div>
                 <div class="card-body p-0">
                     {% for tutor, tutor_data in teachers_tutors_data.items %}
-                        <table class="table border-dark table-bordered table-responsive" >
+                        <table class="table border-dark table-bordered table-responsive">
                             <thead>
                             <tr class="table-primary">
                                 <th colspan="6">{{ tutor_data.tutor_profile.user.get_full_name }}</th>
