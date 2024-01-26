@@ -7,6 +7,11 @@ class ReportDateForm(forms.Form):
     report_scale = forms.CharField(label="report_scale", max_length=100)
 
 
+class ReportDateBusinessForm(forms.Form):
+    report_scale = forms.CharField(label="report_scale", max_length=100)
+    report_business = forms.CharField(label="report_business", max_length=100)
+
+
 class ExtendedReportForm(forms.Form):
     regional_manager = forms.CharField(label="regional_manager", max_length=256)
 
