@@ -548,6 +548,7 @@ def tutor_month_report(request, user_id):
         category = request.POST.get("category")
         is_salary_counted = request.POST.getlist("is_salary_counted")
         report_id = request.POST.get("report_id")
+        conversion = request.POST.get("conversion")
         if month:
             month_reports = TutorMonthReport.objects.filter(
                 month=month, tutor=tutor
@@ -573,6 +574,9 @@ def tutor_month_report(request, user_id):
                 month_report = TutorMonthReport.objects.get(report_id=report_id)
                 if is_salary_counted and is_salary_counted[0] == "yes":
                     month_report.is_salary_counted = True
+
+                if conversion:
+                    month_report.conversion = conversion
 
                 if churns_percent:
                     month_report.churns_percent = churns_percent

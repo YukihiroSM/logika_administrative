@@ -161,7 +161,10 @@
 
                                                                         <p>
                                                                             Ім'я: {{ month_report.teacher.user.get_full_name }}</p>
-                                                                        <p>Конверсія: {{ month_report.conversion }}</p>
+                                                                        <p>Конверсія: <br><textarea
+                                                                                name="conversion"
+                                                                                id="conversion">{{ month_report.conversion }}</textarea>
+                                                                        </p>
                                                                         <p>
                                                                             Успішність: {{ month_report.performance_percent }}</p>
                                                                         <p>Відсоток відвалів: <br><textarea
