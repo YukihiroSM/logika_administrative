@@ -37,7 +37,7 @@
                                 <option value="{{ scale }}">{{ scale }}</option>
                             {% endfor %}
                         </select>
-                    <br>
+                        <br>
                         <select
                                 name="report_business"
                                 id="report_business"
@@ -52,7 +52,7 @@
 
                             </option>
                         </select>
-                    <br>
+                        <br>
                         <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
                         </button>
                         <hr/>
@@ -78,9 +78,9 @@
                                     Імʼя викладача
                                 </td>
                                 <td>Локація</td>
-                                <td>К-ть оплат</td>
-                                <td>К-ть відвідувань</td>
                                 <td>К-ть записів</td>
+                                <td>К-ть відвідувань</td>
+                                <td>К-ть оплат</td>
                                 <td>Конверсія</td>
 
                             </tr>
@@ -95,16 +95,17 @@
                                                 {{ teacher_data.teacher_profile.user.get_full_name }}
                                             </td>
                                         {% endif %}
+
                                         <td>
                                             <label for="location_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}_checkbox"></label>
                                             <input id="location_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}_checkbox"
                                                    type="checkbox" checked>
                                             {{ location.location }}
                                         </td>
-                                        <td id="payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
-                                            {% for loc in teacher_data.payments_by_locations %}
+                                        <td id="enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+                                            {% for loc in teacher_data.enrolled_by_locations %}
                                                 {% if loc.location == location.location %}
-                                                    {{ loc.payment_count|default:0 }}
+                                                    {{ loc.student_count|default:0 }}
                                                 {% endif %}
                                             {% endfor %}
                                         </td>
@@ -115,10 +116,10 @@
                                                 {% endif %}
                                             {% endfor %}
                                         </td>
-                                        <td id="enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
-                                            {% for loc in teacher_data.enrolled_by_locations %}
+                                        <td id="payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+                                            {% for loc in teacher_data.payments_by_locations %}
                                                 {% if loc.location == location.location %}
-                                                    {{ loc.student_count|default:0 }}
+                                                    {{ loc.payment_count|default:0 }}
                                                 {% endif %}
                                             {% endfor %}
                                         </td>
@@ -133,13 +134,13 @@
                                     <tr id="teacherTotal_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
                                         <td></td>
                                         <td>Загалом по викладачу</td>
-                                        <td id="total_payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                        <td id="total_enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
                                             0
                                         </td>
                                         <td id="total_attended_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
                                             0
                                         </td>
-                                        <td id="total_enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                        <td id="total_payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
                                             0
                                         </td>
                                         <td id="total_conversion_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
@@ -154,9 +155,9 @@
                                 <tr id="tutorTotal_{{ tutor_data.tutor_profile.id }}">
                                     <td>Загалом по тьютору</td>
                                     <td></td>
-                                    <td id="total_payments_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
-                                    <td id="total_attended_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
                                     <td id="total_enrolled_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                    <td id="total_attended_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                    <td id="total_payments_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
                                     <td id="total_conversion_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
                                 </tr>
                             </b>
