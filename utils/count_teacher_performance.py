@@ -1,13 +1,14 @@
+from datetime import datetime
+
 from logika_statistics.models import Group
 from logika_teachers.models import TeacherProfile
-from datetime import datetime
 from utils.lms_authentication import get_authenticated_session
 
 
 def is_lesson_in_month(lesson_date, month):
     # lesson_date_example: 2023-03-13T20:30:00+03:00
     lesson_date = datetime.strptime(lesson_date, "%Y-%m-%dT%H:%M:%S%z")
-    if lesson_date.month == month:
+    if lesson_date.month == month and lesson_date.year == 2024:
         return True
 
 
