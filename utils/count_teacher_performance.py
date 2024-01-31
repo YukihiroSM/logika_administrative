@@ -50,7 +50,7 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
                 ):
                     perf = lesson.get("regularTaskScoreSumPercent")
                     if not perf:
-                        if not group.lms_id in zero_performance_lessons:
+                        if group.lms_id not in zero_performance_lessons:
                             zero_performance_lessons[group.lms_id] = []
                         lesson_id = lesson.get("id")
                         lesson_title = lesson["title"]
