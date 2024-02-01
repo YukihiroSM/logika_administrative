@@ -1,19 +1,18 @@
+import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from pathlib import Path
 
 import numpy as np
-import phonenumbers
-from django.core.management.base import BaseCommand, CommandError
-from logika_statistics.models import StudentReport, Location, Issue, GlobalGroup
-import library
-import requests
-from datetime import datetime
-import os
-from logika_administrative.settings import BASE_DIR
-from pathlib import Path
 import pandas as pd
-import logging
-from utils.lms_authentication import get_authenticated_session
+import phonenumbers
+from django.core.management.base import BaseCommand
 
+import library
+from logika_administrative.settings import BASE_DIR
+from logika_statistics.models import StudentReport, Location, Issue, GlobalGroup
+from utils.lms_authentication import get_authenticated_session
 
 parsing_results = {}
 
@@ -260,6 +259,7 @@ class Command(BaseCommand):
                     print("ISSUE ALREADY EXISTS", issue.issue_description)
                 else:
                     issue.save()
+            client_manager = row["client_manager"]
             if row["course"] is None:
                 print("NO COURSE IN LMS" + " " + str(datetime.now()))
                 issue = Issue(
@@ -315,7 +315,11 @@ class Command(BaseCommand):
                         lms_location_name=row["group_location"]
                     ).first()
                     if location:
-                        client_manager = location.client_manager
+                        client_manager = (
+                            location.client_manager
+                            if not client_manager
+                            else client_manager
+                        )
                         regional_manager = location.regional_manager
                         territorial_manager = location.territorial_manager
                         tutor = location.tutor
@@ -343,7 +347,7 @@ class Command(BaseCommand):
                             print("ISSUE ALREADY EXISTS", issue.issue_description)
                         else:
                             issue.save()
-                        client_manager = row["client_manager"]
+                        # client_manager = row["client_manager"]
                         regional_manager = None
                         territorial_manager = None
                         tutor = None
@@ -404,12 +408,12 @@ class Command(BaseCommand):
                         print("ISSUE ALREADY EXISTS", issue.issue_description)
                     else:
                         issue.save()
-                    client_manager = row["client_manager"]
+                    # client_manager = row["client_manager"]
                     regional_manager = "UNKNOWN"
                     territorial_manager = "UNKNOWN"
                     tutor = "UNKNOWN"
             else:
-                client_manager = row["client_manager"]
+                # client_manager = row["client_manager"]
                 regional_manager = None
                 territorial_manager = None
                 tutor = None
