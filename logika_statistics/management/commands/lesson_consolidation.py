@@ -21,7 +21,7 @@ class Command(BaseCommand):
         self.royalty_csv_path = Path(
             BASE_DIR, "reports", f"royalty_{self.start_date}_{self.end_date}.csv"
         )
-        self.royalty_1c_path = Path(BASE_DIR, "reports", "consolidation_report.xlsx")
+        self.royalty_1c_path = Path(BASE_DIR, "reports", "conslidation_report.xlsx")
         self.parsed_start_date = datetime.strptime(self.start_date, "%Y-%m-%d")
         self.parsed_end_date = datetime.strptime(self.end_date, "%Y-%m-%d")
         self.group_data_path = Path(BASE_DIR, "groups_attendance_data")
@@ -40,75 +40,71 @@ class Command(BaseCommand):
         self.download_royalty_csv()
         if not self.group_data_path.exists():
             groups_attendance_data = {}
-            with open(self.royalty_csv_path, "r", encoding="utf-8") as f:
+            with open(self.royalty_csv_path, "r") as f:
                 csv_reader = csv.reader(f, delimiter=";")
-                
                 for line, group_row in enumerate(csv_reader):
-                    try:
-                        if line == 0:
-                            continue
+                    if line == 0:
+                        continue
 
-                        if group_row[3] == "masterclass":
-                            continue
+                    if group_row[3] == "masterclass":
+                        continue
 
-                        group_id = group_row[1]
-                        if group_id in groups_attendance_data:
-                            continue
-                        group_data_url = f"https://lms.logikaschool.com/api/v1/group/{group_id}?expand=venue,curator"
-                        group_data_response = self.session.get(group_data_url)
-                        if group_data_response.status_code != 200:
-                            print(
-                                f"ERROR getting group from lms: {group_data_response.status_code} {group_data_url}"
-                            )
-                            continue
-                        group_data = group_data_response.json()["data"]
-                        group_attendance_url = f"https://lms.logikaschool.com/api/v1/stats/default/attendance?group={group_id}"
-                        group_attendance_response = self.session.get(group_attendance_url)
-                        if group_attendance_response.status_code != 200:
-                            print(
-                                f"ERROR getting attendance from lms: "
-                                f"{group_attendance_response.status_code} {group_attendance_url}"
-                            )
-                            continue
-                        group_attendance = group_attendance_response.json()["data"]
-                        group_curator = (
-                            group_data["curator"]["name"] if group_data["curator"] else ""
+                    group_id = group_row[1]
+                    if group_id in groups_attendance_data:
+                        continue
+                    group_data_url = f"https://lms.logikaschool.com/api/v1/group/{group_id}?expand=venue,curator"
+                    group_data_response = self.session.get(group_data_url)
+                    if group_data_response.status_code != 200:
+                        print(
+                            f"ERROR getting group from lms: {group_data_response.status_code} {group_data_url}"
                         )
-                        group_venue = (
-                            group_data["venue"]["title"] if group_data["venue"] else ""
+                        continue
+                    group_data = group_data_response.json()["data"]
+                    group_attendance_url = f"https://lms.logikaschool.com/api/v1/stats/default/attendance?group={group_id}"
+                    group_attendance_response = self.session.get(group_attendance_url)
+                    if group_attendance_response.status_code != 200:
+                        print(
+                            f"ERROR getting attendance from lms: "
+                            f"{group_attendance_response.status_code} {group_attendance_url}"
                         )
-                        group_title = group_row[2]
-                        print(f"Got group {group_title} {group_id}")
+                        continue
+                    group_attendance = group_attendance_response.json()["data"]
+                    group_curator = (
+                        group_data["curator"]["name"] if group_data["curator"] else ""
+                    )
+                    group_venue = (
+                        group_data["venue"]["title"] if group_data["venue"] else ""
+                    )
+                    group_title = group_row[2]
+                    print(f"Got group {group_title} {group_id}")
 
-                        groups_attendance_data[group_id] = {}
-                        groups_attendance_data[group_id]["lms"] = {}
-                        for student in group_attendance:
-                            student_id = student["student_id"]
-                            groups_attendance_data[group_id]["lms"][student_id] = 0
-                            for lesson in student["attendance"]:
-                                parsed_date = datetime.strptime(
-                                    lesson["start_time_formatted"][3:], "%d.%m.%y %H:%M"
-                                )
-                                if (
-                                    self.parsed_start_date
-                                    <= parsed_date
-                                    <= self.parsed_end_date
-                                ):
-                                    if lesson["status"] not in ["present", "absent"]:
-                                        continue
-                                    groups_attendance_data[group_id]["lms"][student_id] += 1
-                            print(
-                                f"Processed student {student_id}, "
-                                f"{group_id}, "
-                                f"student_attendance: "
-                                f"{groups_attendance_data[group_id]['lms'][student_id]}"
+                    groups_attendance_data[group_id] = {}
+                    groups_attendance_data[group_id]["lms"] = {}
+                    for student in group_attendance:
+                        student_id = student["student_id"]
+                        groups_attendance_data[group_id]["lms"][student_id] = 0
+                        for lesson in student["attendance"]:
+                            parsed_date = datetime.strptime(
+                                lesson["start_time_formatted"][3:], "%d.%m.%y %H:%M"
                             )
+                            if (
+                                self.parsed_start_date
+                                <= parsed_date
+                                <= self.parsed_end_date
+                            ):
+                                if lesson["status"] not in ["present", "absent"]:
+                                    continue
+                                groups_attendance_data[group_id]["lms"][student_id] += 1
+                        print(
+                            f"Processed student {student_id}, "
+                            f"{group_id}, "
+                            f"student_attendance: "
+                            f"{groups_attendance_data[group_id]['lms'][student_id]}"
+                        )
 
-                        groups_attendance_data[group_id]["group_title"] = group_title
-                        groups_attendance_data[group_id]["group_curator"] = group_curator
-                        groups_attendance_data[group_id]["group_venue"] = group_venue
-                    except Exception as exp:
-                        print(exp)
+                    groups_attendance_data[group_id]["group_title"] = group_title
+                    groups_attendance_data[group_id]["group_curator"] = group_curator
+                    groups_attendance_data[group_id]["group_venue"] = group_venue
             with open(self.group_data_path, "wb") as groups_data_file:
                 pickle.dump(groups_attendance_data, groups_data_file)
 
@@ -116,7 +112,7 @@ class Command(BaseCommand):
         with open(self.group_data_path, "rb") as groups_data_file:
             groups_attendance_data = pickle.load(groups_data_file)
 
-        unused_columns = [1, 2, 4, 6, 7, 8, 9]
+        unused_columns = [1, 2, 4, 6, 7, 8, 9, 10]
         payments_dataset = pd.read_excel(
             self.royalty_1c_path, sheet_name="TDSheet", skiprows=4
         )
@@ -128,7 +124,7 @@ class Command(BaseCommand):
                 "Unnamed: 0": "location",
                 "Unnamed: 3": "student, id",
                 "Unnamed: 5": "group, id",
-                "Количество учеников.3": "amount",
+                "Количество учеников.4": "amount",
             },
             inplace=True,
         )
@@ -138,7 +134,11 @@ class Command(BaseCommand):
         payments_dataset[["group_name", "group_id", "trash"]] = payments_dataset[
             "group, id"
         ].str.split(", ", expand=True)
+        pd.set_option('display.max_columns', None)
+        
         payments_dataset["group_id"] = payments_dataset["group_id"].str.replace(",", "")
+        # print(payments_dataset)
+        # return
         unique_group_ids = payments_dataset["group_id"].unique()
         for group_id in unique_group_ids:
             group_df = payments_dataset[payments_dataset["group_id"] == group_id]
@@ -155,9 +155,7 @@ class Command(BaseCommand):
                     groups_attendance_data[group_id]["group_venue"] = student[
                         "location"
                     ]
-                try:
-                    int(student["student_id"])
-                except:
+                if pd.to_numeric(student["student_id"], errors="coerce") is not None:
                     ConsolidationReport.objects.create(
                         group_id=group_id,
                         student_id="",
@@ -172,7 +170,6 @@ class Command(BaseCommand):
                         end_date=self.end_date,
                     )
                     continue
-
                 groups_attendance_data[group_id]["one_c"][
                     int(student["student_id"])
                 ] = student["amount"]

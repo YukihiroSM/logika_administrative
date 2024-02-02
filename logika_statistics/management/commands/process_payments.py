@@ -90,12 +90,17 @@ class Command(BaseCommand):
                 print(f"ISSUE: student {student_id} not found in LMS")
                 continue
             student_details = student_details_response.json()["data"]
-            student_lms_name = student_details.get("fullName")
-            student_lms_id = student_details.get("id")
-            student_recent_group = student_details.get("lastGroup")
+            try:
+                student_lms_name = student_details.get("fullName")
+                student_lms_id = student_details.get("id")
+                student_recent_group = student_details.get("lastGroup")
+            except:
+                print(f"ISSUE: Can't get data about student {student_id} Skipping!")
             if student_recent_group is None:
                 print(f"ISSUE: student {student_id} has no recent group")
+
             student_recent_group_id = student_recent_group.get("id")
+
 
             group_data_url = f"https://lms.logikaschool.com/api/v1/group/{student_recent_group_id}?expand=venue,teacher,curator"
             group_data_response = lms_session.get(group_data_url)
