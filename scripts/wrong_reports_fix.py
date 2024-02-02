@@ -3,11 +3,10 @@ from utils.lms_authentication import get_authenticated_session
 
 
 def run():
-
     wrong_reports = StudentReport.objects.filter(
         payment=1,
         territorial_manager__isnull=True,
-        start_date__in=("2023-12-11",),
+        start_date__in=("2023-12-21", "2024-01-08", "2024-01-15", "2024-01-22"),
         business="programming",
     ).all()
 
@@ -30,10 +29,19 @@ def run():
                             location = group_data["venue"].get("title")
                         except:
                             continue
-                        location_obj = Location.objects.filter(lms_location_name=location).first()
+                        client_manager = None
+                        if group_data["curator"] and group_data["curator"]["name"]:
+                            client_manager = group_data["curator"]["name"]
+                        location_obj = Location.objects.filter(
+                            lms_location_name=location
+                        ).first()
                         if location_obj:
                             report.location = location
-                            report.client_manager = location_obj.client_manager
+                            report.client_manager = (
+                                client_manager
+                                if client_manager
+                                else location_obj.client_manager
+                            )
                             report.territorial_manager = (
                                 location_obj.territorial_manager
                             )
@@ -56,12 +64,20 @@ def run():
                     teacher = group_data["teacher"].get("id")
                     report.teacher = teacher
                     report.save()
+
+                client_manager = group_data.get("curator")
+                if client_manager:
+                    client_manager = group_data["curator"].get("name")
                 location_obj = Location.objects.filter(
                     lms_location_name=location
                 ).first()
                 if location_obj:
                     report.location = location
-                    report.client_manager = location_obj.client_manager
+                    report.client_manager = (
+                        client_manager
+                        if client_manager
+                        else location_obj.client_manager
+                    )
                     report.territorial_manager = location_obj.territorial_manager
                     report.regional_manager = location_obj.regional_manager
                     report.save()
