@@ -11,6 +11,7 @@ from logika_statistics.models import (
     CourseReport,
     Location,
     TeacherReportNew,
+    PaymentRecord
 )
 
 
@@ -88,6 +89,9 @@ class Command(BaseCommand):
         reports = StudentReport.objects.filter(
             start_date__gte=start_date, end_date__lte=end_date, business="programming"
         )
+        payments_reports = PaymentRecord.objects.filter(
+            start_date__gte=start_date, end_date__lte=end_date, business="programming"
+        )
         territorial_managers = reports.values_list(
             "territorial_manager", flat=True
         ).distinct()
@@ -112,12 +116,10 @@ class Command(BaseCommand):
                     ):
                         continue
                     payments = len(
-                        reports.filter(
-                            business="programming",
+                        payments_reports.filter(
                             client_manager=client_manager,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            payment=1,
                         ).all()
                     )
                     attended_mc = len(
@@ -170,12 +172,10 @@ class Command(BaseCommand):
                     ):
                         continue
                     payments = len(
-                        reports.filter(
-                            business="programming",
+                        payments_reports.filter(
                             location=location,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            payment=1,
                         ).all()
                     )
                     attended_mc = len(
