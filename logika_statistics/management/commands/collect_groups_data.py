@@ -68,3 +68,7 @@ class Command(BaseCommand):
                             f"Group {group_name} already exists. Updated data."
                         )
                     )
+
+        else:
+            print(groups_resp.status_code)
+            print(groups_resp.content)

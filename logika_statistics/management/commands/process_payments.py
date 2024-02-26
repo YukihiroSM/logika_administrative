@@ -99,7 +99,10 @@ class Command(BaseCommand):
             if student_recent_group is None:
                 print(f"ISSUE: student {student_id} has no recent group")
 
-            student_recent_group_id = student_recent_group.get("id")
+            try:
+                student_recent_group_id = student_recent_group.get("id")
+            except:
+                continue
 
 
             group_data_url = f"https://lms.logikaschool.com/api/v1/group/{student_recent_group_id}?expand=venue,teacher,curator"
