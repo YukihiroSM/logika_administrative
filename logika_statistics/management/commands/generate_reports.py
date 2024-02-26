@@ -11,7 +11,8 @@ from logika_statistics.models import (
     CourseReport,
     Location,
     TeacherReportNew,
-    PaymentRecord
+    PaymentRecord,
+    MasterClassRecord,
 )
 
 
@@ -42,7 +43,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_rm_by_cm(client_manager, start_date, end_date, territorial_manager):
         regionals = (
-            StudentReport.objects.filter(
+            MasterClassRecord.objects.filter(
                 start_date__gte=start_date,
                 end_date__lte=end_date,
                 business="programming",
@@ -57,7 +58,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_rm_by_tm(tm, start_date, end_date):
         regionals = (
-            StudentReport.objects.filter(
+            MasterClassRecord.objects.filter(
                 start_date__gte=start_date,
                 end_date__lte=end_date,
                 business="programming",
@@ -71,7 +72,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_rm_by_location(location, start_date, end_date, territorial_manager):
         regionals = (
-            StudentReport.objects.filter(
+            MasterClassRecord.objects.filter(
                 start_date__gte=start_date,
                 end_date__lte=end_date,
                 business="programming",
@@ -86,7 +87,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         start_date = datetime.strptime(os.environ.get("start_date"), "%Y-%m-%d").date()
         end_date = datetime.strptime(os.environ.get("end_date"), "%Y-%m-%d").date()
-        reports = StudentReport.objects.filter(
+        reports = MasterClassRecord.objects.filter(
             start_date__gte=start_date, end_date__lte=end_date, business="programming"
         )
         payments_reports = PaymentRecord.objects.filter(
@@ -128,9 +129,8 @@ class Command(BaseCommand):
                             client_manager=client_manager,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            attended_mc=1,
+                            attended=True,
                         )
-                        .exclude(amo_id__isnull=True, is_duplicate=1)
                         .all()
                     )
                     enrolled_mc = len(
@@ -139,9 +139,7 @@ class Command(BaseCommand):
                             client_manager=client_manager,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            enrolled_mc=1,
                         )
-                        .exclude(amo_id__isnull=True, is_duplicate=1)
                         .all()
                     )
                     conversion = self.get_conversion(payments, attended_mc)
@@ -184,9 +182,8 @@ class Command(BaseCommand):
                             location=location,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            attended_mc=1,
+                            attended=True,
                         )
-                        .exclude(amo_id__isnull=True, is_duplicate=1)
                         .all()
                     )
                     enrolled_mc = len(
@@ -195,9 +192,7 @@ class Command(BaseCommand):
                             location=location,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                            enrolled_mc=1,
                         )
-                        .exclude(amo_id__isnull=True, is_duplicate=1)
                         .all()
                     )
                     conversion = self.get_conversion(payments, attended_mc)
