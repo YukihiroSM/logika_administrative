@@ -5,3 +5,14 @@ GROUP_TYPES = {
     "regular": "Група",
     "individual": "Individual group",
 }
+
+GROUP_TYPES_LIST = [
+    "Группа",
+    "Мастер-класс",
+    "Индивидуальная",
+]
+
+GROUP_STATUSES_LIST = [
+    "Активная",
+    "Идет набор"
+]
