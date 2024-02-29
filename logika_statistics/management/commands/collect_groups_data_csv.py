@@ -18,6 +18,7 @@ class Command(BaseCommand):
         try:
             with open(GROUPS_FILE_PATH, mode="r", encoding="utf-8") as csv_file:
                 csv_reader = csv.DictReader(csv_file, delimiter=";")
+                session = get_authenticated_session()
                 for row in csv_reader:
                     if row["Статус"] not in GROUP_STATUSES_LIST or row["Тип группы"] not in GROUP_TYPES_LIST:
                         continue
@@ -29,7 +30,7 @@ class Command(BaseCommand):
                     group_venue = row["Площадка"]
                     teacher_name = row["Преподаватель"]
                     teacher_id = None
-                    session = get_authenticated_session()
+                    
                     if teacher_name != "not_set":
                         detailed_group_resp = session.get(
                             f"https://lms.logikaschool.com/api/v1/group/{group_id}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
