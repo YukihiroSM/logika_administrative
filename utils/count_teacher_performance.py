@@ -18,14 +18,14 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
         groups = Group.objects.filter(
             venue__in=locations,
             teacher_id=teacher.lms_id,
-            type__in=["regular", "individual"],
+            type__in=["regular", "individual", "Группа", "Индивидуальная",],
             title__in=teacher_groups,
         )
     else:
         groups = Group.objects.filter(
             venue__in=locations,
             teacher_id=teacher.lms_id,
-            type__in=["regular", "individual"],
+            type__in=["regular", "individual", "Группа", "Индивидуальная"],
         )
     session = get_authenticated_session()
     results = {}

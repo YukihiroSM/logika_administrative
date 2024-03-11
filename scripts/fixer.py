@@ -12,8 +12,11 @@ import pandas as pd
 
 
 def run():
-    locations_in_mc = MasterClassRecord.objects.values_list("location", flat=True)
-    locations_in_payments = PaymentRecord.objects.values_list("location", flat=True)
+    start_dates = [
+        "2024-02-01","2024-02-05", "2024-02-12", "2024-02-19", "2024-02-26"
+    ]
+    locations_in_mc = MasterClassRecord.objects.filter(start_date__in=start_dates).values_list("location", flat=True)
+    locations_in_payments = PaymentRecord.objects.filter(start_date__in=start_dates).values_list("location", flat=True)
 
     locations_in_mc = list(set(locations_in_mc))
     locations_in_payments = list(set(locations_in_payments))
@@ -23,12 +26,12 @@ def run():
     print("Локации, по которым есть МК:")
     for location in locations_in_mc:
         if not (location in real_locations):
-            print(location)
+            print("\t", location)
 
     print("Локации, по которым есть оплаты:")
     for location in locations_in_payments:
         if not (location in real_locations):
-            print(location)
+            print("\t", location)
 
 
 
