@@ -33,6 +33,7 @@ from .models import (
     LocationReport,
     CourseReport,
     ConsolidationReport,
+    MasterClassRecord
 )
 from .utils import (
     retrieve_group_ids_from_csv,
@@ -63,7 +64,7 @@ scales_new = {
     "Грудень": "2023-12-01_2023-12-20",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
-    "Березень": "2024-03-01_2024-03-10"
+    "Березень": "2024-03-01_2024-03-24"
 }
 
 
@@ -182,6 +183,7 @@ def programming_report_updated(request):
         report_date_default = f"{report_start} - {report_end}"
 
     user_role = get_user_role(request.user)
+    print(user_role)
     if user_role == "admin":
         location_reports = (
             LocationReport.objects.filter(start_date=report_start, end_date=report_end)
@@ -196,7 +198,7 @@ def programming_report_updated(request):
             .all()
         )
         territorial_managers = (
-            StudentReport.objects.filter(
+            MasterClassRecord.objects.filter(
                 start_date__gte=report_start, end_date__lte=report_end
             )
             .exclude(
@@ -364,6 +366,7 @@ def programming_report_updated(request):
         "ukrainian_totals": ukrainian_totals,
         # "reports_by_course": formatted_courses
     }
+    print(context["managers"])
     html_template = loader.get_template(
         "logika_statistics/report_programming_updated.html"
     )
