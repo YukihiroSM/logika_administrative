@@ -6,7 +6,9 @@ import uuid
 
 class TeacherProfile(models.Model):
     lms_id = models.CharField(max_length=16)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, related_name="teacher_profile"
+    )
     related_tutors = models.ManyToManyField(
         "TutorProfile", related_name="related_teachers"
     )
@@ -29,6 +31,9 @@ class TutorProfile(models.Model):
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
+    def get_full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+
 
 class RegionalTutorProfile(models.Model):
     one_c_name = models.CharField(max_length=64, null=True, blank=True)
@@ -40,6 +45,9 @@ class RegionalTutorProfile(models.Model):
     related_tutors = models.ManyToManyField(
         "TutorProfile", related_name="related_regional_tutors"
     )
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 class TeacherFeedback(models.Model):

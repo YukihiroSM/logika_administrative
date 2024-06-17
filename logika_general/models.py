@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.auth.models import User
 
 
 class Group(models.Model):
@@ -45,3 +46,48 @@ class Location(models.Model):
 
     def __str__(self):
         return f"{self.lms_location_name}"
+
+
+class ClientManagerProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    auth_token = models.TextField(null=True, blank=True)
+    login_timestamp = models.DateTimeField(null=True, default=None)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    related_tms = models.ManyToManyField(
+        "TerritorialManagerProfile", related_name="client_managers"
+    )
+
+    class Meta:
+        ordering = ["user__date_joined"]
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class TerritorialManagerProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    auth_token = models.TextField(null=True, blank=True)
+    login_timestamp = models.DateTimeField(null=True, default=None)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    related_rms = models.ManyToManyField(
+        "RegionalManagerProfile", related_name="territorial_managers"
+    )
+
+    class Meta:
+        ordering = ["user__date_joined"]
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class RegionalManagerProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    login_timestamp = models.DateTimeField(null=True, default=None)
+    auth_token = models.TextField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+
+    class Meta:
+        ordering = ["user__date_joined"]
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"

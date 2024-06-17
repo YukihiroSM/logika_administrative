@@ -1,179 +1,221 @@
-{% extends 'layout/app.html' %} {% block title %} Skeleton {% endblock %} {%
-load i18n %} {% load static %} {% block content %}
-<div class="dm-page-content">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header color-dark fw-500">Місячний звіт тьютора {{tutor.user.get_full_name}}</div>
-          <div class="card-body p-0">
-            <form action="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}" method="post">
-              {% csrf_token %}
-              <div class="form-group">
-                <label for="month" class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
-                  місяць</label>
-                <select class="form-control px-15 select2-hidden-accessible" id="month"
-                  data-select2-id="exampleFormControlSelect1" tabindex="-1" aria-hidden="true" name="month">
-                  <option data-select2-id="1">Січень</option>
-                  <option data-select2-id="2">Лютий</option>
-                  <option data-select2-id="3">Березень</option>
-                  <option data-select2-id="4">Квітень</option>
-                  <option data-select2-id="5">Травень</option>
-                  <option data-select2-id="6">Червень</option>
-                  <option data-select2-id="7">Липень</option>
-                  <option data-select2-id="8">Серпень</option>
-                  <option data-select2-id="9">Вересень</option>
-                  <option data-select2-id="10">Жовтень</option>
-                  <option data-select2-id="11">Листопад</option>
-                  <option data-select2-id="12">Грудень</option>
-                </select>
-              </div>
-
-              <button type="submit" class="btn btn-lg btn-primary btn-submit">Отримати звіт
-              </button>
-            </form>
-
-            <div class="table4 p-25 mb-30">
-              <div class="table-responsive">
-                <table class="table mb-0">
-                  <thead>
-                    <tr class="userDatatable-header">
-                      <th>
-                        <span class="userDatatable-title">Середній відсоток відвалів</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Середній відсоток успішності</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Середня конверсія</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="table4 p-25 mb-30">
-              <div class="table-responsive">
-                <table class="table mb-0">
-                  <thead>
-                    <tr class="userDatatable-header">
-                      <th>
-                        <span class="userDatatable-title">Викладач</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Відсоток відвалів</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Відсоток успішності</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Відсоток конверсії</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Чи порахована зарплата</span>
-                      </th>
-                      <th>
-                        <span class="userDatatable-title">Категорія</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for month_report in month_reports %}
-                    <tr>
-                      <td>
-                        <div class="userDatatable-content"><b>{{ month_report.teacher.user.get_full_name }}</b></div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content"><b>{{month_report.churns_percent}}%</b></div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content">
-                          <b>{{month_report.performance_percent}}%</b>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content">
-                          <b>{{month_report.conversion}}%</b>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content">
-                          <b>{% if month_report.is_salary_counted %} Так {% else %} Ні {% endif %}</b>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content">
-                          <b>{{month_report.category}}</b>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="userDatatable-content">
-                          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modal-basic{{forloop.counter}}">Редагувати</button>
-                        </div>
-                        <form action="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}" method="post">
-                          {% csrf_token %}
-                          <div class="modal-basic modal fade" id="modal-basic{{forloop.counter}}" tabindex="-1" style="display: none;"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-md" role="document">
-                              <div class="modal-content modal-bg-white ">
-                                <div class="modal-header">
-                                  <h6 class="modal-title">Зміна звіту викладача</h6>
-                                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                      stroke-linejoin="round" class="svg replaced-svg">
-                                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                  </button>
+{% extends 'layout/app.html' %} {% block title %} Skeleton {% endblock %} {%load i18n %} {% load static %} {% block content %}
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header color-dark fw-500">Місячний звіт
+                            тьютора {{ tutor.user.get_full_name }}</div>
+                        <div class="card-body p-0">
+                            <form action="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}" method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="month" class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                        місяць</label>
+                                    <select class="form-control px-15" id="month"
+                                            tabindex="-1" aria-hidden="true"
+                                            name="month">
+                                        <option>Січень</option>
+                                        <option>Лютий</option>
+                                        <option>Березень</option>
+                                        <option>Квітень</option>
+                                        <option>Травень</option>
+                                        <option>Червень</option>
+                                        <option>Липень</option>
+                                        <option>Серпень</option>
+                                        <option>Вересень</option>
+                                        <option>Жовтень</option>
+                                        <option>Листопад</option>
+                                        <option>Грудень</option>
+                                    </select>
                                 </div>
-                                <div class="modal-body">
 
-                                  <p>Ім'я: {{month_report.teacher.user.get_full_name}}</p>
-                                  <p>Конверсія: {{month_report.conversion}}</p>
-                                  <p>Успішність: {{month_report.performance_percent}}</p>
-                                  <p>Відсоток відвалів: <br><textarea name="churns_percent"
-                                      id="churns_percent">{{month_report.churns_percent}}</textarea></p>
-                                  <p>Категорія (A, B, C): <br><textarea name="category"
-                                      id="churns_percent">{{month_report.category}}</textarea></p>
-                                  <p>Чи порахована ЗП:</p>
-                                  <div class="checkbox-theme-default custom-checkbox ">
+                                <button type="submit" class="btn btn-lg btn-primary btn-submit">Отримати звіт
+                                </button>
+                            </form>
 
-                                    <input class="checkbox" type="checkbox" id="check-un{{ forloop.counter }}"
-                                      name="is_salary_counted" value="yes" {% if month_report.is_salary_counted %}
-                                      checked {% endif %}>
-                                    <label for="check-un{{ forloop.counter }}">
+                            <div class="table4 p-25 mb-30">
+                                <div class="table-responsive">
+                                    <table class="table mb-0">
+                                        <thead>
+                                        <tr class="userDatatable-header">
+                                            <th>
+                                                <span class="userDatatable-title">Середній відсоток відвалів</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Середній відсоток успішності</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Середня конверсія</span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table4 p-25 mb-30">
+                                <div class="table-responsive">
+                                    <table class="table mb-0">
+                                        <thead>
+                                        <tr class="userDatatable-header">
+                                            <th>
+                                                <span class="userDatatable-title">Викладач</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Відсоток відвалів</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Відсоток успішності</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Відсоток конверсії</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Чи порахована зарплата</span>
+                                            </th>
+                                            <th>
+                                                <span class="userDatatable-title">Категорія</span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for month_report in month_reports %}
+                                            <tr>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        {% if user_role == "tutor" %}
+                                                            <a href="{% url 'logika_teachers:teacher-profile' month_report.teacher.id %}">
+                                                        {% else %}
+                                                            <a href="{% url 'logika_teachers:teacher-profile-regional' month_report.teacher.id tutor.id%}">
+                                                        {% endif %}
+                                                        <b>{{ month_report.teacher.user.get_full_name }}</b>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <b>{{ month_report.churns_percent }}%</b></div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <b>{{ month_report.performance_percent }}%</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <b>{{ month_report.conversion }}%</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <b>{% if month_report.is_salary_counted %} Так {% else %}
+                                                            Ні {% endif %}</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <b>{{ month_report.category }}</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="userDatatable-content">
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#modal-basic{{ forloop.counter }}">
+                                                            Редагувати
+                                                        </button>
+                                                    </div>
+                                                    <form action="{% url 'logika_teachers:tutor-month-report' tutor.user.id %}"
+                                                          method="post">
+                                                        {% csrf_token %}
+                                                        <div class="modal-basic modal fade"
+                                                             id="modal-basic{{ forloop.counter }}" tabindex="-1"
+                                                             style="display: none;"
+                                                             aria-hidden="true">
+                                                            <div class="modal-dialog modal-md" role="document">
+                                                                <div class="modal-content modal-bg-white ">
+                                                                    <div class="modal-header">
+                                                                        <h6 class="modal-title">Зміна звіту
+                                                                            викладача</h6>
+                                                                        <button type="button" class="close"
+                                                                                data-bs-dismiss="modal"
+                                                                                aria-label="Close">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                 width="24" height="24"
+                                                                                 viewBox="0 0 24 24"
+                                                                                 fill="none" stroke="currentColor"
+                                                                                 stroke-width="2" stroke-linecap="round"
+                                                                                 stroke-linejoin="round"
+                                                                                 class="svg replaced-svg">
+                                                                                <line x1="18" y1="6" x2="6"
+                                                                                      y2="18"></line>
+                                                                                <line x1="6" y1="6" x2="18"
+                                                                                      y2="18"></line>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+
+                                                                        <p>
+                                                                            Ім'я: {{ month_report.teacher.user.get_full_name }}</p>
+                                                                        <p>Конверсія: <br><textarea
+                                                                                name="conversion"
+                                                                                id="conversion">{{ month_report.conversion }}</textarea>
+                                                                        </p>
+                                                                        <p>
+                                                                            Успішність: {{ month_report.performance_percent }}</p>
+                                                                        <p>Відсоток відвалів: <br><textarea
+                                                                                name="churns_percent"
+                                                                                id="churns_percent">{{ month_report.churns_percent }}</textarea>
+                                                                        </p>
+                                                                        <p>Категорія (A, B, C): <br><textarea
+                                                                                name="category"
+                                                                                id="churns_percent">{{ month_report.category }}</textarea>
+                                                                        </p>
+                                                                        <p>Чи порахована ЗП:</p>
+                                                                        <div class="checkbox-theme-default custom-checkbox ">
+
+                                                                            <input class="checkbox" type="checkbox"
+                                                                                   id="check-un{{ forloop.counter }}"
+                                                                                   name="is_salary_counted" value="yes"
+                                                                                    {% if month_report.is_salary_counted %}
+                                                                                   checked {% endif %}>
+                                                                            <label for="check-un{{ forloop.counter }}">
                                       <span class="checkbox-text">
                                         Так
                                       </span>
-                                    </label>
-                                  </div>
-                                </div>
-                                <div class="modal-footer">
-                                  <input type="hidden" name="report_id" value="{{month_report.report_id}}">
-                                  <input type="hidden" name="month" value="{{month_report.month}}">
-                                  <button type="submit" class="btn btn-primary btn-sm">Зберегти зміни</button>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <input type="hidden" name="report_id"
+                                                                               value="{{ month_report.report_id }}">
+                                                                        <input type="hidden" name="month"
+                                                                               value="{{ month_report.month }}">
+                                                                        <button type="submit"
+                                                                                class="btn btn-primary btn-sm">Зберегти
+                                                                            зміни
+                                                                        </button>
 
-                                </div>
-                        </form>
-              </div>
+                                                                    </div>
+                                                    </form>
+                                            </div>
+                                            </div>
+                                            </div>
+                                            </td>
+                                            </tr>
+                                        {% endfor %}
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-          </div>
-          </td>
-          </tr>
-          {% endfor %}
-          </tbody>
-          </table>
         </div>
-      </div>
     </div>
-  </div>
-</div>
-</div>
-</div>
-</div>
+    </div>
+    </div>
+    </div>
 {% endblock %}

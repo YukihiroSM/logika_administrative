@@ -1,0 +1,193 @@
+{% extends 'layout/app.html' %} {% block title %} Конверсія викладача {% endblock %} {% load i18n %} {% load static %}
+
+{% block content %}
+    {% load get_conversion %}
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="note-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="note-contents">
+                            <div class="note-sidebar-wrapper mb-30">
+                                <div class="note-sidebar">
+                                    <div class="card border-0 shadow-none">
+                                        <div class="card-body px-15 pt-30">
+
+                                            <div class="card-header">
+                                                <h6>Конверсія викладача {{ teacher.user.get_full_name }} для
+                                                    т'ютора {{ tutor_profile.user.get_full_name }}</h6>
+                                            </div>
+                                            {% if user_role == "tutor" %}
+                                                <form action="{% url 'logika_teachers:teacher-conversion' teacher.id %}"
+                                                      method="post">
+
+                                            {% else %}
+                                                <form action="{% url 'logika_teachers:teacher-conversion-regional' teacher.id tutor_profile.id %}"
+                                                      method="post">
+                                            {% endif %}
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <select
+                                                        name="report_scale"
+                                                        id="report_scale"
+                                                        class="form-control"
+                                                        style="width: 250px"
+                                                >
+                                                    <option value="none" selected disabled hidden>
+                                                        Оберіть період
+                                                    </option>
+                                                    {% for scale in report_scales %}
+                                                        <option value="{{ scale }}">{{ scale }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <hr>
+                                            <label for="locations"
+                                                   class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                                локації </label><span class="color-danger"> (*обов'язково) </span>
+                                            {% for location in teachers_locations %}
+                                                <div class="checkbox-theme-default custom-checkbox ">
+
+                                                    <input class="checkbox" type="checkbox"
+                                                           id="check-un{{ forloop.counter }}" name="locations"
+                                                           value="{{ location }}"
+
+                                                            {% if location in form_data.locations %}
+                                                           checked
+                                                            {% endif %}
+                                                    >
+                                                    <label for="check-un{{ forloop.counter }}">
+                                                    <span class="checkbox-text">
+                                                        {{ location }}
+                                                    </span>
+                                                    </label>
+                                                </div>
+
+                                            {% endfor %}
+                                            <hr>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="business"
+                                                       id="flexRadioDefault1" value="programming" checked>
+                                                <label class="form-check-label" for="flexRadioDefault1">
+                                                    Програмування
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="business"
+                                                       id="flexRadioDefault2" value="english">
+                                                <label class="form-check-label" for="flexRadioDefault2">
+                                                    Англійська
+                                                </label>
+                                            </div>
+                                            <hr>
+                                            <button type="submit" class="btn btn-lg btn-primary btn-submit">
+                                                Згенерувати
+                                            </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="note-grid-wrapper mb-30">
+                                <div class="notes-wrapper">
+
+
+                                    <div class="card card-default card-md mb-4">
+                                        <div class="card-header  py-20">
+                                            <h6>Результати за період {{ form_data.report_scale }}: </h6>
+                                        </div>
+
+
+                                        <div class="card-body">
+                                            <table class="table table-bordered border-dark">
+                                                <thead>
+                                                <td>
+                                                    Локація
+                                                </td>
+                                                <td>
+                                                    Записано
+                                                </td>
+                                                <td>
+                                                    Відвідали
+                                                </td>
+                                                <td>
+                                                    Оплат
+                                                </td>
+                                                <td>
+                                                    Конверсія (прихід в оплату) %
+                                                </td>
+                                                </thead>
+
+                                                <tbody>
+                                                {% for location in form_data.locations %}
+                                                    <tr>
+                                                        <td>{{ location }}</td>
+                                                        <td>
+                                                            {% for enrolled in enrolled_by_location %}
+                                                                {% if enrolled.location == location %}
+                                                                    {{ enrolled.student_count|default:0 }}
+                                                                {% endif %}
+                                                            {% empty %}
+                                                                0
+                                                            {% endfor %}
+                                                        </td>
+                                                        <td>
+                                                            {% for attended in attended_by_location %}
+                                                                {% if attended.location == location %}
+                                                                    {{ attended.student_count|default:0 }}
+                                                                {% endif %}
+                                                            {% empty %}
+                                                                0
+                                                            {% endfor %}
+                                                        </td>
+                                                        <td>
+                                                            {% for payment in payments_by_location %}
+                                                                {% if payment.location == location %}
+                                                                    {{ payment.payment_count|default:0 }}
+                                                                {% endif %}
+                                                            {% empty %}
+                                                                0
+                                                            {% endfor %}
+                                                        </td>
+                                                        <td>
+                                                            {% for conversion in conversion_by_location %}
+                                                                {% if conversion.location == location %}
+                                                                    {{ conversion.conversion|default:0 }} %
+                                                                {% endif %}
+                                                            {% empty %}
+                                                                0 %
+                                                            {% endfor %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                                <tfoot>
+                                                <tr>
+                                                    <td>Всього</td>
+                                                    <td>
+                                                        {{ total_enrolled }}
+                                                    </td>
+                                                    <td>
+                                                        {{ total_attended }}
+                                                    </td>
+                                                    <td>
+                                                        {{ total_payments }}
+                                                    </td>
+                                                    <td>
+                                                        {{ total_conversion }} %
+                                                    </td>
+                                                </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

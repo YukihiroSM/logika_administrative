@@ -1,58 +1,37 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-import csv
+import datetime
+import json
 import os
-import textwrap
 
-import pandas as pd
-import requests
 from django import template
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
-from django.shortcuts import redirect
+from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Min, Max
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.template import loader
 from django.urls import reverse
-import copy
-from .forms import (
-    ReportDateForm,
-    CreateAmoRef,
-    ReasonForCloseForm,
-    AssignIssueForm,
-    AddCMForm,
-    AddStudentId,
-    AddLocationForm,
-    AddTeacherForm,
-    AssignTutorIssueForm,
-    ReasonForRevert,
+
+from logika_administrative.settings import BASE_DIR
+from logika_general.models import (
+    ClientManagerProfile,
+    RegionalManagerProfile,
+    TerritorialManagerProfile,
 )
-import datetime
-import library
+from logika_teachers.models import TutorProfile
+from utils.get_user_role import get_user_role
+from .forms import ReportDateForm, UpdateLocationForm
 from .models import (
-    Report,
-    Issue,
     Location,
-    TeacherReport,
-    Payment,
-    GlobalGroup,
-    StudentReport,
-    UsersMapping,
-    LessonsConsolidation,
     ClientManagerReport,
     LocationReport,
     CourseReport,
-    TeacherReportNew
+    ConsolidationReport,
+    MasterClassRecord,
 )
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .utils import (
-    retrieve_group_ids_from_csv,
-    get_lessons_links,
-    get_lessons_links_extended,
-)
-from logika_administrative.settings import BASE_DIR
-from utils.lms_authentication import get_authenticated_session
+
 
 def is_member(user, group_name):
     return user.groups.filter(name=group_name).exists()
@@ -70,61 +49,21 @@ def health(request):
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-25"
+    "Серпень": "2023-08-01_2023-08-31",
+    "Вересень": "2023-09-01_2023-09-30",
+    "Жовтень": "2023-10-01_2023-10-31",
+    "Листопад": "2023-11-01_2023-11-30",
+    "Грудень": "2023-12-01_2023-12-20",
+    "Січень": "2023-12-21_2024-01-31",
+    "Лютий": "2024-02-01_2024-02-29",
+    "Березень": "2024-03-01_2024-03-24",
 }
-
-
-
-@csrf_exempt
-def collect_lessons_links_extended(request):
-    request_data_GET = dict(request.GET)
-    report_start = request_data_GET.get("report_start", [""])[0]
-    report_end = request_data_GET.get("report_end", [""])[0]
-    auth = get_authenticated_session()
-    ids = retrieve_group_ids_from_csv(
-        auth, report_start=report_start, report_end=report_end
-    )
-    result_data = get_lessons_links_extended(ids=ids)
-    response = HttpResponse(
-        content_type="text/csv",
-        headers={
-            "Content-Disposition": 'attachment; filename="lessons_schedule_links.csv"'
-        },
-    )
-    response.write("\ufeff".encode("utf8"))
-
-    writer = csv.writer(response)
-    writer.writerow(
-        [
-            "ID Групи",
-            "Назва групи",
-            "Посилання",
-            "Викладач",
-            "КМ",
-            "Назва курсу",
-            "Дата, час наступного уроку",
-        ]
-    )
-    for group in result_data:
-        writer.writerow(
-            [
-                group.get("group"),
-                group.get("group_name"),
-                group.get("link"),
-                group.get("teacher_name"),
-                group.get("curator_name"),
-                group.get("course_name"),
-                group.get("next_lesson_time"),
-            ]
-        )
-    response["Content-Encoding"] = "utf-8"
-    return response
 
 
 def get_possible_report_scales():
     month_report = None
     with open(
-            f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
+        f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
     ) as report_scales_fileobj:
         scales = report_scales_fileobj.readlines()
     scales_dict = {}
@@ -181,21 +120,21 @@ def programming_report_updated(request):
         report_start, report_end = possible_report_scales[-1].split(" - ")
     if not month_report:
         report_start = datetime.datetime.strptime(
-            report_start, "%Y-%m-%d").date()
-        report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+            report_start.strip(), "%Y-%m-%d"
+        ).date()
+        report_end = datetime.datetime.strptime(report_end.strip(), "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
     else:
         report_start, report_end = scales_new[month_report].split("_")
-        report_start = datetime.datetime.strptime(
-            report_start, "%Y-%m-%d").date()
+        report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
         report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
 
     user_role = get_user_role(request.user)
+    print(user_role)
     if user_role == "admin":
         location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start, end_date=report_end)
+            LocationReport.objects.filter(start_date=report_start, end_date=report_end)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
@@ -207,7 +146,7 @@ def programming_report_updated(request):
             .all()
         )
         territorial_managers = (
-            StudentReport.objects.filter(
+            MasterClassRecord.objects.filter(
                 start_date__gte=report_start, end_date__lte=report_end
             )
             .exclude(
@@ -219,55 +158,31 @@ def programming_report_updated(request):
             .distinct()
         )
         course_report = (
-            CourseReport.objects.filter(
-                start_date=report_start, end_date=report_end)
+            CourseReport.objects.filter(start_date=report_start, end_date=report_end)
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-    elif user_role == "regional":
-        user_name = f"{request.user.last_name} {request.user.first_name}"
-        location_reports = (
-            LocationReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+
+    if user_role == "client_manager":
+        client_manager_profile = ClientManagerProfile.objects.filter(
+            user=request.user
+        ).first()
+        client_manager_name = f"{request.user.last_name} {request.user.first_name}"
+        related_tms = client_manager_profile.related_tms.all()
+        territorial_managers = [
+            f"{tm.user.last_name} {tm.user.first_name}" for tm in related_tms
+        ]
+        client_manager_locations = (
+            Location.objects.filter(client_manager=client_manager_name)
             .all()
+            .values_list("lms_location_name", flat=True)
         )
-        client_manager_reports = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                regional_manager=user_name,
-            )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
-        )
-        course_report = (
-            ClientManagerReport.objects.filter(
-                start_date=report_start, end_date=report_end, regional_manager=user_name
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-    elif user_role == "territorial_manager":
-        user_name = f"{request.user.last_name} {request.user.first_name}"
+
         location_reports = (
             LocationReport.objects.filter(
                 start_date=report_start,
                 end_date=report_end,
-                territorial_manager=user_name,
+                location_name__in=client_manager_locations,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
@@ -276,44 +191,18 @@ def programming_report_updated(request):
             ClientManagerReport.objects.filter(
                 start_date=report_start,
                 end_date=report_end,
-                territorial_manager=user_name,
+                client_manager=client_manager_name,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
-        )
-        course_report = (
-            CourseReport.objects.filter(
-                start_date=report_start,
-                end_date=report_end,
-                territorial_manager=user_name,
-            )
-            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
-            .all()
-        )
-    elif user_role == "territorial_manager_km":
-        user_mapping = UsersMapping.objects.filter(user=request.user).first()
-        user_name = (
-            f"{user_mapping.related_to.last_name} {user_mapping.related_to.first_name}"
-        )
+    if user_role == "territorial_manager":
+        territorial_managers = [f"{request.user.last_name} {request.user.first_name}"]
         location_reports = (
             LocationReport.objects.filter(
                 start_date=report_start,
                 end_date=report_end,
-                territorial_manager=user_name,
+                territorial_manager__in=territorial_managers,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
@@ -322,47 +211,56 @@ def programming_report_updated(request):
             ClientManagerReport.objects.filter(
                 start_date=report_start,
                 end_date=report_end,
-                territorial_manager=user_name,
+                territorial_manager__in=territorial_managers,
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-        course_report = (
-            CourseReport.objects.filter(
+    if user_role == "regional_manager":
+        regional_manager_profile = RegionalManagerProfile.objects.get(user=request.user)
+        territorial_managers_objects = (
+            regional_manager_profile.territorial_managers.all()
+        )
+        territorial_managers = [
+            f"{tm.user.last_name} {tm.user.first_name}"
+            for tm in territorial_managers_objects
+        ]
+
+        location_reports = (
+            LocationReport.objects.filter(
                 start_date=report_start,
                 end_date=report_end,
-                territorial_manager=user_name,
+                territorial_manager__in=territorial_managers,
+                regional_manager=f"{request.user.last_name} {request.user.first_name}",
             )
             .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
             .all()
         )
-        territorial_managers = (
-            StudentReport.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                territorial_manager=user_name,
+        client_manager_reports = (
+            ClientManagerReport.objects.filter(
+                start_date=report_start,
+                end_date=report_end,
+                territorial_manager__in=territorial_managers,
+                regional_manager=f"{request.user.last_name} {request.user.first_name}",
             )
-            .exclude(
-                territorial_manager__isnull=True,
-                territorial_manager="UNKNOWN",
-                regional_manager__isnull=True,
-            )
-            .values_list("territorial_manager", flat=True)
-            .distinct()
+            .exclude(territorial_manager="UNKNOWN", regional_manager__isnull=True)
+            .all()
         )
-    else:
-        context = {}
-        html_template = loader.get_template("logika_statistics/page-403.html")
-        return HttpResponse(html_template.render(context, request))
+
     managers = {}
     totals_tm = {}
     totals_rm = {}
-    ukrainian_totals = {"Ukraine": {
-        "attended": 0, "payments": 0, "enrolled": 0}}
+    ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
         if (
-                report.territorial_manager is not None
-                and report.territorial_manager != "UNKNOWN"
+            report.total_attended == 0
+            and report.total_enrolled == 0
+            and report.total_payments == 0
+        ):
+            continue
+        if (
+            report.territorial_manager is not None
+            and report.territorial_manager != "UNKNOWN"
         ):
             if report.territorial_manager in totals_tm:
                 totals_tm[report.territorial_manager][
@@ -414,10 +312,12 @@ def programming_report_updated(request):
         "totals_tm": totals_tm,
         "totals_rm": totals_rm,
         "ukrainian_totals": ukrainian_totals,
-        "course_reports": course_report
         # "reports_by_course": formatted_courses
     }
-    html_template = loader.get_template("logika_statistics/report_programming_updated.html")
+    print(context["managers"])
+    html_template = loader.get_template(
+        "logika_statistics/report_programming_updated.html"
+    )
     return HttpResponse(html_template.render(context, request))
 
 
@@ -426,19 +326,6 @@ def get_rm_tm_by_tutor(tutor):
     if not location:
         location = Location.objects.filter(tutor_english=tutor).first()
     return location.regional_manager, location.territorial_manager
-
-
-def get_user_role(user):
-    if is_member(user, "admin"):
-        return "admin"
-    elif is_member(user, "regional"):
-        return "regional"
-    elif is_member(user, "territorial_manager"):
-        return "territorial_manager"
-    elif is_member(user, "tutor"):
-        return "tutor"
-    elif is_member(user, "territorial_manager_km"):
-        return "territorial_manager_km"
 
 
 def get_rm_by_tm(tm):
@@ -515,3 +402,138 @@ def pages(request):
     except:
         html_template = loader.get_template("logika_statistics/page-500.html")
         return HttpResponse(html_template.render(context, request))
+
+
+@login_required(login_url="/login/")
+def edit_location(request, location_id):
+    location = Location.objects.get(id=location_id)
+    if request.method == "POST":
+        form = UpdateLocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return redirect("logika_statistics:list-locations")
+    territorial_managers = TerritorialManagerProfile.objects.all()
+    regional_managers = RegionalManagerProfile.objects.all()
+    tutors = TutorProfile.objects.all()
+    return render(
+        request,
+        template_name="logika_statistics/update_location.html",
+        context={
+            "location": location,
+            "territorial_managers": territorial_managers,
+            "regional_managers": regional_managers,
+            "tutors": tutors,
+        },
+    )
+
+
+@login_required(login_url="/login/")
+def list_locations(request):
+    locations = Location.objects.all()
+    context = {
+        "locations": locations,
+    }
+    html_template = loader.get_template("logika_statistics/list_locations.html")
+    return HttpResponse(html_template.render(context, request))
+
+
+@login_required(login_url="/login/")
+def delete_location(request, location_id):
+    location = Location.objects.get(id=location_id)
+    location.delete()
+    return redirect("logika_statistics:list-locations")
+
+
+@login_required(login_url="/login/")
+def create_location(request):
+    if request.method == "POST":
+        form = UpdateLocationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("logika_statistics:list-locations")
+    territorial_managers = TerritorialManagerProfile.objects.all()
+    regional_managers = RegionalManagerProfile.objects.all()
+    tutors = TutorProfile.objects.all()
+    return render(
+        request,
+        template_name="logika_statistics/create_location.html",
+        context={
+            "territorial_managers": territorial_managers,
+            "regional_managers": regional_managers,
+            "tutors": tutors,
+        },
+    )
+
+
+class ConsolidationReportEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ConsolidationReport):
+            return {
+                "location": obj.location,
+                "group_id": obj.group_id,
+                "student_id": obj.student_id,
+                "payment_total": obj.payment_total,
+                "lms_total": obj.lms_total,
+                "group_title": obj.group_title,
+                "difference": obj.difference,
+                "start_date": obj.start_date,
+                "end_date": obj.end_date,
+                "status": obj.status,
+                "comment": obj.comment,
+                "type": obj.type,
+                "id": obj.pk,
+            }
+        return super().default(obj)
+
+
+def get_consolidation_reports(request):
+    consolidation_reports = ConsolidationReport.objects.filter(
+        ~Q(difference=0) & Q(status="todo")
+    )
+    minimal_date = consolidation_reports.aggregate(min_value=Min("start_date"))[
+        "min_value"
+    ]
+    maximal_date = consolidation_reports.aggregate(max_value=Max("end_date"))[
+        "max_value"
+    ]
+    consolidation_reports = consolidation_reports.order_by("type")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        # AJAX request, manually create JSON data
+        data = serialize(
+            "json",
+            consolidation_reports,
+            cls=DjangoJSONEncoder,
+        )
+        data = json.loads(data)
+        return JsonResponse({"consolidation_reports": data}, safe=False)
+
+    return render(
+        request,
+        template_name="logika_statistics/payments_consolidation.html",
+        context={
+            "consolidation_reports": consolidation_reports,
+            "start_date": minimal_date,
+            "end_date": maximal_date,
+        },
+    )
+
+
+@login_required(login_url="/login/")
+def resolve_consolidation_report(request, report_id):
+    report = ConsolidationReport.objects.get(id=report_id)
+    report.status = "done"
+    report.save()
+    query_params = request.GET.urlencode()
+
+    target_view_name = "logika_statistics:consolidation-report"
+
+    if "saveSearch" not in query_params:
+        # Add the saveSearch parameter to the query parameters
+        if query_params:
+            redirect_url = f"{reverse(target_view_name)}?{query_params}&saveSearch=true"
+        else:
+            redirect_url = f"{reverse(target_view_name)}?saveSearch=true"
+    else:
+        redirect_url = reverse(target_view_name)
+
+    return redirect(redirect_url)

@@ -7,9 +7,6 @@ from utils.constants import GROUP_STATUSES, GROUP_TYPES
 class Command(BaseCommand):
     help = "Closes the specified poll for voting"
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument("poll_ids", nargs="+", type=int)
-
     def handle(self, *args, **options):
         session = get_authenticated_session()
         groups_resp = session.get("https://lms.logikaschool.com/api/v1/group")
@@ -40,15 +37,21 @@ class Command(BaseCommand):
                 group_status = group["status"]["value"]
                 group_type = group["type"]["value"]
                 group_venue = group.get("venue", "not_set")
-                group_obj, created = Group.objects.get_or_create(
-                    lms_id=group_id,
-                    title=group_name,
-                    status=group_status,
-                    type=group_type,
-                    venue=group_venue,
-                    teacher_name=teacher_name,
-                    teacher_id=teacher_id,
-                )
+                try:
+                    group_obj, created = Group.objects.get_or_create(
+                        lms_id=group_id,
+                        title=group_name,
+                        status=group_status,
+                        type=group_type,
+                        venue=group_venue,
+                        teacher_name=teacher_name,
+                        teacher_id=teacher_id,
+                    )
+                except:
+                    self.stdout.write(
+                        self.style.ERROR(f"Group {group_name} duplicated")
+                    )
+                    continue
                 group_obj.save()
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Group {group_name} created"))
@@ -65,3 +68,7 @@ class Command(BaseCommand):
                             f"Group {group_name} already exists. Updated data."
                         )
                     )
+
+        else:
+            print(groups_resp.status_code)
+            print(groups_resp.content)

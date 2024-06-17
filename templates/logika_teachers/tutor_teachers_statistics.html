@@ -1,0 +1,314 @@
+
+
+{% extends 'layout/app.html' %}
+
+{% block title %} Статистика тьюторів {% endblock %}
+
+{% load i18n %}
+
+{% load static %}
+
+{% block content %}
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="breadcrumb-main">
+                        <div class="breadcrumb-action justify-content-center flex-wrap">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Content goes here -->
+            <div class="card">
+                <div class="card-header color-dark fw-500">
+                    <form method="POST" action="{% url 'logika_teachers:tutor-teachers-statistics' %}">
+                        {% csrf_token %}
+                        <select
+                                name="report_scale"
+                                id="report_scale"
+                                class="form-control"
+                                style="width: 250px"
+                        >
+                            <option value="none" selected disabled hidden>
+                                Оберіть період
+                            </option>
+                            {% for scale in report_scales %}
+                                <option value="{{ scale }}">{{ scale }}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <select
+                                name="report_business"
+                                id="report_business"
+                                class="form-control"
+                                style="width: 250px"
+                        >
+                            <option value="programming" selected>
+                                Програмування
+                            </option>
+                            <option value="english">
+                                Англійська
+
+                            </option>
+                        </select>
+                        <br>
+                        <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
+                        </button>
+                        <hr/>
+                    </form>
+
+                    <h1>
+                        Звіт по тьюторам - викладачам за {{ report_date_default }}
+                    </h1>
+
+                </div>
+                <div class="card-body p-0">
+                    {% for tutor, tutor_data in teachers_tutors_data.items %}
+                        <table class="table border-dark table-bordered table-responsive">
+                            <thead>
+                            <tr class="table-primary">
+                                <th colspan="6">{{ tutor_data.tutor_profile.user.get_full_name }}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="table-primary">
+                                <!-- this is kind of inner table header -->
+                                <td>
+                                    Імʼя викладача
+                                </td>
+                                <td>Локація</td>
+                                <td>К-ть записів</td>
+                                <td>К-ть відвідувань</td>
+                                <td>К-ть оплат</td>
+                                <td>Конверсія</td>
+
+                            </tr>
+                            {% for teacher, teacher_data in tutor_data.teachers.items %}
+                                {% for location in teacher_data.enrolled_by_locations %}
+                                    <tr id="location_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}_row">
+                                        {% if forloop.counter0 == 0 %}
+                                            <td rowspan="{{ teacher_data.enrolled_by_locations.count }}">
+                                                <label for="teacher_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_checkbox"></label>
+                                                <input id="teacher_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_checkbox"
+                                                       type="checkbox" checked>
+                                                {{ teacher_data.teacher_profile.user.get_full_name }}
+                                            </td>
+                                        {% endif %}
+
+                                        <td>
+                                            <label for="location_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}_checkbox"></label>
+                                            <input id="location_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}_checkbox"
+                                                   type="checkbox" checked>
+                                            {{ location.location }}
+                                        </td>
+                                        <td id="enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+                                            {% for loc in teacher_data.enrolled_by_locations %}
+                                                {% if loc.location == location.location %}
+                                                    {{ loc.student_count|default:0 }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td id="attended_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+                                            {% for loc in teacher_data.attended_by_locations %}
+                                                {% if loc.location == location.location %}
+                                                    {{ loc.student_count|default:0 }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td id="payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+                                            {% for loc in teacher_data.payments_by_locations %}
+                                                {% if loc.location == location.location %}
+                                                    {{ loc.payment_count|default:0 }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+
+                                        <td id="conversion_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}_{{ forloop.counter0 }}">
+
+                                        </td>
+
+                                    </tr>
+                                {% endfor %}
+                                <b>
+                                    <tr id="teacherTotal_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                        <td></td>
+                                        <td>Загалом по викладачу</td>
+                                        <td id="total_enrolled_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                            0
+                                        </td>
+                                        <td id="total_attended_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                            0
+                                        </td>
+                                        <td id="total_payments_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                            0
+                                        </td>
+                                        <td id="total_conversion_{{ tutor_data.tutor_profile.id }}_{{ teacher_data.teacher_profile.id }}">
+                                            0
+                                        </td>
+
+                                    </tr>
+                                </b>
+                            {% endfor %}
+
+                            <b>
+                                <tr id="tutorTotal_{{ tutor_data.tutor_profile.id }}">
+                                    <td>Загалом по тьютору</td>
+                                    <td></td>
+                                    <td id="total_enrolled_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                    <td id="total_attended_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                    <td id="total_payments_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                    <td id="total_conversion_tutor_{{ tutor_data.tutor_profile.id }}">0</td>
+                                </tr>
+                            </b>
+                            </tbody>
+                        </table>
+                        <hr>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get all checkboxes in the table
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+            checkboxes.forEach(function (checkbox) {
+                updateTotals(checkbox);
+            });
+
+            // Add change event listener to each checkbox
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    updateTotals(checkbox);
+                });
+            });
+            current_checkboxes_states = {};
+
+            // Function to update totals
+            function updateTotals(checkbox) {
+                var tutorTotals = {};
+                var checkboxIdParts = checkbox.id.split('_');
+                if (checkboxIdParts.includes('location')) {
+                    var tutorId = checkboxIdParts[1];
+                    var teacherId = checkboxIdParts[2];
+                    var locationId = checkboxIdParts[3];
+                    if (tutorId && teacherId && locationId) {
+                        var teacherTotalRow = document.getElementById('teacherTotal_' + tutorId + '_' + teacherId);
+                        let tutorTotalRow = document.getElementById('tutorTotal_' + tutorId);
+                        if (checkbox.checked) {
+                            // Update TEACHER TOTAL
+                            if (teacherTotalRow) {
+                                document.getElementById('total_payments_' + tutorId + "_" + teacherId).innerText = parseInt(document.getElementById('total_payments_' + tutorId + "_" + teacherId).innerText) + parseInt(document.getElementById('payments_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_attended_' + tutorId + "_" + teacherId).innerText = parseInt(document.getElementById('total_attended_' + tutorId + "_" + teacherId).innerText) + parseInt(document.getElementById('attended_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_enrolled_' + tutorId + "_" + teacherId).innerText = parseInt(document.getElementById('total_enrolled_' + tutorId + "_" + teacherId).innerText) + parseInt(document.getElementById('enrolled_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                            }
+                            // update tutor total
+                            if (tutorTotalRow) {
+                                document.getElementById('total_payments_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_payments_tutor_' + tutorId).innerText) + parseInt(document.getElementById('payments_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_attended_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_attended_tutor_' + tutorId).innerText) + parseInt(document.getElementById('attended_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_enrolled_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_enrolled_tutor_' + tutorId).innerText) + parseInt(document.getElementById('enrolled_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                            }
+                        } else {
+                            // Update TEACHER TOTAL
+                            if (teacherTotalRow) {
+                                document.getElementById('total_payments_' + tutorId + "_" + teacherId).innerText = parseInt(document.getElementById('total_payments_' + tutorId + "_" + +teacherId).innerText) - parseInt(document.getElementById('payments_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_attended_' + tutorId + "_" + +teacherId).innerText = parseInt(document.getElementById('total_attended_' + tutorId + "_" + +teacherId).innerText) - parseInt(document.getElementById('attended_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_enrolled_' + tutorId + "_" + +teacherId).innerText = parseInt(document.getElementById('total_enrolled_' + tutorId + "_" + +teacherId).innerText) - parseInt(document.getElementById('enrolled_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                            }
+                            // update tutor total
+                            if (tutorTotalRow) {
+                                document.getElementById('total_payments_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_payments_tutor_' + tutorId).innerText) - parseInt(document.getElementById('payments_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_attended_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_attended_tutor_' + tutorId).innerText) - parseInt(document.getElementById('attended_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                                document.getElementById('total_enrolled_tutor_' + tutorId).innerText = parseInt(document.getElementById('total_enrolled_tutor_' + tutorId).innerText) - parseInt(document.getElementById('enrolled_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                            }
+
+                        }
+
+                        document.getElementById('total_conversion_' + tutorId + '_' + teacherId).innerText = getConversion(
+                            parseInt(document.getElementById('total_payments_' + tutorId + '_' + teacherId)?.innerText || 0),
+                            parseInt(document.getElementById('total_attended_' + tutorId + '_' + teacherId)?.innerText || 0)
+                        );
+                        document.getElementById('total_conversion_tutor_' + tutorId).innerText = getConversion(
+                            parseInt(document.getElementById('total_payments_tutor_' + tutorId)?.innerText || 0),
+                            parseInt(document.getElementById('total_attended_tutor_' + tutorId)?.innerText || 0)
+                        );
+
+                        document.getElementById('conversion_' + tutorId + '_' + teacherId + '_' + locationId).innerText = getConversion(
+                            parseInt(document.getElementById('payments_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0),
+                            parseInt(document.getElementById('attended_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0)
+                        );
+
+                        let location_conversion = parseInt(document.getElementById('conversion_' + tutorId + '_' + teacherId + '_' + locationId)?.innerText || 0);
+                        let location_row = document.getElementById('location_' + tutorId + '_' + teacherId + '_' + locationId + '_row');
+                        if (location_conversion < 40) {
+                            location_row.classList.add('table-danger');
+                        } else if (location_conversion < 45) {
+                            location_row.classList.add('table-warning');
+                        } else {
+                            location_row.classList.add('table-success');
+                        }
+
+                        let total_tutor_row = document.getElementById('tutorTotal_' + tutorId);
+                        let total_tutor_conversion = parseInt(document.getElementById('total_conversion_tutor_' + tutorId)?.innerText || 0);
+                        if (total_tutor_conversion < 40) {
+                            total_tutor_row.classList.add('table-danger');
+                        } else if (total_tutor_conversion < 45) {
+                            total_tutor_row.classList.add('table-warning');
+                        } else {
+                            total_tutor_row.classList.add('table-success');
+                        }
+                    }
+                }
+
+                if (checkboxIdParts.includes("teacher")) {
+                    let tutorId = checkboxIdParts[1];
+                    let teacherId = checkboxIdParts[2];
+
+
+                    checkboxes.forEach(function (check) {
+                        let inner_checkbox_parts = check.id.split('_');
+                        if (inner_checkbox_parts.includes("location")) {
+
+                            if (inner_checkbox_parts[1] == tutorId && inner_checkbox_parts[2] == teacherId) {
+                                console.log("inner Checkbox " + inner_checkbox_parts + " checked")
+                                let previous_check_state = check.checked
+                                check.checked = checkbox.checked;
+                                if (previous_check_state != check.checked) {
+                                    updateTotals(check);
+                                }
+                            }
+                        }
+                    });
+
+                }
+
+
+            }
+
+            function getConversion(payments, attended) {
+                let conversion;
+
+                if (payments === 0 && attended === 0) {
+                    conversion = 0;
+                } else {
+                    try {
+                        conversion = Math.round((payments / attended) * 100 * 100) / 100;
+                    } catch (error) {
+                        conversion = 100;
+                    }
+                }
+
+                return conversion || 0;
+            }
+        });
+
+    </script>
+{% endblock %}
+
+

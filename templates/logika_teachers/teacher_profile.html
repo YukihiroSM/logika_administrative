@@ -41,20 +41,8 @@
                                     <h5 class="ap-nameAddress__title">{{teacher_profile.user.get_full_name}}</h5>
                                     <!--                                    <p class="ap-nameAddress__subTitle fs-14 m-0">Тьютор: </p>-->
                                     <p class="ap-nameAddress__subTitle fs-14 m-0">
-                                        <img src="{% static 'img/svg/map-pin.svg' %}" alt="map-pin" class="svg">Онлайн
+                                        <img src="{% static 'img/svg/map-pin.svg' %}" alt="map-pin" class="svg">---
                                     </p>
-                                </div>
-                            </div>
-                            <div class="card-footer mt-20 pt-20 pb-20 px-0 bg-transparent">
-                                <div class="profile-overview d-flex justify-content-between flex-wrap">
-                                    <!--                                    <div class="po-details">-->
-                                    <!--                                        <h6 class="po-details__title pb-1">69%</h6>-->
-                                    <!--                                        <span class="po-details__sTitle">Успішність</span>-->
-                                    <!--                                    </div>-->
-                                    <!--                                    <div class="po-details">-->
-                                    <!--                                        <h6 class="po-details__title pb-1">45%</h6>-->
-                                    <!--                                        <span class="po-details__sTitle">Конверсія</span>-->
-                                    <!--                                    </div>-->
                                 </div>
                             </div>
                         </div>
@@ -79,8 +67,20 @@
                                         <img src="{% static 'img/svg/globe.svg' %}" alt="globe" class="svg">{{teacher_profile.telegram_nickaname}}
                                     </p>
                                 </div>
-                            </div>
-                        </div>
+                                <br>
+                        <a href="{% url 'logika_teachers:teacher-performance' teacher_profile.id %}">
+                            <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
+                                <i class="fas fa-chart-line"></i>
+                                Підрахунок успішності
+                            </button>
+                        </a>
+                        <br>
+                                <a href="{% url 'logika_teachers:teacher-conversion-regional' teacher_profile.id tutor_profile.id %}">
+                            <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
+                                <i class="fas fa-chart-line"></i>
+                                Підрахунок конверсії
+                            </button>
+                        </a>
                         <br>
                         <a href="{% url 'logika_teachers:refresh-credentials' teacher_profile.user.id %}">
                             <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
@@ -89,6 +89,16 @@
                             </button>
                         </a>
                         <br>
+                        <a href="{% url 'logika_teachers:edit-teacher-profile' teacher_profile.id %}">
+                            <button class="btn btn-white btn-default btn-squared btn-shadow-white ">
+                                <i class="fas fa-edit"></i>
+                                Редагувати профіль викладача
+                            </button>
+                        </a>
+                        <br>
+
+                            </div>
+                        </div>
 
                         <div class="user-skils border-bottom">
                             <div class="card-header border-bottom-0 pt-sm-25 pb-sm-0  px-md-25 px-3">
@@ -96,29 +106,12 @@
                                     Курси
                                 </div>
                             </div>
-                            <!--                            <div class="card-body pt-md-1 pt-0">-->
-                            <!--                                <ul class="user-skils-parent">-->
-                            <!--                                    <li class="user-skils-parent__item">-->
-                            <!--                                        <a href="#">Python Start</a>-->
-                            <!--                                    </li>-->
-                            <!--                                    <li class="user-skils-parent__item">-->
-                            <!--                                        <a href="#">Python Pro</a>-->
-                            <!--                                    </li>-->
-                            <!--                                    <li class="user-skils-parent__item">-->
-                            <!--                                        <a href="#">Scratch</a>-->
-                            <!--                                    </li>-->
-
-                            <!--                                </ul>-->
-                            <!--                            </div>-->
                         </div>
                     </div>
                 </aside>
             </div>
             <div class="col">
                 <div class="ap-tab ap-tab-header">
-                    <!--                    <div class="ap-tab-header__img">-->
-                    <!--                        <img src="{% static 'img/ap-header.png' %}" alt="ap-header" class="img-fluid w-100">-->
-                    <!--                    </div>-->
                     <div class="ap-tab-wrapper">
                         <ul class="nav px-25 ap-tab-main" id="ap-tab" role="tablist">
                             <li class="nav-item">

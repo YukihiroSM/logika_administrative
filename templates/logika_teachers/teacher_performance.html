@@ -21,33 +21,38 @@ load i18n %} {% load static %} {% block content %}
                                                 <label for="month"
                                                     class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
                                                     місяць</label>
-                                                <select class="form-control px-15 select2-hidden-accessible" id="month"
-                                                    data-select2-id="exampleFormControlSelect1" tabindex="-1"
-                                                    aria-hidden="true" name="month">
-                                                    <option data-select2-id="1">Січень</option>
-                                                    <option data-select2-id="2">Лютий</option>
-                                                    <option data-select2-id="3">Березень</option>
-                                                    <option data-select2-id="4">Квітень</option>
-                                                    <option data-select2-id="5">Травень</option>
-                                                    <option data-select2-id="6">Червень</option>
-                                                    <option data-select2-id="7">Липень</option>
-                                                    <option data-select2-id="8">Серпень</option>
-                                                    <option data-select2-id="9">Вересень</option>
-                                                    <option data-select2-id="10">Жовтень</option>
-                                                    <option data-select2-id="11">Листопад</option>
-                                                    <option data-select2-id="12">Грудень</option>
+                                                <select id="month"
+                                                    name="month">
+                                                    <option {% if form_data.month == "Січень" %} selected {% endif %}>Січень</option>
+                                                    <option {% if form_data.month == "Лютий" %} selected {% endif %}>Лютий</option>
+                                                    <option {% if form_data.month == "Березень" %} selected {% endif %}>Березень</option>
+                                                    <option {% if form_data.month == "Квітень" %} selected {% endif %}>Квітень</option>
+                                                    <option {% if form_data.month == "Травень" %} selected {% endif %}>Травень</option>
+                                                    <option {% if form_data.month == "Червень" %} selected {% endif %}>Червень</option>
+                                                    <option {% if form_data.month == "Липень" %} selected {% endif %}>Липень</option>
+                                                    <option {% if form_data.month == "Серпень" %} selected {% endif %}>Серпень</option>
+                                                    <option {% if form_data.month == "Вересень" %} selected {% endif %}>Вересень</option>
+                                                    <option {% if form_data.month == "Жовтень" %} selected {% endif %}>Жовтень</option>
+                                                    <option {% if form_data.month == "Листопад" %} selected {% endif %}>Листопад</option>
+                                                    <option {% if form_data.month == "Грудень" %} selected {% endif %}>Грудень</option>
                                                 </select>
                                             </div>
                                             <hr>
                                             <label for="locations"
                                                 class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
-                                                локації</label>
+                                                локації   </label><span class="color-danger"> (*обов'язково) </span>
                                             {% for location in teachers_locations%}
                                             <div class="checkbox-theme-default custom-checkbox ">
 
                                                 <input class="checkbox" type="checkbox"
                                                     id="check-un{{ forloop.counter }}" name="locations"
-                                                    value="{{location}}">
+                                                    value="{{location}}" 
+                                                    {% for loc in form_data.locations %}
+                                                        {% if loc == location %}
+                                                        checked
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    >
                                                 <label for="check-un{{ forloop.counter }}">
                                                     <span class="checkbox-text">
                                                         {{location}}
@@ -57,6 +62,30 @@ load i18n %} {% load static %} {% block content %}
 
                                             {% endfor %}
                                             <hr>
+                                            <label for="groups"
+                                            class="il-gray fs-14 fw-500 align-center mb-10">Оберіть
+                                            групи</label>
+                                            {% for group in teacher_groups%}
+                                            
+                                            <div class="checkbox-theme-default custom-checkbox ">
+
+                                                <input class="checkbox" type="checkbox"
+                                                    id="check-gr{{ forloop.counter }}" name="groups"
+                                                    value="{{group}}"
+                                                    {% for gr in form_data.chosen_groups %}
+                                                        {% if gr == group %}
+                                                        checked
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    >
+                                                <label for="check-gr{{ forloop.counter }}">
+                                                    <span class="checkbox-text">
+                                                        {{group}}
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            {% endfor %}
                                             <button type="submit" class="btn btn-lg btn-primary btn-submit">Згенерувати
                                             </button>
                                         </form>
@@ -67,6 +96,8 @@ load i18n %} {% load static %} {% block content %}
 
                         <div class="note-grid-wrapper mb-30">
                             <div class="notes-wrapper">
+                                
+
                                 <div class="card card-default card-md mb-4">
                                     <div class="card-header  py-20">
                                         <h6>Результати</h6>
@@ -134,6 +165,71 @@ load i18n %} {% load static %} {% block content %}
                                     </div>
                                     {% endif %}
                                     {% endfor %}
+                                </div>
+                                <div class="card card-default card-md mb-4">
+                                    <div class="card-header  py-20">
+                                        <h6>Уроки з нульовою успішністю</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="dm-statistics-wrap d-flex">
+                                            <div class="table4 p-25 mb-30">
+                                                <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                <thead>
+                                                    <tr class="userDatatable-header">
+                                                    <th>
+                                                        <span class="userDatatable-title">ID групи</span>
+                                                    </th>
+                                                    <th>
+                                                        <span class="userDatatable-title">Урок</span>
+                                                    </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for group_id, lesson_data in zero_performance_lessons.items %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="userDatatable-content">
+                                                                {{group_id}}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                        <table class="table table-bordered">
+                                                        <thead>
+                                                            <th>
+                                                                <span class="userDatatable-title">Назва уроку</span>
+                                                            </th>
+                                                            <th>
+                                                                <span class="userDatatable-title">Посилання на успішність на уроці</span>
+                                                            </th>
+                                                        </thead>
+                                                        {% for lesson in lesson_data %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="userDatatable-content">
+                                                                    {{lesson.lesson_title}}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="userDatatable-content">
+                                                                    <a href="https://lms.logikaschool.com/group/view/{{group_id}}?progressLessonId={{lesson.lesson_id}}#group-progress-tab" target="_blank">
+                                                                        Перейти до уроку
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                        <td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                                </table>
+                                                </div>
+                                                </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

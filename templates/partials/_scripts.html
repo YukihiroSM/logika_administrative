@@ -46,3 +46,156 @@
 <script src="{% static 'js/custom/jvectormap-init.js' %}"></script>
 <script src="{% static 'js/custom/leaflet-init.js' %}"></script>
 <script src="{% static 'js/custom/main.js' %}"></script>
+<script src="{% static 'js/custom/change-color-of-progress-percentage.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/colreorder/1.5.5/js/dataTables.colReorder.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/colreorder/1.5.5/js/dataTables.colResize.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.colVis.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+
+<!-- DataTablesScript for list_locations.html -->
+<script>
+    new DataTable('#locations_table', {
+        order: [],
+        language: {
+            "decimal": "",
+            "emptyTable": "У таблиці немає даних",
+            "info": "Показано з _START_ по _END_ із _TOTAL_ рядків",
+            "infoEmpty": "Показано з 0 по 0 із 0 рядків",
+            "infoFiltered": "(відфільтровано із _MAX_ рядків)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Показувати _MENU_ рядків",
+            "loadingRecords": "Завантаження...",
+            "processing": "",
+            "search": "Пошук:",
+            "zeroRecords": "Збігів не знайдено",
+            "paginate": {
+                "first": "Перша",
+                "last": "Остання",
+                "next": "Наступна",
+                "previous": "Попередня"
+            },
+            "aria": {
+                "sortAscending": ": активуйте, щоб відсортувати колонки за зростанням",
+                "sortDescending": ": активуйте, щоб відсортувати колонки за спаданням"
+            }
+        }
+
+    });
+</script>
+
+{#Consolidation report scripts#}
+
+<script>
+    var dataTable = new DataTable('#consolidation_table', {
+        order: [],
+        paging: true,
+        responsive: true,
+        colReorder: true,
+        colResize: {
+            tableWidthFixed: false
+        },
+        scrollX: true,
+        ajax: {
+            url: "{% url 'logika_statistics:consolidation-report' %}",
+            type: "GET",
+            dataSrc: "consolidation_reports"  // Data source path in the AJAX response
+        },
+        columns: [
+            {data: 'fields.location', className: 'wrap-text'},
+            {data: 'fields.group_id', className: 'wrap-text'},
+            {data: 'fields.student_id', className: 'wrap-text'},
+            {data: 'fields.group_title', className: 'wrap-text'},
+            {data: 'fields.lms_total', className: 'wrap-text'},
+            {data: 'fields.payment_total', className: 'wrap-text'},
+            {data: 'fields.difference', className: 'wrap-text'},
+            {data: 'fields.comment', className: 'wrap-text'},
+            {data: 'fields.type', className: 'wrap-text'},
+            // Add more columns if needed
+            {
+                data: null,
+                render: function (data, type, row) {
+                    var resolveUrl = "{% url 'logika_statistics:resolve-consolidation-report' 999 %}".replace('999', row.pk);
+                    return '<a href="' + resolveUrl + '" class="edit" target="_blank"><button class="btn btn-primary"><i class="uil uil-trash-alt"></i> Виправлено</button></a>';
+                },
+                className: 'wrap-text',
+                width: '50px'
+            }
+        ],
+        language: {
+            "decimal": "",
+            "emptyTable": "У таблиці немає даних",
+            "info": "Показано з _START_ по _END_ із _TOTAL_ рядків",
+            "infoEmpty": "Показано з 0 по 0 із 0 рядків",
+            "infoFiltered": "(відфільтровано із _MAX_ рядків)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Показувати _MENU_ рядків",
+            "loadingRecords": "Завантаження...",
+            "processing": "",
+            "search": "Пошук:",
+            "zeroRecords": "Збігів не знайдено",
+            "paginate": {
+                "first": "Перша",
+                "last": "Остання",
+                "next": "Наступна",
+                "previous": "Попередня"
+            },
+            "aria": {
+                "sortAscending": ": активуйте, щоб відсортувати колонки за зростанням",
+                "sortDescending": ": активуйте, щоб відсортувати колонки за спаданням"
+            }
+        },
+        initComplete: function () {
+            var table = this.api();
+
+            // Add filtering
+            table.columns().every(function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo($("thead tr:eq(1) td").eq(this.index()))
+                    .on('change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+
+                        column
+                            .search(val ? '^' + val + '$' : '', true, false)
+                            .draw();
+                    });
+
+                column.data().unique().sort().each(function (d, j) {
+                    select.append('<option value="' + d + '">' + d + '</option>')
+                });
+
+            });
+        }
+
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        var urlParams = new URLSearchParams(window.location.search);
+        var saveSearch = urlParams.get('saveSearch');
+
+        if (saveSearch === 'true') {
+            var savedSearchValue = localStorage.getItem('dataTableSearch');
+            if (savedSearchValue) {
+                dataTable.search(savedSearchValue).draw();
+            }
+
+            dataTable.on('search.dt', function () {
+                var currentSearchValue = dataTable.search();
+                localStorage.setItem('dataTableSearch', currentSearchValue);
+            });
+        }
+    });
+</script>
+
+
+
+
+
+

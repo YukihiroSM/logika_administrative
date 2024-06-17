@@ -1,120 +1,131 @@
 {% extends 'layout/app.html' %} {% block title %} Потижневий звіт {% endblock %}
 {% load i18n %} {% load static %} {% block content %}
-<div class="dm-page-content">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="breadcrumb-main">
-          <h4 class="text-capitalize breadcrumb-title">
-            Робота тьюторів
-          </h4>
-        </div>
-      </div>
-      <div class="col-lg-12">
-        <form
-          action="{% url 'logika_teachers:tutor-results-report' %}"
-          method="post"
-        >
-          {% csrf_token %}
-          <div class="col-sm-3">Дата старту звіту</div>
-          <div class="col-sm-3">
-            <div class="position-relative">
-              <input
-                type="date"
-                name="report_start"
-                class="form-control ih-medium ip-light radius-xs b-light px-15"
-                id="report_start"
-                placeholder="{{report_start}}"
-              />
-            </div>
-          </div>
-          <div class="col-sm-3">Дата кінця звіту</div>
-          <div class="col-sm-3">
-            <div class="position-relative">
-              <input
-                type="date"
-                name="report_end"
-                class="form-control ih-medium ip-light radius-xs b-light px-15"
-                id="report_end"
-                placeholder="{{report_end}}"
-              />
-            </div>
-          </div>
-          <br />
-          <button type="submit" class="btn btn-lg btn-primary btn-submit">
-            Отримати звіт
-          </button>
-          <br />
-        </form>
-        <div class="card card-default card-md mb-4">
-          <div class="card-header py-20">
-            <h6>
-              Звіт по роботі тьюторів за {{report_start}} - {{report_end}}
-            </h6>
-          </div>
-          <div class="card-body">
-            <div class="dm-skeleton">
-              {% for tutor, details in data.items %}
-              <div class="dm-collapse-item">
-                <div class="dm-collapse-item__header">
-                  <a
-                    href="#"
-                    class="item-link collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapse-body-c-{{forloop.counter}}"
-                    aria-expanded="false"
-                  >
-                    <i class="la la-angle-right"></i>
-                    <h5>{{tutor}}</h5>
-                    {% for key, value in details.items%} {%if key == "total" %}
-                    <h6>
-                      Всього: Викладачів: {{value.total_teachers}} | Дзвінків: {{value.total_calls}} | Відвідувань
-                      уроків: {{value.total_lessons}}
-                    </h6>
-                    {%endif%} {%endfor%}
-                  </a>
-                </div>
-                <div
-                  id="collapse-body-c-{{forloop.counter}}"
-                  class="dm-collapse-item__body collapse"
-                  style=""
-                >
-                  <div class="collapse-body-text">
-                    <div class="table-responsive">
-                      <table class="table table-bordered table-social">
-                        <thead>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>Викладач</td>
-                            <td>Кількість дзвінків</td>
-                            <td>Кількість форм ЗЗ</td>
-                            <td>Кількість відвіданих уроків</td>
-                          </tr>
-                          {% for key, value in details.items%} {%if key != "total" %}
-                          <tr>
-                            <td>
-                              <a href="{% url 'logika_teachers:teacher-profile' value.id %}" target="_blank">{{key}}</a>
-                            </td>
-                            <td>{{value.call_amount}}</td>
-                            <td>{{value.feedbacks_amount}}</td>
-                            <td>{{value.lesson_amount}}</td>
-                          </tr>
-                    {%endif%} {%endfor%}
-                          
-                        </tbody>
-                      </table>
+    <div class="dm-page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="breadcrumb-main">
+                        <h4 class="text-capitalize breadcrumb-title">
+                            Робота тьюторів
+                        </h4>
                     </div>
-                  </div>
                 </div>
-              </div>
-              <hr>
-              {% endfor %}
+                <div class="col-lg-12">
+                    <form
+                            action="{% url 'logika_teachers:tutor-results-report' %}"
+                            method="post"
+                    >
+                        {% csrf_token %}
+                        <div class="col-sm-3">Дата старту звіту</div>
+                        <div class="col-sm-3">
+                            <div class="position-relative">
+                                <input
+                                        type="date"
+                                        name="report_start"
+                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                        id="report_start"
+                                        placeholder="{{ report_start }}"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-sm-3">Дата кінця звіту</div>
+                        <div class="col-sm-3">
+                            <div class="position-relative">
+                                <input
+                                        type="date"
+                                        name="report_end"
+                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                        id="report_end"
+                                        placeholder="{{ report_end }}"
+                                />
+                            </div>
+                        </div>
+                        <br/>
+                        <button type="submit" class="btn btn-lg btn-primary btn-submit">
+                            Отримати звіт
+                        </button>
+                        <br/>
+                    </form>
+                    <div class="card card-default card-md mb-4">
+                        <div class="card-header py-20">
+                            <h6>
+                                Звіт по роботі тьюторів за {{ report_start }} - {{ report_end }}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="dm-skeleton">
+                                {% for tutor, details in data.items %}
+                                    <div class="dm-collapse-item">
+                                        <div class="dm-collapse-item__header">
+                                            <a
+                                                    href="#"
+                                                    class="item-link collapsed"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse-body-c-{{ forloop.counter }}"
+                                                    aria-expanded="false"
+                                            >
+                                                <i class="la la-angle-right"></i>
+                                                <h5>{{ tutor }}</h5>
+                                                {% for key, value in details.items %} {% if key == "total" %}
+                                                    <h6>
+                                                        Всього: Викладачів: {{ value.total_teachers }} |
+                                                        Дзвінків: {{ value.total_calls }} | Відвідувань
+                                                        уроків: {{ value.total_lessons }}
+                                                    </h6>
+                                                {% endif %} {% endfor %}
+                                            </a>
+                                        </div>
+                                        <div
+                                                id="collapse-body-c-{{ forloop.counter }}"
+                                                class="dm-collapse-item__body collapse"
+                                                style=""
+                                        >
+                                            <div class="collapse-body-text">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-social">
+                                                        <thead>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr>
+                                                            <td>Викладач</td>
+                                                            <td>Кількість дзвінків</td>
+                                                            <td>Кількість форм ЗЗ</td>
+                                                            <td>Кількість відвіданих уроків</td>
+                                                        </tr>
+                                                        {% for key, value in details.items %} {% if key != "total" %}
+                                                            <tr>
+                                                                <td>
+                                                                    {% if user_role == "tutor" %}
+                                                                        <a href="{% url 'logika_teachers:teacher-profile' value.id %}"
+                                                                           target="_blank">
+                                                                    {% else %}
+
+                                                                        <a href="{% url 'logika_teachers:teacher-profile-regional' value.id tutor.id %}"
+                                                                            target="_blank">
+
+                                                                    {% endif %}
+                                                                    {{ key }} </a>
+                                                                </td>
+
+                                                                <td>{{ value.call_amount }}</td>
+                                                                <td>{{ value.feedbacks_amount }}</td>
+                                                                <td>{{ value.lesson_amount }}</td>
+                                                            </tr>
+                                                        {% endif %} {% endfor %}
+
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
-</div>
 {% endblock %}

@@ -2,8 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 import csv
-import pprint
-import library
 from utils.lms_authentication import get_authenticated_session
 
 ok_status = 200
@@ -153,9 +151,7 @@ def get_lessons_links_extended(ids: list) -> list:
     return result_extended
 
 
-def collect_groups_by_teacher_location(
-    teacher_name=None, location=None
-) -> list[dict]:
+def collect_groups_by_teacher_location(teacher_name=None, location=None) -> list[dict]:
     link_for_groups = "https://lms.logikaschool.com/api/v1/group"
     resp = auth.get(link_for_groups)
     if resp.status_code == ok_status:
@@ -192,13 +188,6 @@ def get_lessons_with_dates(group_id):
         if lessons_data:
             lessons_schedule = lessons_data[0].get("attendance", [])
         if lessons_schedule:
-            # lesson example:
-            # {
-            #   "lesson_id": 13730,
-            #   "lesson_title": "Python Start. Введення в мову Python.",
-            #   "start_time_formatted": "пн 10.04.23 16:00",
-            #   "status": "present"
-            # }
             for lesson in lessons_schedule:
                 lesson_title = lesson.get("lesson_title")
                 start_time_formatted = lesson.get("start_time_formatted")
@@ -211,9 +200,7 @@ def get_lessons_with_dates(group_id):
                 return lesson_data
 
 
-def collect_groups_schedule(
-    teacher_name=None, location=None
-):
+def collect_groups_schedule(teacher_name=None, location=None):
     teacher_groups = collect_groups_by_teacher_location(
         teacher_name=teacher_name, location=location
     )
