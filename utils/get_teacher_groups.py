@@ -6,7 +6,8 @@ def get_teacher_groups(teacher_id):
     teacher = TeacherProfile.objects.get(id=teacher_id)
     locations = (
         Group.objects.filter(
-            teacher_id=teacher.lms_id, type__in=("regular", "individual", "Группа", "Индивидуальная")
+            teacher_id=teacher.lms_id,
+            type__in=("regular", "individual", "Группа", "Индивидуальная"),
         )
         .values_list("title", flat=True)
         .distinct()

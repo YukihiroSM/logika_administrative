@@ -15,4 +15,3 @@ admin.site.register(TeacherProfile, TeacherProfileAdmin)
 admin.site.register(TutorProfile)
 admin.site.register(TeacherFeedback)
 admin.site.register(RegionalTutorProfile)
-# Register your models here.

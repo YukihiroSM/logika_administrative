@@ -11,16 +11,16 @@ GROUPS_FILE_PATH = settings.BASE_DIR / "groups_data.csv"
 class Command(BaseCommand):
     help = "Closes the specified poll for voting"
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument("poll_ids", nargs="+", type=int)
-
     def handle(self, *args, **options):
         try:
             with open(GROUPS_FILE_PATH, mode="r", encoding="utf-8") as csv_file:
                 csv_reader = csv.DictReader(csv_file, delimiter=";")
                 session = get_authenticated_session()
                 for row in csv_reader:
-                    if row["Статус"] not in GROUP_STATUSES_LIST or row["Тип группы"] not in GROUP_TYPES_LIST:
+                    if (
+                        row["Статус"] not in GROUP_STATUSES_LIST
+                        or row["Тип группы"] not in GROUP_TYPES_LIST
+                    ):
                         continue
 
                     group_id = row['\ufeff"ID"']
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                     group_venue = row["Площадка"]
                     teacher_name = row["Преподаватель"]
                     teacher_id = None
-                    
+
                     if teacher_name != "not_set":
                         detailed_group_resp = session.get(
                             f"https://lms.logikaschool.com/api/v1/group/{group_id}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
@@ -53,7 +53,9 @@ class Command(BaseCommand):
                             teacher_id=teacher_id,
                         )
                         if created:
-                            self.stdout.write(self.style.SUCCESS(f"Group {group_name} created"))
+                            self.stdout.write(
+                                self.style.SUCCESS(f"Group {group_name} created")
+                            )
                         else:
                             group_obj.title = group_name
                             group_obj.status = group_status
@@ -62,8 +64,16 @@ class Command(BaseCommand):
                             group_obj.teacher_name = teacher_name
                             group_obj.teacher_id = teacher_id
                             group_obj.save()
-                            self.stdout.write(self.style.WARNING(f"Group {group_name} already exists. Updated data."))
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"Group {group_name} already exists. Updated data."
+                                )
+                            )
                     except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"Group {group_name} duplicated or another error: {e}"))
+                        self.stdout.write(
+                            self.style.ERROR(
+                                f"Group {group_name} duplicated or another error: {e}"
+                            )
+                        )
         except FileNotFoundError:
             raise CommandError('File "path_to_your_file.csv" does not exist')

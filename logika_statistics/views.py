@@ -1,4 +1,3 @@
-import csv
 import datetime
 import json
 import os
@@ -14,7 +13,6 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 
 from logika_administrative.settings import BASE_DIR
 from logika_general.models import (
@@ -24,20 +22,14 @@ from logika_general.models import (
 )
 from logika_teachers.models import TutorProfile
 from utils.get_user_role import get_user_role
-from utils.lms_authentication import get_authenticated_session
 from .forms import ReportDateForm, UpdateLocationForm
 from .models import (
     Location,
-    StudentReport,
     ClientManagerReport,
     LocationReport,
     CourseReport,
     ConsolidationReport,
-    MasterClassRecord
-)
-from .utils import (
-    retrieve_group_ids_from_csv,
-    get_lessons_links_extended,
+    MasterClassRecord,
 )
 
 
@@ -64,54 +56,8 @@ scales_new = {
     "Грудень": "2023-12-01_2023-12-20",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
-    "Березень": "2024-03-01_2024-03-24"
+    "Березень": "2024-03-01_2024-03-24",
 }
-
-
-@csrf_exempt
-def collect_lessons_links_extended(request):
-    request_data_GET = dict(request.GET)
-    report_start = request_data_GET.get("report_start", [""])[0]
-    report_end = request_data_GET.get("report_end", [""])[0]
-    auth = get_authenticated_session()
-    ids = retrieve_group_ids_from_csv(
-        auth, report_start=report_start, report_end=report_end
-    )
-    result_data = get_lessons_links_extended(ids=ids)
-    response = HttpResponse(
-        content_type="text/csv",
-        headers={
-            "Content-Disposition": 'attachment; filename="lessons_schedule_links.csv"'
-        },
-    )
-    response.write("\ufeff".encode("utf8"))
-
-    writer = csv.writer(response)
-    writer.writerow(
-        [
-            "ID Групи",
-            "Назва групи",
-            "Посилання",
-            "Викладач",
-            "КМ",
-            "Назва курсу",
-            "Дата, час наступного уроку",
-        ]
-    )
-    for group in result_data:
-        writer.writerow(
-            [
-                group.get("group"),
-                group.get("group_name"),
-                group.get("link"),
-                group.get("teacher_name"),
-                group.get("curator_name"),
-                group.get("course_name"),
-                group.get("next_lesson_time"),
-            ]
-        )
-    response["Content-Encoding"] = "utf-8"
-    return response
 
 
 def get_possible_report_scales():
@@ -173,7 +119,9 @@ def programming_report_updated(request):
     else:
         report_start, report_end = possible_report_scales[-1].split(" - ")
     if not month_report:
-        report_start = datetime.datetime.strptime(report_start.strip(), "%Y-%m-%d").date()
+        report_start = datetime.datetime.strptime(
+            report_start.strip(), "%Y-%m-%d"
+        ).date()
         report_end = datetime.datetime.strptime(report_end.strip(), "%Y-%m-%d").date()
         report_date_default = f"{report_start} - {report_end}"
     else:

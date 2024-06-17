@@ -15,10 +15,7 @@ def run():
         ("2024-03-01", "2024-03-03"),
         ("2024-03-04", "2024-03-10"),
         ("2024-03-01", "2024-03-10"),
-
     ]
-
-
 
     start_dates = [line[0] for line in timelines]
     os.environ["start_dates"] = json.dumps(start_dates)
@@ -45,6 +42,5 @@ def run():
         # management.call_command("process_payments", course="programming")
         management.call_command("generate_reports")
 
-        
         # management.call_command("lesson_consolidation")
     # management.call_command("collect_groups_data")

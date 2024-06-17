@@ -1,16 +1,7 @@
-# from django.db import models
-#
-#
-
-
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+
 
 regions = [
     ("UA_Kievskaya oblast", "UA_Kievskaya oblast"),

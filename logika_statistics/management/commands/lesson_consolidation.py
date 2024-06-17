@@ -134,8 +134,8 @@ class Command(BaseCommand):
         payments_dataset[["group_name", "group_id", "trash"]] = payments_dataset[
             "group, id"
         ].str.split(", ", expand=True)
-        pd.set_option('display.max_columns', None)
-        
+        pd.set_option("display.max_columns", None)
+
         payments_dataset["group_id"] = payments_dataset["group_id"].str.replace(",", "")
         # print(payments_dataset)
         # return

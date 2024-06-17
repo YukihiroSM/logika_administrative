@@ -40,7 +40,7 @@ scales_new = {
     "Грудень": "2023-12-01_2023-12-20",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
-    "Березень": "2024-03-01_2024-03-10"
+    "Березень": "2024-03-01_2024-03-10",
 }
 
 
@@ -869,8 +869,6 @@ def get_teacher_conversion(request, teacher_id, tutor_id=None):
 
 @login_required(login_url="/login/")
 def get_tutors_conversion(request):
-    #
-    # possible_report_scales = get_possible_report_scales()
     business = "programming"
     month_report = None
     possible_report_scales = get_possible_report_scales()

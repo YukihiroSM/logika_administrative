@@ -104,7 +104,6 @@ class Command(BaseCommand):
             except:
                 continue
 
-
             group_data_url = f"https://lms.logikaschool.com/api/v1/group/{student_recent_group_id}?expand=venue,teacher,curator"
             group_data_response = lms_session.get(group_data_url)
             if group_data_response.status_code != 200:

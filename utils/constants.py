@@ -12,7 +12,4 @@ GROUP_TYPES_LIST = [
     "Индивидуальная",
 ]
 
-GROUP_STATUSES_LIST = [
-    "Активная",
-    "Идет набор"
-]
+GROUP_STATUSES_LIST = ["Активная", "Идет набор"]

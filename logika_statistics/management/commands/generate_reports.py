@@ -1,16 +1,11 @@
 import logging
 import os
 from datetime import datetime
-import library
 from django.core.management.base import BaseCommand
 
 from logika_statistics.models import (
     ClientManagerReport,
     LocationReport,
-    StudentReport,
-    CourseReport,
-    Location,
-    TeacherReportNew,
     PaymentRecord,
     MasterClassRecord,
 )
@@ -130,8 +125,7 @@ class Command(BaseCommand):
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
                             attended=True,
-                        )
-                        .all()
+                        ).all()
                     )
                     enrolled_mc = len(
                         reports.filter(
@@ -139,8 +133,7 @@ class Command(BaseCommand):
                             client_manager=client_manager,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                        )
-                        .all()
+                        ).all()
                     )
                     conversion = self.get_conversion(payments, attended_mc)
                     new_report = ClientManagerReport(
@@ -183,8 +176,7 @@ class Command(BaseCommand):
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
                             attended=True,
-                        )
-                        .all()
+                        ).all()
                     )
                     enrolled_mc = len(
                         reports.filter(
@@ -192,8 +184,7 @@ class Command(BaseCommand):
                             location=location,
                             territorial_manager=territorial_manager,
                             regional_manager=regional_manager,
-                        )
-                        .all()
+                        ).all()
                     )
                     conversion = self.get_conversion(payments, attended_mc)
                     new_report = LocationReport(

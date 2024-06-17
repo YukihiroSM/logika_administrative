@@ -1,6 +1,4 @@
 from django import forms
-from django.contrib.postgres.forms import SimpleArrayField
-from logika_teachers.models import TeacherProfile
 
 
 class TeacherCreateForm(forms.Form):

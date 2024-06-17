@@ -98,10 +98,6 @@ TUTORS_ENGLISH = list(
 TUTORS = list(set(TUTORS_PROGRAMMING + TUTORS_ENGLISH))
 TUTORS.sort()
 TUTORS = [(tutor, tutor) for tutor in TUTORS]
-# TUTORS = []
-# CLIENT_MANAGERS = []
-# TERRITORIAL_MANAGERS = []
-# LOCATIONS = []
 
 
 class LocationCreateForm(forms.Form):

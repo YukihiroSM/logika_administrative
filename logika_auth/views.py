@@ -1,11 +1,10 @@
-# Create your views here.
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from datetime import datetime, timedelta, timezone
-from logika_teachers.models import TutorProfile, TeacherProfile, RegionalTutorProfile
+from logika_teachers.models import TutorProfile, RegionalTutorProfile
 from utils.get_user_role import get_user_role
 from logika_general.models import (
     ClientManagerProfile,

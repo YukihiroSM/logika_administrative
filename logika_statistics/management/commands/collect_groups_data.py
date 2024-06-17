@@ -7,9 +7,6 @@ from utils.constants import GROUP_STATUSES, GROUP_TYPES
 class Command(BaseCommand):
     help = "Closes the specified poll for voting"
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument("poll_ids", nargs="+", type=int)
-
     def handle(self, *args, **options):
         session = get_authenticated_session()
         groups_resp = session.get("https://lms.logikaschool.com/api/v1/group")
@@ -51,7 +48,10 @@ class Command(BaseCommand):
                         teacher_id=teacher_id,
                     )
                 except:
-                    self.stdout.write(self.style.ERROR(f"Group {group_name} duplicated"))
+                    self.stdout.write(
+                        self.style.ERROR(f"Group {group_name} duplicated")
+                    )
+                    continue
                 group_obj.save()
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Group {group_name} created"))
