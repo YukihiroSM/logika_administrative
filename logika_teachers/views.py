@@ -1035,3 +1035,21 @@ def get_tutors_conversion(request):
         template_name="logika_teachers/tutor_teachers_statistics.html",
         context=context,
     )
+
+
+@require_GET
+def get_churn_name(request) -> JsonResponse:
+    churn_id = request.GET.get("churn_id")
+    if churn_id:
+
+        data, status = LMSService.get_student(churn_id)
+        if status == 200:
+            name = data.get("last_name") + " " + data.get("first_name")
+            return JsonResponse({"value": name})
+        elif status == 404:
+            return JsonResponse({"value": "Учня не знайдено"})
+        else:
+            return JsonResponse({"value": "Щось пішло не так"})
+
+    else:
+        return JsonResponse({"value": "Введіть ID учня"})
