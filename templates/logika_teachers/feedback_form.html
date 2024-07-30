@@ -133,16 +133,24 @@
                                                     class="color-danger"></span></label>
                                         <div id="students-container">
                                             <div class="student-row">
-                                                <input type="text"
-                                                       class="form-control ih-medium ip-light radius-xs b-light px-15"
-                                                       name="predicted_churn_id[]"
-                                                       placeholder="ID учня з LMS">
+                                                <div class=" form-floating">
 
-                                                <input type="text"
-                                                       id="predicted_churn_description[]"
-                                                       name="predicted_churn_description[]"
-                                                       placeholder="Опис Проблеми"
-                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
+                                                    <input type="text"
+                                                           id="churn_id_0"
+                                                           class="form-control mb-1"
+                                                           name="predicted_churn_id[]"
+                                                           placeholder="ID учня з LMS">
+                                                    <label for="churn_id_0" id="churn_name_0">Введіть ID учня</label>
+                                                </div>
+                                                <div class=" form-floating">
+                                                    <input type="text"
+                                                           id="predicted_churn_description[]"
+                                                           name="predicted_churn_description[]"
+                                                           placeholder="Опис Проблеми"
+                                                           class="form-control">  {# ih-medium ip-light radius-xs b-light #}
+                                                    <label for="predicted_churn_description[]">Опис проблеми</label>
+
+                                                </div>
                                                 <br>
 
                                                 <!--                                                <button type="button"-->
@@ -158,28 +166,72 @@
                                         </button>
                                         <br>
                                         <script>
+                                            let num = 1;
                                             document.addEventListener("DOMContentLoaded", function () {
                                                 const addStudentButton = document.getElementById("add-student");
                                                 const studentsContainer = document.getElementById("students-container");
+
+                                                function addInputListeners() {
+                                                    const inputs = document.querySelectorAll('#students-container input[name="predicted_churn_id[]"]');
+
+                                                    inputs.forEach(input => {
+                                                        input.addEventListener('input', () => {
+                                                            clearTimeout(input.timer); // Очищаємо попередній таймер, якщо він існує
+                                                            input.timer = setTimeout(() => {
+                                                                const labelId = input.id.replace('churn_id_', 'churn_name_');
+                                                                const label = document.getElementById(labelId);
+                                                                if (label) {
+                                                                    const value = encodeURIComponent(input.value);
+                                                                    const url = `{% url 'logika_teachers:get-churn-name' %}?churn_id=${value}`;
+
+                                                                    fetch(url)
+                                                                        .then(response => response.json())
+                                                                        .then(data => {
+                                                                            if (data.value) {
+                                                                                label.textContent = data.value;
+                                                                            } else {
+                                                                                label.textContent = 'Щось пішло не так';
+                                                                            }
+                                                                        })
+                                                                        .catch(error => {
+                                                                            console.error('Error fetching name:', error);
+                                                                            label.textContent = 'Сервер не відповідає';
+                                                                        });
+                                                                }
+                                                            }, 1000);
+                                                            });
+                                                        });
+                                                }
+                                                addInputListeners();
 
                                                 addStudentButton.addEventListener("click", function () {
                                                     const studentRow = document.createElement("div");
                                                     studentRow.className = "student-row";
                                                     studentRow.innerHTML = `
+                                                <div class=" form-floating">
                                                 <input type="text"
-                                                        class="form-control ih-medium ip-light radius-xs b-light px-15"
+                                                        id="churn_id_${num}"
+                                                        class="form-control mb-1"
                                                         name="predicted_churn_id[]"
-                                                       placeholder="ID учня з LMS">
+                                                        placeholder="ID учня з LMS">
+                                                <label for="churn_id_${num}" id="churn_name_${num}">Введіть ID учня</label>
+                                                </div>
 
-                                                <input type="text"
-                                                       id="predicted_churn_description[]"
-                                                       name="predicted_churn_description[]"
-                                                       placeholder="Опис Проблеми"
-                                                       class="form-control ih-medium ip-light radius-xs b-light px-15">
+                                                <div class=" form-floating">
+                                                    <input type="text"
+                                                           id="predicted_churn_description[]"
+                                                           name="predicted_churn_description[]"
+                                                           placeholder="Опис Проблеми"
+                                                           class="form-control">
+                                                    <label for="predicted_churn_description[]">Опис проблеми</label>
+
+                                                </div>
                                                 <br>
                                                 <button type="button" class="remove-student btn btn-secondary-hover btn-default btn-squared px-10">Видалити</button>
 <br>`;
                                                     studentsContainer.appendChild(studentRow);
+                                                    num ++;
+                                                    addInputListeners();
                                                 });
 
                                                 studentsContainer.addEventListener("click", function (event) {
