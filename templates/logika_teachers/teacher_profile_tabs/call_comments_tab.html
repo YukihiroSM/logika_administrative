@@ -1,0 +1,78 @@
+<div class="tab-pane fade" id="call-comments" role="tabpanel"
+     aria-labelledby="call-comments-tab">
+    <div class="ap-post-content">
+        <div class="row">
+            <div class="col-lg-12 mb-30">
+                <div class="card global-shadow mb-30">
+                    <div class="friends-widget">
+                        <div class="col-lg-18">
+                            <div class="card card-default card-md mb-4">
+                                <div class="card-header py-20">
+                                    <h6>Додати коментар</h6>
+                                </div>
+                                <div class="card-body pb-10">
+                                    <div class="reply-editor media">
+
+                                        <div class="reply-editor__form media-body">
+                                            <form action="{% url 'logika_teachers:create-comment' %}"
+                                                  method="post">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="form-group col-12">
+                                                        <textarea name="comment" id="comment"
+                                                                  class="form-control mb-4"></textarea>
+
+                                                        <input type="hidden" name="next"
+                                                               value="{{ request.path }}">
+                                                        <input type="hidden" name="comment_type"
+                                                               value="call">
+                                                        <input type="hidden" name="teacher"
+                                                               value="{{ teacher_profile.id }}">
+                                                        <button type="submit"
+                                                                class="btn btn-primary btn-lg btn-squared btn-shadow-primary fw-400">
+                                                            Додати коментар
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="card card-default card-md mb-4">
+                                        <div class="card-header px-md-25 px-3">
+                                            <h6>Коментарі тьютора</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="timeline-box">
+                                                {% for comment in call_comments %}
+                                                <div class="timeline-single d-flex">
+                                                    <span class="timeline-line"></span>
+
+                                                    <span class="timeline-single__buble buble-danger"></span>
+                                                    <p>
+                                                        {{comment.created_at}}
+                                                    </p>
+                                                    <div class="timeline-single__content">
+                                                        <p>{{comment.comment|safe}}</p>
+                                                    </div>
+
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
