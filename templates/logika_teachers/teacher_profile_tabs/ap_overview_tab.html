@@ -1,0 +1,235 @@
+{% load static %}
+<div class="tab-pane fade show active" id="ap-overview" role="tabpanel"
+     aria-labelledby="ap-overview-tab">
+    <div class="ap-content-wrapper">
+        <div class="row">
+            <div class="col-lg-4 mb-25">
+                <div class="ap-po-details radius-xl d-flex justify-content-between">
+                    <div>
+                        <div class="overview-content">
+                            <h1>--%</h1>
+                            <p>Успішність</p>
+                            <div class="ap-po-details-time">
+                                <span class="color-success"><i class="las la-arrow-up"></i>
+                                    <strong>--%</strong></span>
+                                <small></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ap-po-timeChart">
+                        <div class="overview-single__chart d-md-flex align-items-end">
+                            <div class="parentContainer">
+                                <div>
+                                    <canvas id="mychart8"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-25">
+                <div class="ap-po-details radius-xl d-flex justify-content-between">
+                    <div>
+                        <div class="overview-content">
+                            <h1>--</h1>
+                            <p>Кількість відвалів</p>
+                            <div class="ap-po-details-time">
+                                <span class="color-success"><i class="las la-arrow-down"></i>
+                                    <strong>--%</strong></span>
+                                <small></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ap-po-timeChart">
+                        <div class="overview-single__chart d-md-flex align-items-end">
+                            <div class="parentContainer">
+                                <div>
+                                    <canvas id="mychart9"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-25">
+                <div class="ap-po-details radius-xl d-flex justify-content-between">
+                    <div>
+                        <div class="overview-content">
+                            <h1>--%</h1>
+                            <p>Конверсія</p>
+                            <div class="ap-po-details-time">
+                                <span class="color-danger"><i class="las la-arrow-down"></i>
+                                    <strong>--%</strong></span>
+                                <small></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ap-po-timeChart">
+                        <div class="overview-single__chart d-md-flex align-items-end">
+                            <div class="parentContainer">
+                                <div>
+                                    <canvas id="mychart10"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card mt-25 mb-40">
+                    <div class="card-header text-capitalize px-md-25 px-3">
+                        <h6>Найближчі ВУ</h6>
+                        <div class="dropdown">
+                            <a href="#" role="button" id="products" data-bs-toggle="dropdown"
+                               aria-haspopup="true" aria-expanded="false">
+                                <img src="{% static 'img/svg/more-horizontal.svg' %}"
+                                     alt="more-horizontal" class="svg">
+                            </a>
+                            <!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+                            <!--                                                     aria-labelledby="products">-->
+                            <!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+                            <!--                                                </div>-->
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="ap-product">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Група</th>
+                                        <th scope="col">Викладач</th>
+                                        <th scope="col">Дата</th>
+                                        <th scope="col">Статус</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>Група 1</td>
+                                        <td>Викладач 1</td>
+                                        <td>31.07.2023</td>
+                                        <td>Перевірено</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-default btn-squared btn-shadow-primary ">
+                                                Переглянути перевірку
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Група 2</td>
+                                        <td>Викладач 2</td>
+                                        <td>01.08.2023</td>
+                                        <td>Не перевірено</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-default btn-squared btn-shadow-primary ">
+                                                Перевірити проекти
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card mt-25 mb-40">
+                    <div class="card-header text-capitalize px-md-25 px-3">
+                        <h6>Учні, щоб звернути увагу</h6>
+                        <div class="dropdown">
+                            <a href="#" role="button" id="products" data-bs-toggle="dropdown"
+                               aria-haspopup="true" aria-expanded="false">
+                                <img src="{% static 'img/svg/more-horizontal.svg' %}"
+                                     alt="more-horizontal" class="svg">
+                            </a>
+                            <!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+                            <!--                                                     aria-labelledby="products">-->
+                            <!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+                            <!--                                                </div>-->
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="ap-product">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Група</th>
+                                        <th scope="col">Викладач</th>
+                                        <th scope="col">Учень</th>
+                                        <th scope="col">Успішність</th>
+                                        <th scope="col">Коментар</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>Група 1</td>
+                                        <td>Викладач 1</td>
+                                        <td>Учень 1</td>
+                                        <td>25%</td>
+                                        <td>Посилання на коментарі</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-default btn-squared btn-shadow-primary ">
+                                                Додати коментар
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Група 2</td>
+                                        <td>Викладач 2</td>
+                                        <td>Учень 2</td>
+                                        <td>49%</td>
+                                        <td>Коментар не вказано</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-default btn-squared btn-shadow-primary ">
+                                                Додати коментар
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header text-capitalize px-md-25 px-3">
+                        <h6>Загальна статистика</h6>
+                        <div class="dropdown">
+                            <a href="#" role="button" id="statistics1" data-bs-toggle="dropdown"
+                               aria-haspopup="true" aria-expanded="false">
+                                <img src="{% static 'img/svg/more-horizontal.svg' %}"
+                                     alt="more-horizontal" class="svg">
+                            </a>
+                            <!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+                            <!--                                                     aria-labelledby="statistics1">-->
+                            <!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+                            <!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+                            <!--                                                </div>-->
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="ap-statistics-charts">
+                            <div class="parentContainer">
+                                <div>
+                                    <canvas id="profile-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
