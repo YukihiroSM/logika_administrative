@@ -4,9 +4,10 @@ import pickle
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
 from transliterate import translit
 
 from logika_administrative.settings import BASE_DIR
@@ -17,6 +18,7 @@ from logika_teachers.forms import (
     TeacherEditProfileForm,
     TeacherFeedbackForm,
 )
+from logika_teachers.lms_service import LMSService
 from logika_teachers.models import (
     TeacherProfile,
     TutorProfile,
@@ -65,6 +67,13 @@ def teacher_profile(request, id, tutor_id=None):
         if feedbacks and feedbacks[0].predicted_churn_object
         else None
     )
+    for churn_id, description in recent_predicted_churns.items():
+        data, status = LMSService.get_student(churn_id)
+        if status == 200:
+            name = data.get("last_name") + " " + data.get("first_name")
+        else:
+            name = "Not found"
+        recent_predicted_churns[churn_id] = {"name": name, "description": description}
 
     call_comments = (
         TeacherComment.objects.filter(
@@ -80,11 +89,32 @@ def teacher_profile(request, id, tutor_id=None):
         .order_by("-created_at")
         .all()
     )
+    for comm in lesson_comments:
+        data, status = LMSService.get_group(comm.group_id)
+        if status == 200:
+            comm.group_title = data.get('title')
+        else:
+            comm.group_title = "Not found"
+
     all_comments = (
         TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile)
         .order_by("-created_at")
         .all()
     )
+    for comm in all_comments:
+        if comm.comment_type == "lesson":
+            data, status = LMSService.get_group(comm.group_id)
+            print(status)
+            if status == 200:
+                comm.group_title = data.get('title')
+            else:
+                comm.group_title = "Not found"
+        elif comm.comment_type == "predicted_churn":
+            data, status = LMSService.get_student(comm.churn_id)
+            if status == 200:
+                comm.churn_name = data.get("last_name") + " " + data.get("first_name")
+            else:
+                comm.churn_name = "Not found"
 
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
     return render(
