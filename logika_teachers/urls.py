@@ -20,6 +20,11 @@ urlpatterns = [
         views.teacher_feedback_form,
         name="teacher-feedback",
     ),
+    path(
+        "teacher-feedback-get-chur-name/",
+        views.get_churn_name,
+        name="get-churn-name",
+    ),
     path("view-forms/<int:feedback_id>/", views.view_forms, name="view-forms"),
     path("create-comment/", views.create_comment, name="create-comment"),
     path(
