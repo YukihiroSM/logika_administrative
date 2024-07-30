@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from requests import Response
 
@@ -10,17 +10,17 @@ class LMSServiceInterface(ABC):
 
     @classmethod
     @abstractmethod
-    def get_student(cls, student_id: int | str) -> tuple[Optional[dict], int]:
+    def get_student(cls, student_id: Union[str, int]) -> tuple[Optional[dict], int]:
         pass
 
     @classmethod
     @abstractmethod
-    def get_group(cls, group_id: int | str) -> tuple[Optional[dict], int]:
+    def get_group(cls, group_id: Union[str, int]) -> tuple[Optional[dict], int]:
         pass
 
     @classmethod
     @abstractmethod
-    def get_lessons(cls, group_id: int | str) -> tuple[Optional[list], int]:
+    def get_lessons(cls, group_id: Union[str, int]) -> tuple[Optional[list], int]:
         pass
 
 
@@ -32,17 +32,17 @@ class LMSService(LMSServiceInterface):
     _session = get_authenticated_session()
 
     @classmethod
-    def get_student(cls, student_id: int | str) -> tuple[Optional[dict], int]:
+    def get_student(cls, student_id: Union[str, int]) -> tuple[Optional[dict], int]:
         response = cls._session.get(url=cls._student_url.format(student_id))
         return cls._validate_response(response)
 
     @classmethod
-    def get_group(cls, group_id: int | str) -> tuple[Optional[dict], int]:
+    def get_group(cls, group_id: Union[str, int]) -> tuple[Optional[dict], int]:
         response = cls._session.get(url=cls._group_url.format(group_id))
         return cls._validate_response(response)
 
     @classmethod
-    def get_lessons(cls, group_id: int | str) -> tuple[Optional[list], int]:
+    def get_lessons(cls, group_id: Union[str, int]) -> tuple[Optional[list], int]:
         response = cls._session.get(url=cls._lessons_url.format(group_id))
         data, status = cls._validate_response(response)
         if status == 200:
