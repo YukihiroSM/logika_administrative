@@ -65,7 +65,7 @@ def teacher_profile(request, id, tutor_id=None):
     recent_predicted_churns = (
         pickle.loads(feedbacks[0].predicted_churn_object)
         if feedbacks and feedbacks[0].predicted_churn_object
-        else None
+        else dict()
     )
     for churn_id, description in recent_predicted_churns.items():
         data, status = LMSService.get_student(churn_id)
