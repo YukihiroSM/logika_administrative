@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 from transliterate import translit
@@ -601,8 +602,9 @@ def tutor_month_report(request, user_id):
                         tutor=tutor,
                     )
                     new_month_report.save()
+            current_year = timezone.now().year
             month_reports = (
-                TutorMonthReport.objects.filter(month=month, tutor=tutor)
+                TutorMonthReport.objects.filter(month=month, tutor=tutor, created_at__year=current_year)
                 .order_by("teacher")
                 .all()
             )
