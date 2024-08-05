@@ -6,18 +6,18 @@
                 <div class="card mt-30">
                     <div class="card-body">
                         <h1>Останні передбачувані відвали: </h1>
-                        {% for churn_id, data in recent_feedback_churn.items %}
+                        {% for churn in feedbacks.0.predicted_churns.all %}
                         <div class="job-item px-25 py-30">
                             <div class="card-body p-0  d-flex align-items-sm-center align-items-start flex-wrap">
                                 <div class="job-item__body text-capitalize d-flex flex-wrap">
                                     <div class="job-item__content d-flex">
                                         <div class="job-deadline">
-                                            <h6>ID: {% if churn_id %}
-                                                {{churn_id}}
-                                                <a href="https://lms.logikaschool.com/student/update/{{ churn_id }}" target="_blank">{{ data.name }}</a>
+                                            <h6>ID: {% if churn.churn_id %}
+                                                {{churn.churn_id}}
+                                                <a href="https://lms.logikaschool.com/student/update/{{ churn.churn_id }}" target="_blank">{{ churn.fullname }}</a>
                                                 {% endif %}
                                             </h6>
-                                            <span>Опис: {{data.description}}</span>
+                                            <span>Опис: {{churn.description}}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -31,7 +31,9 @@
                                         <input type="hidden" name="next"
                                                value="{{ request.path }}">
                                         <input type="hidden" name="churn"
-                                               value="{{ churn_id }}">
+                                               value="{{ churn.churn_id }}">
+                                        <input type="hidden" name="churn_obj"
+                                               value="{{ churn.pk }}">
                                         <input type="hidden" name="comment_type"
                                                value="predicted_churn">
                                         <input type="hidden" name="teacher"
