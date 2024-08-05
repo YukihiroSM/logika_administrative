@@ -21,9 +21,12 @@
                                                     <div class="form-group col-12">
                                                         <textarea name="comment"
                                                                   class="form-control mb-4"></textarea>
-                                                        <input type="text" name="group_id"
-                                                               class="form-control form-control-lg mb-4"
-                                                               placeholder="ID групи">
+                                                        <div class="form-floating">
+                                                            <input type="text" name="group_id" id="group_id_input"
+                                                           class="form-control form-control-lg mb-4">
+                                                            <label for="group_id_input" id="group_name_label">Введіть ID групи</label>
+                                                        </div>
+
                                                         <input type="hidden" name="next"
                                                                value="{{ request.path }}">
                                                         <input type="hidden" name="comment_type"
@@ -77,3 +80,32 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const group_input = document.getElementById("group_id_input")
+        const group_label = document.getElementById("group_name_label")
+        group_input.addEventListener("input", function () {
+           clearTimeout(group_input.timer);
+           group_input.timer = setTimeout(() => {
+               if (group_label) {
+                const value = encodeURIComponent(group_input.value);
+                const url = `{% url 'logika_teachers:get_group_title' %}?group_id=${value}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.value) {
+                            group_label.textContent = data.value;
+                        } else {
+                            group_label.textContent = 'Щось пішло не так';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching name:', error);
+                        group_label.textContent = 'Сервер не відповідає';
+                    });
+
+               }
+           }, 1000);
+        });
+    });
+</script>
