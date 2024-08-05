@@ -1,0 +1,83 @@
+{% load static %}
+<div class="card mt-25 mb-40">
+    <div class="card-header text-capitalize px-md-25 px-3">
+        <h6>Найближчі ВУ</h6>
+        <form method="GET" class="row">
+            <div class="col-auto">
+                <input type="date" name="from" value="{{ from_date }}" class="form-control">
+            </div>
+            <div class="col-auto">
+                <input type="date" name="to" value="{{ to_date }}" class="form-control">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary h-75">Оновити</button>
+            </div>
+        </form>
+        <div class="dropdown">
+            <a href="#" role="button" id="products" data-bs-toggle="dropdown"
+               aria-haspopup="true" aria-expanded="false">
+                <img src="{% static 'img/svg/more-horizontal.svg' %}"
+                     alt="more-horizontal" class="svg">
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="ap-product">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">Група</th>
+                        <th scope="col">Викладач</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Урок</th>
+                        <th scope="col">Коментар</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for lesson in open_lessons %}
+                    <tr>
+                        <td>
+                            <a href="https://lms.logikaschool.com/group/view/{{ lesson.group_id }}">{{ lesson.group_name }}</a>
+                        </td>
+                        <td>{{ lesson.teacher }}</td>
+                        <td style="text-transform: none !important;">{{ lesson.start_time_formatted }}</td>
+                        <td style="text-transform: none !important;">{{ lesson.lesson_title }}</td>
+                        <td style="text-transform: none !important;">
+                            {% if not lesson.comment %}
+                                <form method="POST" action="{% url 'logika_teachers:create-comment' %}">
+                                    {% csrf_token %}
+                                    <textarea name="comment" class="form-control mb-2"></textarea>
+                                    <input type="hidden" name="group_id"
+                                           value="{{ lesson.group_id }}">
+                                    <input type="hidden" name="next"
+                                           value="{{ request.path }}">
+                                    <input type="hidden" name="comment_type"
+                                           value="lesson">
+                                    <input type="hidden" name="teacher"
+                                           value="{{ teacher_profile.id }}">
+                                    <input type="hidden" name="lesson_id"
+                                           value="{{ lesson.lesson_id }}">
+                                    <button class="btn btn-primary btn-default btn-squared"
+                                            type="submit">
+                                        Відправити
+                                    </button>
+                                </form>
+                            {% else %}
+                                {% if lesson.comment|length > 20 %}
+                                    <a class="text-decoration-none text-dark" href="#" data-bs-toggle="tooltip" data-bs-title="{{ lesson.comment }}">
+                                    {{ lesson.comment|truncatechars:20 }}
+                                    </a>
+                                {% else %}
+                                    {{ lesson.comment }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
