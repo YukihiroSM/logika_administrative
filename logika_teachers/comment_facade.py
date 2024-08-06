@@ -35,7 +35,7 @@ class CommentsFacade(CommentsFacadeInterface):
         comments = TeacherComment.objects.filter(teacher=self.teacher, tutor=self.tutor, comment_type="lesson")
         comments = comments.order_by("-created_at")
         for comm in comments:
-            data, status = LMSService.get_group(comm.group_id)
+            data, status = LMSService.get_group(comm.group_id.strip())
             if status == 200:
                 comm.group_title = data.get('title')
             else:
@@ -46,15 +46,15 @@ class CommentsFacade(CommentsFacadeInterface):
         comments = TeacherComment.objects.filter(teacher=self.teacher, tutor=self.tutor).order_by("-created_at")
         for comm in comments:
             if comm.comment_type == "lesson":
-                data, status = LMSService.get_group(comm.group_id)
+                data, status = LMSService.get_group(comm.group_id.strip())
                 if status == 200:
                     comm.group_title = data.get('title')
                 else:
-                    comm.group_title = "Not found" + str(comm.group_id)
+                    comm.group_title = "Not found " + str(comm.group_id)
             elif comm.comment_type == "predicted_churn":
                 data, status = LMSService.get_student(comm.churn_id)
                 if status == 200:
                     comm.churn_name = data.get("last_name") + " " + data.get("first_name")
                 else:
-                    comm.churn_name = "Not found" + str(comm.churn_id)
+                    comm.churn_name = "Not found " + str(comm.churn_id)
         return comments

@@ -372,7 +372,7 @@ def create_comment(request):
         comment = TeacherComment(
             comment=request_data.get("comment"),
             comment_type=comment_type,
-            group_id=request_data.get("group_id"),
+            group_id=request_data.get("group_id", "").strip(),
             teacher=teacher_profile,
             tutor=tutor_profile,
             lesson_id=request_data.get("lesson_id", None)
