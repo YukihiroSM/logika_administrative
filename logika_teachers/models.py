@@ -122,8 +122,9 @@ class PredictedChurn(models.Model):
         if status == 200:
             name = data.get("last_name") + " " + data.get("first_name")
             self.fullname = name
-            group_id = data.get("group", dict()).get("id")
-            if group_id:
+            group = data.get("group")
+            if group:
+                group_id = group.get("id")
                 group_service = GroupService()
                 group, created = group_service.get_or_create_group(group_id=group_id)
                 self.group = group
