@@ -3,6 +3,10 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 import uuid
 
+from logika_statistics.models import Group
+from logika_teachers.services.group_service import GroupService
+from logika_teachers.services.lms_service import LMSService
+
 
 class TeacherProfile(models.Model):
     lms_id = models.CharField(max_length=16)
@@ -84,10 +88,46 @@ class TeacherComment(models.Model):
         default=None,
     )
     group_id = models.CharField(max_length=16, null=True, blank=True, default=None)
+    lesson_id = models.CharField(max_length=16, null=True, blank=True, default=None)
     churn_id = models.CharField(max_length=16, null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Коментар {self.teacher.user.first_name} {self.teacher.user.last_name} {self.created_at}"
+
+
+class PredictedChurn(models.Model):
+    STATUS_CHOICES = (
+        ('relevant', "Актуальний"),
+        ('not relevant', "Неактуальний"),
+        ('churn', 'Відвал')
+    )
+
+    churn_id = models.CharField(max_length=16, null=True, blank=True, default=None)
+    fullname = models.CharField(max_length=50, null=True)
+    group = models.ForeignKey(Group, related_name="predicted_churns", on_delete=models.DO_NOTHING, blank=True,
+                              null=True)
+    description = models.TextField()
+    created_at = models.DateField(auto_now_add=True)
+    comment = models.ForeignKey(TeacherComment, on_delete=models.DO_NOTHING, null=True)
+    feedback = models.ForeignKey(TeacherFeedback, related_name="predicted_churns", on_delete=models.DO_NOTHING,
+                                 null=True)
+    teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.DO_NOTHING)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
+
+    def __str__(self):
+        return f"{self.churn_id} - {self.status}"
+
+    def save(self, *args, **kwargs):
+        data, status = LMSService.get_student(self.churn_id)
+        if status == 200:
+            name = data.get("last_name") + " " + data.get("first_name")
+            self.fullname = name
+            group_id = data.get("group", dict()).get("id")
+            if group_id:
+                group_service = GroupService()
+                group, created = group_service.get_or_create_group(group_id=group_id)
+                self.group = group
+        super().save(*args, **kwargs)
 
 
 class TutorMonthReport(models.Model):

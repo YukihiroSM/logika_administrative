@@ -1,35 +1,36 @@
-import datetime
+from datetime import datetime, timedelta
 import pickle
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET
 from transliterate import translit
 
-from logika_administrative.settings import BASE_DIR
-from logika_statistics.forms import ReportDateForm, ReportDateBusinessForm
-from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_statistics.forms import ReportDateForm
+from logika_statistics.models import MasterClassRecord, PaymentRecord
+from logika_teachers.comment_facade import CommentsFacade
 from logika_teachers.forms import (
     TeacherCreateForm,
     TeacherEditProfileForm,
     TeacherFeedbackForm,
 )
-from logika_teachers.lms_service import LMSService
+from logika_teachers.lesson_facade import LessonFacade
+from logika_teachers.services.lms_service import LMSService
 from logika_teachers.models import (
     TeacherProfile,
     TutorProfile,
     TeacherFeedback,
     TeacherComment,
     TutorMonthReport,
-    RegionalTutorProfile,
+    PredictedChurn,
 )
 from utils.count_teacher_performance import get_teacher_performance_by_month
-from utils.get_teacher_groups import get_teacher_groups
+from utils.get_possible_report_scales import get_possible_report_scales
+from utils.get_teacher_groups import get_teacher_group_titles, get_teacher_groups
 from utils.get_teacher_locations import get_teacher_locations
 from utils.get_user_role import get_user_role
 from utils.lms_authentication import get_authenticated_session
@@ -56,70 +57,53 @@ def teacher_profile(request, id, tutor_id=None):
     user_role = get_user_role(request.user)
     if user_role == "tutor":
         tutor_profile = TutorProfile.objects.filter(user=request.user).first()
-        teacher = TeacherProfile.objects.filter(id=id).first()
     if user_role == "regional_tutor" or user_role == "admin":
-        teacher = TeacherProfile.objects.filter(id=id).first()
         tutor_profile = TutorProfile.objects.filter(id=tutor_id).first()
+    teacher = TeacherProfile.objects.filter(id=id).first()
+
+    from_date = request.GET.get("from")
+    from_date = datetime.strptime(from_date, "%Y-%m-%d") if from_date else datetime.now()
+    to_date = request.GET.get("to")
+    to_date = datetime.strptime(to_date, "%Y-%m-%d") if to_date else from_date + timedelta(days=7)
+
+    groups = get_teacher_groups(teacher.id)
+    open_lessons = list()
+    lesson_ids = list()
+    for group in groups:
+        lesson_facade = LessonFacade(lms_service=LMSService, group_id=group.lms_id)
+        lesson_facade.filter_open_lessons()
+        lesson_facade.filter_lessons_by_date(from_date=from_date, to_date=to_date)
+
+        for lesson in lesson_facade.lessons:
+            lesson_ids.append(lesson.get("lesson_id"))
+            lesson.update({"group_name": group.title,
+                           "group_id": group.lms_id,
+                           "teacher": group.teacher_name,
+                           })
+        open_lessons += lesson_facade.lessons
+
+    comments = TeacherComment.objects.filter(comment_type="lesson", group_id__in=[g.lms_id for g in groups],
+                                             lesson_id__in=lesson_ids).order_by("-created_at")
+    comments_dict = {(comment.lesson_id, comment.group_id): comment.comment for comment in comments}
+    for lesson in open_lessons:
+        com = comments_dict.get((str(lesson.get("lesson_id")), str(lesson.get("group_id"))), None)
+        lesson["comment"] = com
 
     feedbacks = (
         TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
         .order_by("-created_at")
         .all()
     )
+    churn_status = request.GET.get("churn_status", "relevant")
+    predicted_churns = teacher.predicted_churns.order_by('-created_at')
+    filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30))
+    predicted_churns = predicted_churns.filter(status=churn_status)
 
-    recent_predicted_churns = (
-        pickle.loads(feedbacks[0].predicted_churn_object)
-        if feedbacks and feedbacks[0].predicted_churn_object
-        else dict()
-    )
-    for churn_id, description in recent_predicted_churns.items():
-        data, status = LMSService.get_student(churn_id)
-        if status == 200:
-            name = data.get("last_name") + " " + data.get("first_name")
-        else:
-            name = "Not found"
-        recent_predicted_churns[churn_id] = {"name": name, "description": description}
+    comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile)
 
-    call_comments = (
-        TeacherComment.objects.filter(
-            teacher=teacher, tutor=tutor_profile, comment_type="call"
-        )
-        .order_by("-created_at")
-        .all()
-    )
-    lesson_comments = (
-        TeacherComment.objects.filter(
-            teacher=teacher, tutor=tutor_profile, comment_type="lesson"
-        )
-        .order_by("-created_at")
-        .all()
-    )
-    for comm in lesson_comments:
-        data, status = LMSService.get_group(comm.group_id)
-        if status == 200:
-            comm.group_title = data.get('title')
-        else:
-            comm.group_title = "Not found"
-
-    all_comments = (
-        TeacherComment.objects.filter(teacher=teacher, tutor=tutor_profile)
-        .order_by("-created_at")
-        .all()
-    )
-    for comm in all_comments:
-        if comm.comment_type == "lesson":
-            data, status = LMSService.get_group(comm.group_id)
-            print(status)
-            if status == 200:
-                comm.group_title = data.get('title')
-            else:
-                comm.group_title = "Not found"
-        elif comm.comment_type == "predicted_churn":
-            data, status = LMSService.get_student(comm.churn_id)
-            if status == 200:
-                comm.churn_name = data.get("last_name") + " " + data.get("first_name")
-            else:
-                comm.churn_name = "Not found"
+    call_comments = comments_facade.get_call_comments()
+    lesson_comments = comments_facade.get_lesson_comments()
+    all_comments = comments_facade.get_all_comments()
 
     teacher_profile = TeacherProfile.objects.filter(id=id).first()
     return render(
@@ -132,8 +116,12 @@ def teacher_profile(request, id, tutor_id=None):
             "call_comments": call_comments,
             "lesson_comments": lesson_comments,
             "all_comments": all_comments,
-            "recent_feedback_churn": recent_predicted_churns,
             "tutor_profile": tutor_profile,
+            "open_lessons": open_lessons,
+            "from_date": from_date.strftime("%Y-%m-%d"),
+            "to_date": to_date.strftime("%Y-%m-%d"),
+            "churns": predicted_churns,
+            "filtered_churns": filtered_churns,
         },
     )
 
@@ -301,7 +289,7 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                     },
                 )
 
-            new_form = TeacherFeedback(
+            new_form = TeacherFeedback.objects.create(
                 teacher=teacher_profile,
                 tutor=tutor_profile,
                 mistakes=form_data["mistakes"],
@@ -317,6 +305,10 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             churns = {}
             for i in range(len(predicted_churn_ids)):
                 churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
+                PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
+                                              description=predicted_churn_descriptions[i],
+                                              feedback=new_form,
+                                              teacher=teacher_profile)
 
             new_form.predicted_churn_object = pickle.dumps(churns)
             new_form.save()
@@ -352,30 +344,8 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
 def view_forms(request, feedback_id):
     feedback = TeacherFeedback.objects.filter(id=feedback_id).first()
     user_role = get_user_role(request.user)
-    predicted_churns = (
-        pickle.loads(feedback.predicted_churn_object)
-        if feedback.predicted_churn_object
-        else None
-    )
-    churns_data = []
-    session = get_authenticated_session()
-    if predicted_churns:
-        for predicted_churn in predicted_churns:
-            student_url = f"https://lms.logikaschool.com/api/v1/student/view/{predicted_churn}?expand=branch,group"
-            student_response = session.get(student_url)
-            if student_response.status_code == 200:
-                student_info = {}
-                student_info["student_id"] = predicted_churn
-                student_data = student_response.json()["data"]
-                student_info[
-                    "student_name"
-                ] = f"{student_data['first_name']} {student_data['last_name']}"
-                group_data = student_data["group"]
-                if group_data:
-                    student_info[
-                        "group_link"
-                    ] = f'<a href="https://lms.logikaschool.com/group/view/{group_data["id"]}" target="_blank">{group_data["title"]}</a>'
-                churns_data.append(student_info)
+    predicted_churns = feedback.predicted_churns.all()
+
     return render(
         request,
         "logika_teachers/view_forms.html",
@@ -383,7 +353,6 @@ def view_forms(request, feedback_id):
             "feedback": feedback,
             "user_role": user_role,
             "predicted_churns": predicted_churns,
-            "churns_data": churns_data,
         },
     )
 
@@ -408,9 +377,10 @@ def create_comment(request):
         comment = TeacherComment(
             comment=request_data.get("comment"),
             comment_type=comment_type,
-            group_id=request_data.get("group_id"),
+            group_id=request_data.get("group_id", "").strip(),
             teacher=teacher_profile,
             tutor=tutor_profile,
+            lesson_id=request_data.get("lesson_id", None)
         )
         comment.save()
 
@@ -440,6 +410,13 @@ def create_comment(request):
             churn_id=request_data.get("churn"),
         )
         comment.save()
+        churn_pk = request_data.get("churn_obj")
+        if churn_pk:
+            churn_obj = PredictedChurn.objects.filter(pk=churn_pk)
+            if churn_obj.exists():
+                churn_obj = churn_obj.first()
+                churn_obj.comment = comment
+                churn_obj.save()
     next = request.POST.get("next", "/")
     return HttpResponseRedirect(next)
 
@@ -534,7 +511,7 @@ def teacher_performance(request, teacher_id):
                 {
                     "groups_data": groups_data,
                     "teachers_locations": get_teacher_locations(teacher_id),
-                    "teacher_groups": get_teacher_groups(teacher_id),
+                    "teacher_groups": get_teacher_group_titles(teacher_id),
                     "teacher": teacher,
                     "zero_performance_lessons": zero_performance_lessons,
                     "form_data": {
@@ -549,12 +526,13 @@ def teacher_performance(request, teacher_id):
         "logika_teachers/teacher_performance.html",
         {
             "teachers_locations": get_teacher_locations(teacher_id),
-            "teacher_groups": get_teacher_groups(teacher_id),
+            "teacher_groups": get_teacher_group_titles(teacher_id),
             "teacher": teacher,
         },
     )
 
 
+<<<<<<< HEAD:logika_teachers/views.py
 def tutor_results(request):
     return render(request, "logika_teachers/tutor_results.html")
 
@@ -635,6 +613,8 @@ def tutor_month_report(request, user_id):
     return render(request, "logika_teachers/tutor_month_report.html", {"tutor": tutor})
 
 
+=======
+>>>>>>> origin/features:logika_teachers/views/teacher_views.py
 def add_performance_to_report(request, teacher_id):
     teacher = TeacherProfile.objects.get(id=teacher_id)
     tutor = TutorProfile.objects.get(user=request.user)
@@ -653,74 +633,6 @@ def add_performance_to_report(request, teacher_id):
         return redirect("logika_teachers:teacher-performance", teacher_id=teacher_id)
 
 
-def tutor_results_report(request):
-    current_user_role = get_user_role(request.user)
-    if request.method == "POST":
-        regional_tutor_profile = None
-        report_start = request.POST.get("report_start")
-        report_end = request.POST.get("report_end")
-        if current_user_role == "regional_tutor" or current_user_role == "admin":
-            regional_tutor_profile = RegionalTutorProfile.objects.get(user=request.user)
-            tutors = regional_tutor_profile.related_tutors.all()
-        elif current_user_role == "tutor":
-            tutor_profile = TutorProfile.objects.get(user=request.user)
-            tutors = [tutor_profile]
-        data = {}
-        for tutor in tutors:
-            data[tutor] = {}
-            call_summ = 0
-            lesson_summ = 0
-            for teacher in tutor.related_teachers.order_by("user__first_name").all():
-                comments_call = TeacherComment.objects.filter(
-                    teacher=teacher,
-                    tutor=tutor,
-                    created_at__gte=report_start,
-                    created_at__lte=report_end,
-                    comment_type="call",
-                ).all()
-                comments_lesson = TeacherComment.objects.filter(
-                    teacher=teacher,
-                    tutor=tutor,
-                    created_at__gte=report_start,
-                    created_at__lte=report_end,
-                    comment_type="lesson",
-                ).all()
-                feedbacks = TeacherFeedback.objects.filter(
-                    teacher=teacher,
-                    tutor=tutor,
-                    created_at__gte=report_start,
-                    created_at__lte=report_end,
-                ).all()
-                data[tutor][teacher] = {
-                    "call": comments_call,
-                    "lesson": comments_lesson,
-                    "call_amount": len(comments_call),
-                    "lesson_amount": len(comments_lesson),
-                    "feedbacks_amount": len(feedbacks),
-                    "id": teacher.id,
-                }
-                call_summ += len(comments_call)
-                lesson_summ += len(comments_lesson)
-            data[tutor]["total"] = {
-                "total_calls": call_summ,
-                "total_lessons": lesson_summ,
-                "total_teachers": len(data[tutor]),
-            }
-
-        return render(
-            request,
-            "logika_teachers/weekly_tutors_result.html",
-            context={
-                "data": data,
-                "report_start": report_start,
-                "report_end": report_end,
-                "regional_tutor_profile": regional_tutor_profile,
-                "tutors": tutors,
-            },
-        )
-    return render(request, "logika_teachers/weekly_tutors_result.html")
-
-
 @login_required
 def unsub_teacher(request, teacher_id):
     current_user = request.user
@@ -735,38 +647,12 @@ def unsub_teacher(request, teacher_id):
     return redirect("logika_general:index")
 
 
-def get_possible_report_scales():
-    with open(
-        f"{BASE_DIR}/report_scales.txt", "r", encoding="UTF-8"
-    ) as report_scales_fileobj:
-        scales = report_scales_fileobj.readlines()
-    scales_dict = {}
-    for i in range(len(scales)):
-        scales[i] = scales[i].replace("\n", "").replace("_", " - ")
-        month = scales[i].split(":")[0]
-        try:
-            dates = scales[i].split(":")[1]
-        except:
-            dates = None
-        if month not in scales_dict:
-            scales_dict[month] = [dates]
-        else:
-            scales_dict[month].append(dates)
-    possible_report_scales = []
-    for key, value in scales_dict.items():
-        possible_report_scales.append(key)
-        for val in value:
-            if val is not None:
-                possible_report_scales.append(val)
-    return possible_report_scales
-
-
 @login_required
 def get_teacher_conversion(request, teacher_id, tutor_id=None):
     current_user = request.user
     user_role = get_user_role(current_user)
     if not (
-        user_role == "tutor" or user_role == "admin" or user_role == "regional_tutor"
+            user_role == "tutor" or user_role == "admin" or user_role == "regional_tutor"
     ):
         return render(request, "error_403.html")
     if user_role == "tutor":
@@ -798,12 +684,12 @@ def get_teacher_conversion(request, teacher_id, tutor_id=None):
             report_start, report_end = possible_report_scales[-1].split(" - ")
 
         if not month_report:
-            report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
-            report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+            report_start = datetime.strptime(report_start, "%Y-%m-%d").date()
+            report_end = datetime.strptime(report_end, "%Y-%m-%d").date()
         else:
             report_start, report_end = scales_new[month_report].split("_")
-            report_start = datetime.datetime.strptime(report_start, "%Y-%m-%d").date()
-            report_end = datetime.datetime.strptime(report_end, "%Y-%m-%d").date()
+            report_start = datetime.strptime(report_start, "%Y-%m-%d").date()
+            report_end = datetime.strptime(report_end, "%Y-%m-%d").date()
 
         teacher_mc_students_queryset = MasterClassRecord.objects.filter(
             start_date__gte=report_start,
@@ -901,191 +787,3 @@ def get_teacher_conversion(request, teacher_id, tutor_id=None):
             "tutor_profile": tutor_profile,
         },
     )
-
-
-@login_required(login_url="/login/")
-def get_tutors_conversion(request):
-    business = "programming"
-    month_report = None
-    possible_report_scales = get_possible_report_scales()
-    if request.method == "POST":
-        form = ReportDateBusinessForm(request.POST)
-        if form.is_valid():
-            try:
-                report_start, report_end = form.cleaned_data["report_scale"].split(
-                    " - "
-                )
-            except ValueError:
-                month_report = form.cleaned_data["report_scale"]
-
-            business = form.cleaned_data["report_business"]
-        else:
-            report_start, report_end = possible_report_scales[-1].split(" - ")
-    else:
-        report_start, report_end = possible_report_scales[-1].split(" - ")
-    if not month_report:
-        report_start = datetime.datetime.strptime(
-            report_start.strip(), "%Y-%m-%d"
-        ).date()
-        report_end = datetime.datetime.strptime(report_end.strip(), "%Y-%m-%d").date()
-        report_date_default = f"{report_start} - {report_end}"
-    else:
-        report_start, report_end = scales_new[month_report].split("_")
-        report_start = datetime.datetime.strptime(
-            report_start.strip(), "%Y-%m-%d"
-        ).date()
-        report_end = datetime.datetime.strptime(report_end.strip(), "%Y-%m-%d").date()
-        report_date_default = f"{report_start} - {report_end}"
-
-    current_user = request.user
-    user_role = get_user_role(current_user)
-    if not (
-        user_role == "tutor"
-        or user_role == "admin"
-        or user_role == "regional_tutor"
-        or user_role == "regional_manager"
-        or user_role == "territorial_manager"
-    ):
-        return render(request, "error_403.html")
-
-    tutor_profiles = []
-
-    if user_role == "tutor":
-        tutor_profiles = [
-            TutorProfile.objects.get(user=current_user),
-        ]
-
-    elif user_role == "regional_tutor":
-        regional_tutor_profile = RegionalTutorProfile.objects.get(user=current_user)
-        tutor_profiles = regional_tutor_profile.related_tutors.all()
-
-    elif user_role == "regional_manager" or user_role == "territorial_manager":
-        if user_role == "regional_manager":
-            regional_manager_name = (
-                f"{current_user.last_name} {current_user.first_name}"
-            )
-            locations = list(
-                set(
-                    Location.objects.filter(
-                        regional_manager=regional_manager_name
-                    ).values_list("lms_location_name", flat=True)
-                )
-            )
-        else:
-            territorial_manager_name = (
-                f"{current_user.last_name} {current_user.first_name}"
-            )
-            locations = list(
-                set(
-                    Location.objects.filter(
-                        territorial_manager=territorial_manager_name
-                    ).values_list("lms_location_name", flat=True)
-                )
-            )
-        teachers = list(
-            set(
-                MasterClassRecord.objects.filter(
-                    location__in=locations,
-                    start_date__gte=report_start,
-                    end_date__lte=report_end,
-                    business=business,
-                ).values_list("teacher_lms_id", flat=True)
-            )
-        )
-        tutor_profiles = []
-        for teacher in teachers:
-            tutor_profile = TutorProfile.objects.filter(
-                related_teachers__lms_id=teacher
-            ).all()
-            for profile in tutor_profile:
-                tutor_profiles.append(profile)
-
-    elif user_role == "admin":
-        tutor_profiles = TutorProfile.objects.all()
-
-    teachers_by_tutors_data = {}
-    for tutor in tutor_profiles:
-        teachers = tutor.related_teachers.all()
-        for teacher in teachers:
-            teacher_locations = list(
-                set(
-                    MasterClassRecord.objects.filter(
-                        teacher_lms_id=teacher.lms_id
-                    ).values_list("location", flat=True)
-                )
-            )
-            teacher_mc_students_queryset = MasterClassRecord.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                teacher_lms_id=teacher.lms_id,
-                location__in=teacher_locations,
-                business=business,
-            )
-
-            teacher_payments_queryset = PaymentRecord.objects.filter(
-                start_date__gte=report_start,
-                end_date__lte=report_end,
-                teacher_lms_id=teacher.lms_id,
-                location__in=teacher_locations,
-                business=business,
-            )
-
-            payments_by_location = teacher_payments_queryset.values(
-                "location"
-            ).annotate(payment_count=Count("location"))
-
-            enrolled_by_location = teacher_mc_students_queryset.values(
-                "location"
-            ).annotate(student_count=Count("location"))
-
-            attended_by_location = (
-                teacher_mc_students_queryset.filter(attended=True)
-                .values("location")
-                .annotate(student_count=Count("location"))
-            )
-            if len(attended_by_location) != 0:
-                tutor_name = tutor.user.get_full_name()
-                teacher_name = teacher.user.get_full_name()
-
-                if tutor_name not in teachers_by_tutors_data:
-                    teachers_by_tutors_data[tutor_name] = {
-                        "teachers": {},
-                        "tutor_profile": tutor,
-                    }
-
-                if teacher_name not in teachers_by_tutors_data[tutor_name]:
-                    teachers_by_tutors_data[tutor_name]["teachers"][teacher_name] = {
-                        "enrolled_by_locations": enrolled_by_location,
-                        "attended_by_locations": attended_by_location,
-                        "payments_by_locations": payments_by_location,
-                        "teacher_profile": teacher,
-                    }
-
-    context = {
-        "teachers_tutors_data": teachers_by_tutors_data,
-        "report_date_default": report_date_default,
-        "report_scales": possible_report_scales,
-    }
-    return render(
-        request,
-        template_name="logika_teachers/tutor_teachers_statistics.html",
-        context=context,
-    )
-
-
-@require_GET
-def get_churn_name(request) -> JsonResponse:
-    churn_id = request.GET.get("churn_id")
-    if churn_id:
-
-        data, status = LMSService.get_student(churn_id)
-        if status == 200:
-            name = data.get("last_name") + " " + data.get("first_name")
-            return JsonResponse({"value": name})
-        elif status == 404:
-            return JsonResponse({"value": "Учня не знайдено"})
-        else:
-            return JsonResponse({"value": "Щось пішло не так"})
-
-    else:
-        return JsonResponse({"value": "Введіть ID учня"})

@@ -46,6 +46,9 @@ class LMSService(LMSServiceInterface):
         response = cls._session.get(url=cls._lessons_url.format(group_id))
         data, status = cls._validate_response(response)
         if status == 200:
+            if len(data) == 0:
+                status = 400
+                return data, status
             data = data[0].get("attendance")
         return data, status
 

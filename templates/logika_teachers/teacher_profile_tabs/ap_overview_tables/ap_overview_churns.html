@@ -1,0 +1,215 @@
+{% load static %}
+<div class="col-lg-12">
+    <div class="card mt-25 mb-40">
+        <div class="card-header text-capitalize px-md-25 px-3">
+            <h6>Передбачені відвали</h6>
+            <form method="GET" class="row align-center">
+                <div class="col-auto">
+                    <select class="form-select form-select-sm text-muted" name="churn_status">
+                        <option value="relevant" {% if not request.GET.churn_status or request.GET.churn_status == 'relevant' %}selected{% endif %}>Актуальні</option>
+                        <option value="not relevant" {% if request.GET.churn_status and request.GET.churn_status == 'not relevant' %}selected{% endif %}>Неактуальні</option>
+                        <option value="churn" {% if request.GET.churn_status and request.GET.churn_status == 'churn' %}selected{% endif %}>Відвали</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Оновити</button>
+                </div>
+            </form>
+            <div class="dropdown">
+                <a href="#" role="button" id="products" data-bs-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    <img src="{% static 'img/svg/more-horizontal.svg' %}"
+                         alt="more-horizontal" class="svg">
+                </a>
+                <!--                                                <div class="dropdown-menu dropdown-menu-right"-->
+                <!--                                                     aria-labelledby="products">-->
+                <!--                                                    <a class="dropdown-item" href="#">Action</a>-->
+                <!--                                                    <a class="dropdown-item" href="#">Another action</a>-->
+                <!--                                                    <a class="dropdown-item" href="#">Something else here</a>-->
+                <!--                                                </div>-->
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="ap-product">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Учень</th>
+                            <th scope="col">Статус учня</th>
+                            <th scope="col">Опис</th>
+                            <th scope="col">Дата</th>
+                            <th scope="col">Форма</th>
+                            <th scope="col">Коментар</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for c in churns %}
+                        <tr>
+                            <td>
+                                <a href="https://lms.logikaschool.com/student/update/{{ c.churn_id }}" target="_blank">
+                                {{ c.fullname }}
+                                </a><br>
+                                <a href="https://lms.logikaschool.com/group/view/{{ c.group.lms_id }}" target="_blank">
+                                {{ c.group.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm w-auto status-select text-muted"
+                                        data-churn-id="{{ c.churn_id }}"
+                                        data-teacher-id="{{ c.teacher.pk }}"
+                                        data-created-at="{{ c.created_at|date:'Y-m-d' }}">
+                                    {% for status in c.STATUS_CHOICES %}
+                                        <option
+                                                {% if status.1 == c.get_status_display %}selected{% endif %}
+                                                value="{{ status.0 }}">{{ status.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="p-0" style="text-transform: none !important;">
+                                {% if c.description|length <= 20 %}
+                                    {{ c.description }}
+                                {% else %}
+                                    <a class="text-decoration-none text-dark" href="#" data-bs-toggle="tooltip" data-bs-title="{{ c.description }}">
+                                        {{ c.description|truncatechars:20 }}
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="p-1" style="text-transform: none !important;">{{ c.created_at }}</td>
+                            <td style="text-transform: none !important;">
+                                {% if c.feedback %}
+                                <a href="{% url 'logika_teachers:view-forms' c.feedback.pk %}" target="_blank">Форма</a>
+                                {% else %}
+                                Без форми
+                                {% endif %}
+                            </td>
+                            <td style="text-transform: none !important;">
+                            {% if not c.comment %}
+                                <form method="POST" action="{% url 'logika_teachers:create-comment' %}">
+                                    {% csrf_token %}
+                                    <textarea name="comment" class="form-control mb-2"></textarea>
+                                    <input type="hidden" name="next"
+                                           value="{{ request.path }}">
+                                    <input type="hidden" name="churn"
+                                           value="{{ c.churn_id }}">
+                                    <input type="hidden" name="comment_type"
+                                           value="predicted_churn">
+                                    <input type="hidden" name="teacher"
+                                           value="{{ c.teacher.id }}">
+                                    <input type="hidden" name="churn_obj"
+                                           value="{{ c.pk }}">
+                                    <button class="btn btn-primary btn-default btn-squared btn-sm"
+                                            type="submit">
+                                        Відправити
+                                    </button>
+                                </form>
+                            {% else %}
+                                {% if c.comment.comment|length <= 20 %}
+                                    {{ c.comment.comment }}
+                                {% else %}
+                                    <a class="text-decoration-none text-dark" href="#" data-bs-toggle="tooltip" data-bs-title="{{ c.comment.comment }}">
+                                        {{ c.comment.comment|truncatechars:20 }}
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <form class="row justify-content-end" method="POST" action="{% url 'logika_teachers:add-new-churn' %}">
+                {% csrf_token %}
+                <input type="hidden" value="{{ teacher_profile.id }}" name="teacher">
+                <input type="hidden" value="{{ request.path }}" name="next">
+                <div class="col-auto align-center ps-0 pe-0 text-small">
+                    <span id="churn_name_span" class="h-75"></span>
+                </div>
+                <div class="col-auto">
+                    <input class="form-control h-75 ps-2 pe-1" id="churn_input" placeholder="Введіть ID учня" name="churn_id">
+                </div>
+                <div class="col-auto">
+                    <select class="form-select h-75 text-muted" name="churn_status">
+                        <option value="relevant" selected>Актуальний</option>
+                        <option value="not relevant">Неактуальний</option>
+                        <option value="churn">Відвал</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <textarea class="form-control h-75" placeholder="Опис" name="description"></textarea>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary h-75" type="submit">+ Додати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.status-select').forEach(function(select) {
+            select.addEventListener('change', function() {
+                const churnId = this.dataset.churnId;
+                const teacherId = this.dataset.teacherId;
+                const createdAt = this.dataset.createdAt;
+                const status = this.value;
+
+                fetch("{% url 'logika_teachers:change-churn-status' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'  // Передаем CSRF токен для защиты
+                    },
+                    body: JSON.stringify({
+                        'churn_id': churnId,
+                        'teacher_id': teacherId,
+                        'created_at': createdAt,
+                        'status': status
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Status updated successfully:', data);
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                });
+            });
+        });
+        const churn_input = document.getElementById("churn_input")
+        const churn_span = document.getElementById("churn_name_span")
+        churn_input.addEventListener("input", function () {
+           clearTimeout(churn_input.timer);
+           churn_input.timer = setTimeout(() => {
+               if (churn_span) {
+                const value = encodeURIComponent(churn_input.value);
+                const url = `{% url 'logika_teachers:get-churn-name' %}?churn_id=${value}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.value) {
+                            churn_span.textContent = data.value;
+                        } else {
+                            churn_span.textContent = 'Щось пішло не так';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching name:', error);
+                        churn_span.textContent = 'Сервер не відповідає';
+                    });
+
+               }
+           }, 1000);
+        });
+    });
+</script>
