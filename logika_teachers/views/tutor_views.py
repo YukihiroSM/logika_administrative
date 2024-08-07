@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import render
+from django.utils import timezone
 
 from logika_statistics.forms import ReportDateBusinessForm
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
@@ -57,11 +58,13 @@ def tutor_month_report(request, user_id):
                         tutor=tutor,
                     )
                     new_month_report.save()
+            current_year = timezone.now().year
             month_reports = (
-                TutorMonthReport.objects.filter(month=month, tutor=tutor)
+                TutorMonthReport.objects.filter(month=month, tutor=tutor, created_at__year=current_year)
                 .order_by("teacher")
                 .all()
             )
+
             if report_id:
                 month_report = TutorMonthReport.objects.get(report_id=report_id)
                 if is_salary_counted and is_salary_counted[0] == "yes":
