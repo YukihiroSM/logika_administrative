@@ -30,9 +30,10 @@ class GroupServiceInterface(ABC):
 
 class GroupService(GroupServiceInterface):
     def get_or_create_group(self, group_id: Union[int, str]) -> tuple[Optional[Group], bool]:
-        try:
-            return Group.objects.get(lms_id=group_id), False
-        except Group.DoesNotExist:
+        group_qs = Group.objects.filter(lms_id=group_id)
+        if group_qs.exists():
+            return group_qs.first(), False
+        else:
             data = self._get_group_data_by_id(group_id=group_id)
             if data:
                 group_dto = self._parse_data_to_dto(data=data)
