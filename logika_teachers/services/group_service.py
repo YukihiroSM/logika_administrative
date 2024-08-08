@@ -31,7 +31,7 @@ class GroupServiceInterface(ABC):
 class GroupService(GroupServiceInterface):
     def get_or_create_group(self, group_id: Union[int, str]) -> tuple[Optional[Group], bool]:
         group_qs = Group.objects.filter(lms_id=group_id)
-        if group_qs.exitsts():
+        if group_qs.exists():
             return group_qs.first(), False
         else:
             data = self._get_group_data_by_id(group_id=group_id)
