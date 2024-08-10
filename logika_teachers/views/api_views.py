@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_POST, require_GET
@@ -65,10 +66,19 @@ def add_new_churn(request):
     teacher_id = request.POST.get("teacher")
     description = request.POST.get("description", "")
     if churn_id and churn_status and teacher_id:
-        PredictedChurn.objects.create(churn_id=churn_id,
-                                      status=churn_status,
-                                      description=description,
-                                      teacher_id=teacher_id)
+        predicted_churn = PredictedChurn.objects.filter(churn_id=churn_id,
+                                                        teacher_id=teacher_id)
+        if predicted_churn.exists():
+            predicted_churn = predicted_churn.order_by("-priority", "-created_at").first()
+            predicted_churn.status = churn_status
+            predicted_churn.description = description
+            predicted_churn.created_at = date.today()
+            predicted_churn.save()
+        else:
+            PredictedChurn.objects.create(churn_id=churn_id,
+                                          status=churn_status,
+                                          description=description,
+                                          teacher_id=teacher_id)
 
     next_url = request.POST.get("next", "/")
     return HttpResponseRedirect(next_url)
