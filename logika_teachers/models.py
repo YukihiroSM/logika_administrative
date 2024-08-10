@@ -113,6 +113,7 @@ class PredictedChurn(models.Model):
                                  null=True)
     teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.DO_NOTHING)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
+    priority = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.fullname} ({self.churn_id}) - {self.status}"
