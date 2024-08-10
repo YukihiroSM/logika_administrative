@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import pickle
 
 from django.contrib.auth.decorators import login_required
@@ -300,10 +300,19 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             churns = {}
             for i in range(len(predicted_churn_ids)):
                 churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
-                PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
-                                              description=predicted_churn_descriptions[i],
-                                              feedback=new_form,
-                                              teacher=teacher_profile)
+                predicted_churn = PredictedChurn.objects.filter(churn_id=predicted_churn_ids[i],
+                                                                teacher=teacher_profile)
+                if predicted_churn.exists():
+                    predicted_churn = predicted_churn.order_by("-priority", "-created_at").first()
+                    predicted_churn.status = "relevant"
+                    predicted_churn.description = predicted_churn_descriptions[i]
+                    predicted_churn.created_at = date.today()
+                    predicted_churn.save()
+                else:
+                    PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
+                                                  description=predicted_churn_descriptions[i],
+                                                  feedback=new_form,
+                                                  teacher=teacher_profile)
 
             new_form.predicted_churn_object = pickle.dumps(churns)
             new_form.save()
