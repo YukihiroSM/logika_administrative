@@ -92,7 +92,7 @@ def teacher_profile(request, id, tutor_id=None):
     churn_status = request.GET.get("churn_status", "relevant")
     predicted_churns = teacher.predicted_churns.order_by('-created_at')
     filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30))
-    predicted_churns = predicted_churns.filter(status=churn_status)
+    predicted_churns = predicted_churns.filter(status=churn_status).order_by("-priority", "-created_at")
 
     comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile)
 
