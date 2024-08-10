@@ -14,6 +14,166 @@
         <i class="las la-plus fs-16"></i>Звіт по роботі</a>
     <br>
 </div>
+<div class="accordion mb-5" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Передбачувані відвали
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+          <form method="GET" class="row mb-3">
+              <div class="col-auto">
+                  <div class="input-group">
+                      <label class="input-group-text" for="filter_teacher">Викладач:</label>
+                      <input type="text" class="form-control" placeholder="Викладач" id="filter_teacher" name="churn_teacher" value="{{ teacher_name }}">
+                  </div>
+              </div>
+              <div class="col-auto">
+                  <div class="input-group">
+                      <label class="input-group-text" for="filter_status">Статус:</label>
+                      <select class="form-select form-select-sm text-muted" name="churn_status" id="filter_status">
+                            <option value=""{% if not request.GET.churn_status %}selected{% endif %}>-------</option>
+                            <option value="relevant" {% if request.GET.churn_status == 'relevant' %}selected{% endif %}>Актуальні</option>
+                            <option value="not relevant" {% if request.GET.churn_status and request.GET.churn_status == 'not relevant' %}selected{% endif %}>Неактуальні</option>
+                            <option value="churn" {% if request.GET.churn_status and request.GET.churn_status == 'churn' %}selected{% endif %}>Відвали</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="col-3">
+                  <div class="input-group">
+                      <label class="input-group-text" for="date_from_filter">З:</label>
+                      <input type="date" class="form-control" id="date_from_filter" name="churn_date_from" value="{{ from_date }}">
+                  </div>
+              </div>
+              <div class="col-auto">
+                  <div class="input-group">
+                      <label class="input-group-text" for="date_to_filter">По:</label>
+                      <input type="date" class="form-control" id="date_to_filter" name="churn_date_to" value="{{ to_date }}">
+                  </div>
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary h-75">
+                    Upd
+                </button>
+              </div>
+          </form>
+          <hr class="mt-0 mb-0 border-0">
+          <div class="accordion accordion-flush" id="churns1_accordion">
+              {% for churn in predicted_churns %}
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#i{{ churn.pk }}" aria-expanded="true" aria-controls="collapseOne">
+                          <div class="row">
+                              <div class="col-auto">
+                                  <h4>{{ churn.priority }} {{ churn.fullname }}</h4>
+                              </div>
+                              <div class="col-auto text-dark">
+                                  ({{ churn.teacher }})
+                              </div>
+                              <div class="col-auto text-end">
+                                  <small class="text-muted">{{ churn.get_status_display }}</small>
+                              </div>
+                              <div class="col-auto text-end">
+                                  <small class="text-muted">{{ churn.created_at }}</small>
+                              </div>
+                          </div>
+                      </button>
+                    </h2>
+                    <div id="i{{ churn.pk }}" class="accordion-collapse collapse" data-bs-parent="#churns1_accordion">
+                      <div class="accordion-body">
+                      <form method="POST" class="row justify-content-start">
+                      {% csrf_token %}
+                      <input type="hidden" value="{{ churn.pk }}" name="churn_pk">
+                      <div class="col-2">
+                        <label for="churn{{ churn.pk }}priority" class="text-dark">Пріоритетність: </label>
+                        <input type="number" class="form-control w-25 ps-1 pe-1" id="churn{{ churn.pk }}priority" value="{{ churn.priority }}" name="priority">
+
+                      </div>
+                      <div class="col-3">
+                        <label for="churn{{ churn.pk }}status" class="text-dark">Статус: </label>
+                        <select class="form-select form-select-sm" name="status" id="churn{{ churn.pk }}status">
+                            {% for status in churn.STATUS_CHOICES %}
+                                <option
+                                {% if status.1 == churn.get_status_display %}selected{% endif %}
+                                value="{{ status.0 }}">{{ status.1 }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-6">
+                          <label for="churn{{ churn.pk }}description" class="text-dark">Опис:</label>
+                          <textarea name="description" id="churn{{ churn.pk }}description" class="form-control">{{ churn.description }}</textarea>
+                      </div>
+                      <button type="submit" class="btn btn-success justify-content-end mt-3" style="margin-left: 0.6rem!important;">Зберігти</button>
+                      </form>
+                          {% if churn.comment.comment %}
+                              <div class="text-dark">Останній коментар:</div>{{ churn.comment.comment }}
+                              <a type="button" class="text-primary" data-bs-toggle="modal" data-bs-target="#churn{{ churn.pk }}comments">
+                                  ще...
+                              </a>
+                              <div class="modal" id="churn{{ churn.pk }}comments" tabindex="-1" aria-labelledby="churn{{ churn.pk }}comments" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="churn{{ churn.pk }}comments">Modal title</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        {% for cc in churn_comments %}
+                                            {% if cc.0 == churn.churn_id %}
+                                                {% for comment in cc.1 %}
+                                                    <div class="card mb-2 border-gray">
+                                                        <div class="card-header">
+                                                            Коментар за {{ comment.created_at }}
+                                                        </div>
+                                                        <div class="card-body">
+                                                            {{ comment.comment }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                          {% endif %}
+                              <form method="POST" action="{% url 'logika_teachers:create-comment' %}" class="mt-3">
+                                {% csrf_token %}
+                                <label for="churn{{ churn.pk }}comment" class="text-dark">Коментар:</label>
+                                <textarea id="churn{{ churn.pk }}comment" name="comment" class="form-control mb-2"></textarea>
+                                <input type="hidden" name="next"
+                                       value="{{ request.path }}">
+                                <input type="hidden" name="churn"
+                                       value="{{ churn.churn_id }}">
+                                <input type="hidden" name="comment_type"
+                                       value="predicted_churn">
+                                <input type="hidden" name="teacher"
+                                       value="{{ churn.teacher.id }}">
+                                <input type="hidden" name="churn_obj"
+                                       value="{{ churn.pk }}">
+                                <button class="btn btn-primary btn-default btn-squared btn-sm"
+                                        type="submit">
+                                    Відправити
+                                </button>
+                              </form>
+                          <br>
+                          <a href="{% url 'logika_teachers:teacher-profile' churn.teacher.pk %}" target="_blank">
+                              {{ churn.teacher }}
+                          </a>
+                      </div>
+                    </div>
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% for teacher in teachers %}
     <div class="row">
         <div class="col-md-6 col-sm-12 mb-25">
@@ -108,4 +268,3 @@
         </div>
     </div>
 {% endfor %}
-<!-- Button trigger modal -->
