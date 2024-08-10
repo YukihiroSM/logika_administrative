@@ -115,7 +115,7 @@ class PredictedChurn(models.Model):
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
 
     def __str__(self):
-        return f"{self.churn_id} - {self.status}"
+        return f"{self.fullname} ({self.churn_id}) - {self.status}"
 
     def save(self, *args, **kwargs):
         data, status = LMSService.get_student(self.churn_id)
