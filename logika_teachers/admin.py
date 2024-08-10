@@ -4,6 +4,7 @@ from logika_teachers.models import (
     TutorProfile,
     TeacherFeedback,
     RegionalTutorProfile,
+    PredictedChurn
 )
 
 
@@ -26,3 +27,4 @@ admin.site.register(TeacherProfile, TeacherProfileAdmin)
 admin.site.register(TutorProfile, TutorProfileAdmin)
 admin.site.register(TeacherFeedback)
 admin.site.register(RegionalTutorProfile)
+admin.site.register(PredictedChurn)
