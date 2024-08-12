@@ -84,6 +84,11 @@ def teacher_profile(request, id, tutor_id=None):
         com = comments_dict.get((str(lesson.get("lesson_id")), str(lesson.get("group_id"))), None)
         lesson["comment"] = com
 
+    tutor_comments = TeacherComment.objects.filter(tutor=tutor_profile)
+    churn_comments = []
+    for churn in PredictedChurn.objects.filter(teacher=teacher):
+        churn_comments.append((churn.churn_id, tutor_comments.filter(churn_id=churn.churn_id).order_by("-created_at")))
+
     feedbacks = (
         TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
         .order_by("-created_at")
@@ -117,6 +122,7 @@ def teacher_profile(request, id, tutor_id=None):
             "to_date": to_date.strftime("%Y-%m-%d"),
             "churns": predicted_churns,
             "filtered_churns": filtered_churns,
+            "churn_comments": churn_comments,
         },
     )
 
