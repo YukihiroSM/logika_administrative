@@ -5,12 +5,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect
 
+from logika_statistics.models import Group
+from logika_teachers.lesson_facade import LessonFacade
 from logika_teachers.models import (
     TeacherProfile,
     TutorProfile,
     TeacherFeedback,
     RegionalTutorProfile, PredictedChurn, TeacherComment,
 )
+from logika_teachers.services.lms_service import LMSService
 from utils.get_user_role import get_user_role
 
 
@@ -25,6 +28,9 @@ def index(request):
     from_date = ""
     to_date = ""
     teacher_name = ""
+    les_from_date = datetime.now()
+    les_to_date = datetime.now()
+    open_lessons = []
     if user_role == "teacher":
         teacher_profile = TeacherProfile.objects.filter(user=request.user).first()
         feedbacks = (
@@ -83,6 +89,31 @@ def index(request):
         churn_comments = []
         for churn in PredictedChurn.objects.filter(teacher__in=teachers):
             churn_comments.append((churn.churn_id, tutor_comments.filter(churn_id=churn.churn_id)))
+
+        les_teacher = request.GET.get("les_teacher")
+        if les_teacher:
+            les_teachers = teachers.filter(
+                (Q(user__first_name__icontains=les_teacher) | Q(user__last_name__icontains=les_teacher))
+            )
+        else:
+            les_teachers = teachers
+        groups = Group.objects.filter(teacher_id__in=list(les_teachers.values_list("lms_id", flat=True)),
+                                      type__in=("regular", "individual", "Группа", "Индивидуальная"))
+        les_from_date = request.GET.get("les_date_from")
+        les_from_date = datetime.strptime(les_from_date, "%Y-%m-%d") if les_from_date else datetime.now()
+        les_to_date = request.GET.get("les_date_to")
+        les_to_date = datetime.strptime(les_to_date, "%Y-%m-%d") if les_to_date else les_from_date + timedelta(days=7)
+        open_lessons = []
+        for group in groups:
+            lessons_facade = LessonFacade(lms_service=LMSService, group_id=group.lms_id)
+            lessons_facade.filter_open_lessons()
+            lessons_facade.filter_lessons_by_date(from_date=les_from_date, to_date=les_to_date)
+            for lesson in lessons_facade.lessons:
+                lesson.update({"group_name": group.title,
+                               "group_id": group.lms_id,
+                               "teacher": group.teacher_name,
+                               })
+            open_lessons.extend(lessons_facade.lessons)
     if user_role == "regional_tutor" or user_role == "admin":
         regional_tutor_profile = RegionalTutorProfile.objects.filter(
             user=request.user
@@ -107,6 +138,9 @@ def index(request):
             "from_date": from_date.strftime("%Y-%m-%d") if from_date else "",
             "to_date": to_date.strftime("%Y-%m-%d") if to_date else "",
             "teacher_name": teacher_name,
+            "open_lessons": open_lessons,
+            "les_date_from": les_from_date.strftime("%Y-%m-%d"),
+            "les_date_to": les_to_date.strftime("%Y-%m-%d")
         },
     )
 
