@@ -173,6 +173,94 @@
       </div>
     </div>
   </div>
+<div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseOne">
+        Відкриті уроки
+      </button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+          <form method="GET" class="row mb-3">
+              <div class="col-auto">
+                  <div class="input-group">
+                      <label class="input-group-text" for="filter_les_teacher">Викладач:</label>
+                      <input type="text" class="form-control" placeholder="Викладач" id="filter_teacher" name="les_teacher" value="{{ request.GET.les_teacher }}">
+                  </div>
+              </div>
+              <div class="col-3">
+                  <div class="input-group">
+                      <label class="input-group-text" for="date_from_filter">З:</label>
+                      <input type="date" class="form-control" id="date_from_filter" name="les_date_from" value="{{ les_date_from }}">
+                  </div>
+              </div>
+              <div class="col-auto">
+                  <div class="input-group">
+                      <label class="input-group-text" for="date_to_filter">По:</label>
+                      <input type="date" class="form-control" id="date_to_filter" name="les_date_to" value="{{ les_date_to }}">
+                  </div>
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary h-75">
+                    Upd
+                </button>
+              </div>
+          </form>
+          <hr class="mt-0 mb-0 border-0">
+          <table>
+              <thead>
+                <tr>
+                    <th>Назва уроку:</th>
+                    <th>Назва групи:</th>
+                    <th>Час уроку:</th>
+                    <th>Викладач(-ка):</th>
+                    <th>Коментарі:</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for lesson in open_lessons %}
+                  <tr>
+                        <td>
+                            {{ lesson.lesson_title }}
+                        </td>
+                        <td>
+                            <a href="https://lms.logikaschool.com/group/view/{{ lesson.group_id }}">{{ lesson.group_name }}</a>
+                        </td>
+                        <td>
+                            {{ lesson.start_time_formatted }}
+                        </td>
+                        <td>
+                            {{ lesson.teacher }}
+                        </td>
+                        <td>
+                            <a type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#lesson{{ forloop.counter }}comments">
+                                  Читати коментарі
+                            </a>
+                        </td>
+                  </tr>
+                  <div class="modal" id="lesson{{ forloop.counter }}comments" tabindex="-1" aria-labelledby="lesson{{ forloop.counter }}commentsLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-scrollable">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="lesson{{ forloop.counter }}commentsLabel">Коментарі</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Ще у розробці...
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+              {% endfor %}
+              </tbody>
+          </table>
+
+      </div>
+    </div>
+  </div>
 </div>
 {% for teacher in teachers %}
     <div class="row">
