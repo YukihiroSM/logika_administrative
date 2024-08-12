@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from transliterate import translit
 
@@ -43,7 +44,11 @@ scales_new = {
     "Грудень": "2023-12-01_2023-12-20",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
-    "Березень": "2024-03-01_2024-03-10",
+    "Березень": "2024-03-01_2024-03-31",
+    "Квітень": "2024-04-01_2024-04-30",
+    "Травень": "2024-05-01_2024-05-31",
+    "Червень": "2024-06-01_2024-06-30",
+    "Липень": "2024-07-01_2024-07-31",
 }
 
 

@@ -181,3 +181,5 @@ report_scales.txt
 *fixture*
 groups_attendance_data
 *.ipynb
+groups_data.csv
+report_scales.txt
