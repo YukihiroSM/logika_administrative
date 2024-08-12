@@ -38,6 +38,8 @@ class TutorProfile(models.Model):
     def get_full_name(self):
         return f"{self.user.last_name} {self.user.first_name}"
 
+    class Meta:
+        ordering = ("user__last_name", "user__first_name")
 
 class RegionalTutorProfile(models.Model):
     one_c_name = models.CharField(max_length=64, null=True, blank=True)
