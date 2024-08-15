@@ -309,6 +309,8 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
             )
             churns = {}
             for i in range(len(predicted_churn_ids)):
+                if predicted_churn_ids[i] == "":
+                    continue
                 churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
                 predicted_churn = PredictedChurn.objects.filter(churn_id=predicted_churn_ids[i],
                                                                 teacher=teacher_profile)
