@@ -15,15 +15,51 @@
                         alt="img"
                 />
             </a>
-            <a href="/" class="sidebar-toggle">
-                <img
-                        class="svg"
-                        src="{% static 'img/svg/align-center-alt.svg' %}"
-                        alt="img"
-                /></a>
+{#            <a href="/" class="sidebar-toggle">#}
+{#                <img#}
+{#                        class="svg"#}
+{#                        src="{% static 'img/svg/align-center-alt.svg' %}"#}
+{#                        alt="img"#}
+{#                /></a>#}
         </div>
 
     </div>
+    {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "client_manager" or user_role == "admin"%}
+    <div>
+        <a href="{% url 'logika_statistics:programming-updated' %}">
+            <span class="nav-icon uil uil-create-dashboard"></span>
+            <span class="menu-text">Звіт програмування</span>
+            <span class="toggle-icon"></span>
+        </a>
+    </div>
+    {% endif %}
+    {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "admin"%}
+    <div>
+        <a href="{% url 'logika_statistics:list-locations' %}">
+            <span class="nav-icon uil uil-create-dashboard"></span>
+            <span class="menu-text">Перегляд локацій</span>
+            <span class="toggle-icon"></span>
+        </a>
+    </div>
+    {% endif %}
+    {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "admin"%}
+    <div>
+        <a href="{% url 'logika_statistics:consolidation-report' %}">
+            <span class="nav-icon uil uil-create-dashboard"></span>
+            <span class="menu-text">Зведення 1С</span>
+            <span class="toggle-icon"></span>
+        </a>
+    </div>
+    {% endif %}
+    {% if user_role == "regional_manager" or user_role == "territorial_manager" or user_role == "admin" or user_role == "tutor" or user_role == "regional_tutor"%}
+    <div>
+        <a href="{% url 'logika_teachers:tutor-teachers-statistics' %}">
+            <span class="nav-icon uil uil-create-dashboard"></span>
+            <span class="menu-text">Статистика по тьюторам-викладачам</span>
+            <span class="toggle-icon"></span>
+        </a>
+    </div>
+    {% endif %}
     <div class="navbar-right">
         <a href="/logout"><button class="btn btn-primary btn-default btn-squared border-0 px-25">Вихід
 </button></a>

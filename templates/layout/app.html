@@ -32,20 +32,18 @@
     <header class="header-top">
         {% include 'partials/_top_nav.html' %}
     </header>
-    <main class="main-content">
-        <aside class="sidebar-wrapper">
-            <div class="sidebar">
-                {% include 'partials/_menu.html' %}
-            </div>
-        </aside>
-        <div class="contents">
+{#    <main class="main-content">#}
+{#        <aside class="sidebar-wrapper">#}
+{#            <div class="sidebar">#}
+{#                {% include 'partials/_menu.html' %}#}
+{#            </div>#}
+{#        </aside>#}
+        <div class="container">
             {% block content %}
             {% endblock %}
         </div>
-        <footer class="footer-wrapper">
-            {% include 'partials/_footer.html' %}
-        </footer>
-    </main>
+        {% include 'partials/_footer.html' %}
+{#    </main>#}
     <div id="overlayer">
         <span class="loader-overlay">
             <div class="dm-spin-dots spin-lg">
