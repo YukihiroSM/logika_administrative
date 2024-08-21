@@ -16,7 +16,11 @@ class LessonFacade:
         return list()
 
     def filter_open_lessons(self):
-        self.lessons = [lesson for lesson in self.lessons if "Відкритий" in lesson["lesson_title"]]
+        self.lessons = [lesson for lesson in self.lessons
+                        if "Відкритий" in lesson["lesson_title"]
+                        or "Open" in lesson["lesson_title"]
+                        or "Реліз" in lesson["lesson_title"]
+                        or "Release" in lesson["lesson_title"]]
 
     def filter_lessons_by_date(self, from_date: datetime, to_date: datetime):
         future_lessons = []
