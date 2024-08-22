@@ -84,9 +84,15 @@
                                 {% endif %}
                             </td>
                             <td style="text-transform: none !important;">
+                             {% if c.comment %}
                               <a type="button" class="text-primary mb-2" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
-                                  Читати коментарі
+                                  {{ c.comment.comment|truncatechars:20 }}
                               </a>
+                             {% else %}
+                                 <a type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
+                                  Додати
+                                 </a>
+                             {% endif %}
                               <div class="modal" id="churn{{ c.pk }}comments" tabindex="-1" aria-labelledby="churn{{ c.pk }}comments" aria-hidden="true">
                                   <div class="modal-dialog modal-dialog-scrollable">
                                     <div class="modal-content">
