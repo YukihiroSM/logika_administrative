@@ -40,6 +40,21 @@ urlpatterns = [
         api_views.add_new_churn,
         name="add-new-churn",
     ),
+    path(
+        "api/open-lessons/",
+        api_views.get_open_lessons,
+        name="open-lessons",
+    ),
+    path(
+        "api/lesson_comments/",
+        api_views.get_lesson_comments,
+        name="open-lessons-comments",
+    ),
+    path(
+        "api/churns/",
+        api_views.get_churns,
+        name="get-churns",
+    ),
     path("view-forms/<int:feedback_id>/", teacher_views.view_forms, name="view-forms"),
     path("create-comment/", teacher_views.create_comment, name="create-comment"),
     path(

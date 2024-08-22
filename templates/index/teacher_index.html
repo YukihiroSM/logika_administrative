@@ -1,0 +1,15 @@
+{% load static %}
+{% for tutor in tutors %}
+    <a href="{% url 'logika_teachers:teacher-feedback' user.id tutor.user.id %}">
+        <h1>Форма ЗЗ для
+            {{ tutor.user.get_full_name }}</h1>
+    </a>
+{% endfor %}
+<hr>
+<h2>Відправлені форми:</h2>
+{% for feedback in feedbacks %}
+    <a href="{% url 'logika_teachers:view-forms' feedback.id %}">
+        <h1> Форма для
+            {{ feedback.tutor.user.get_full_name }} від {{ feedback.created_at }}</h1>
+    </a>
+{% endfor %}

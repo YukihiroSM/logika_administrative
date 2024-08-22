@@ -84,34 +84,63 @@
                                 {% endif %}
                             </td>
                             <td style="text-transform: none !important;">
-                            {% if not c.comment %}
-                                <form method="POST" action="{% url 'logika_teachers:create-comment' %}">
-                                    {% csrf_token %}
-                                    <textarea name="comment" class="form-control mb-2"></textarea>
-                                    <input type="hidden" name="next"
-                                           value="{{ request.path }}">
-                                    <input type="hidden" name="churn"
-                                           value="{{ c.churn_id }}">
-                                    <input type="hidden" name="comment_type"
-                                           value="predicted_churn">
-                                    <input type="hidden" name="teacher"
-                                           value="{{ c.teacher.id }}">
-                                    <input type="hidden" name="churn_obj"
-                                           value="{{ c.pk }}">
-                                    <button class="btn btn-primary btn-default btn-squared btn-sm"
-                                            type="submit">
-                                        Відправити
-                                    </button>
-                                </form>
-                            {% else %}
-                                {% if c.comment.comment|length <= 20 %}
-                                    {{ c.comment.comment }}
-                                {% else %}
-                                    <a class="text-decoration-none text-dark" href="#" data-bs-toggle="tooltip" data-bs-title="{{ c.comment.comment }}">
-                                        {{ c.comment.comment|truncatechars:20 }}
-                                    </a>
-                                {% endif %}
-                            {% endif %}
+                             {% if c.comment %}
+                              <a type="button" class="text-primary mb-2" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
+                                  {{ c.comment.comment|truncatechars:20 }}
+                              </a>
+                             {% else %}
+                                 <a type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
+                                  Додати
+                                 </a>
+                             {% endif %}
+                              <div class="modal" id="churn{{ c.pk }}comments" tabindex="-1" aria-labelledby="churn{{ c.pk }}comments" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="churn{{ c.pk }}comments">Коментарі</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        <form method="POST" action="{% url 'logika_teachers:create-comment' %}" class="mb-3">
+                                            {% csrf_token %}
+                                            <textarea name="comment" class="form-control mb-2" placeholder="додати коментар"></textarea>
+                                            <input type="hidden" name="next"
+                                                   value="{{ request.path }}">
+                                            <input type="hidden" name="churn"
+                                                   value="{{ c.churn_id }}">
+                                            <input type="hidden" name="comment_type"
+                                                   value="predicted_churn">
+                                            <input type="hidden" name="teacher"
+                                                   value="{{ c.teacher.id }}">
+                                            <input type="hidden" name="churn_obj"
+                                                   value="{{ c.pk }}">
+                                            <button class="btn btn-primary btn-default btn-squared btn-sm"
+                                                    type="submit">
+                                                Відправити
+                                            </button>
+                                        </form>
+                                        {% for cc in churn_comments %}
+                                            {% if cc.0 == c.churn_id %}
+                                                {% for comment in cc.1 %}
+                                                    <div class="card mb-2 border-gray">
+                                                        <div class="card-header">
+                                                            Коментар за {{ comment.created_at }}
+                                                        </div>
+                                                        <div class="card-body">
+                                                            {{ comment.comment }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
                             </td>
 
                         </tr>

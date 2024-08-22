@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import pickle
 
 from django.contrib.auth.decorators import login_required
@@ -89,6 +89,11 @@ def teacher_profile(request, id, tutor_id=None):
         com = comments_dict.get((str(lesson.get("lesson_id")), str(lesson.get("group_id"))), None)
         lesson["comment"] = com
 
+    tutor_comments = TeacherComment.objects.filter(tutor=tutor_profile)
+    churn_comments = []
+    for churn in PredictedChurn.objects.filter(teacher=teacher):
+        churn_comments.append((churn.churn_id, tutor_comments.filter(churn_id=churn.churn_id).order_by("-created_at")))
+
     feedbacks = (
         TeacherFeedback.objects.filter(teacher=teacher, tutor=tutor_profile)
         .order_by("-created_at")
@@ -97,7 +102,7 @@ def teacher_profile(request, id, tutor_id=None):
     churn_status = request.GET.get("churn_status", "relevant")
     predicted_churns = teacher.predicted_churns.order_by('-created_at')
     filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30))
-    predicted_churns = predicted_churns.filter(status=churn_status)
+    predicted_churns = predicted_churns.filter(status=churn_status).order_by("-priority", "-created_at")
 
     comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile)
 
@@ -122,6 +127,7 @@ def teacher_profile(request, id, tutor_id=None):
             "to_date": to_date.strftime("%Y-%m-%d"),
             "churns": predicted_churns,
             "filtered_churns": filtered_churns,
+            "churn_comments": churn_comments,
         },
     )
 
@@ -307,10 +313,19 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                 if predicted_churn_ids[i] == "":
                     continue
                 churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
-                PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
-                                              description=predicted_churn_descriptions[i],
-                                              feedback=new_form,
-                                              teacher=teacher_profile)
+                predicted_churn = PredictedChurn.objects.filter(churn_id=predicted_churn_ids[i],
+                                                                teacher=teacher_profile)
+                if predicted_churn.exists():
+                    predicted_churn = predicted_churn.order_by("-priority", "-created_at").first()
+                    predicted_churn.status = "relevant"
+                    predicted_churn.description = predicted_churn_descriptions[i]
+                    predicted_churn.created_at = date.today()
+                    predicted_churn.save()
+                else:
+                    PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
+                                                  description=predicted_churn_descriptions[i],
+                                                  feedback=new_form,
+                                                  teacher=teacher_profile)
 
             new_form.predicted_churn_object = pickle.dumps(churns)
             new_form.save()
