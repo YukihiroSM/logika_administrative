@@ -89,11 +89,8 @@ def add_new_churn(request):
 
 @require_GET
 def get_open_lessons(request):
-    teachers = (
-        TutorProfile.objects.filter(user=request.user)
-        .first()
-        .related_teachers.all()
-    )
+    tutor = TutorProfile.objects.filter(user=request.user).first()
+    teachers = tutor.related_teachers.all()
     groups = Group.objects.filter(teacher_id__in=list(teachers.values_list("lms_id", flat=True)),
                                   type__in=("regular", "individual", "Группа", "Индивидуальная"))
 
@@ -103,7 +100,9 @@ def get_open_lessons(request):
         teacher = TeacherProfile.objects.filter(lms_id=group.teacher_id).first()
         lessons_facade.filter_open_lessons()
         for lesson in lessons_facade.lessons:
-            last_comment = TeacherComment.objects.filter(lesson_id=lesson["lesson_id"]).order_by("-created_at").first()
+            last_comment = TeacherComment.objects.filter(lesson_id=lesson["lesson_id"],
+                                                         teacher_id=teacher.id,
+                                                         tutor=tutor).order_by("-created_at").first()
             lesson.update({"group_name": group.title,
                            "group_id": group.lms_id,
                            "teacher": group.teacher_name,
