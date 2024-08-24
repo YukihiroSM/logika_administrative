@@ -118,7 +118,9 @@ def get_open_lessons(request):
 @require_GET
 def get_lesson_comments(request):
     lesson_id = request.GET.get("lesson_id")
-    comments = TeacherComment.objects.filter(lesson_id=lesson_id)
+    teacher_id = request.GET.get("teacher_id")
+    tutor = TutorProfile.objects.filter(user=request.user).first()
+    comments = TeacherComment.objects.filter(lesson_id=lesson_id, tutor=tutor, teacher_id=teacher_id)
     if comments.exists():
         comments = comments.values()
         return JsonResponse({"comments": list(comments)})

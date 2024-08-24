@@ -256,9 +256,9 @@ document.addEventListener("DOMContentLoaded", function() {
             return dateA - dateB;
         });
     }
-    async function loadComments(lessonId) {
+    async function loadComments(lessonId ,teacherId) {
         try {
-            let response = await fetch(`{% url 'logika_teachers:open-lessons-comments' %}?lesson_id=${lessonId}`); // Замените URL на ваш
+            let response = await fetch(`{% url 'logika_teachers:open-lessons-comments' %}?lesson_id=${lessonId}&teacher_id=${teacherId}`); // Замените URL на ваш
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function() {
             modal.setAttribute('aria-hidden', 'true');
 
             // Загрузка комментариев для урока
-            let comments = await loadComments(lesson.lesson_id);
+            let comments = await loadComments(lesson.lesson_id, lesson.teacher_id);
             let commentsHtml = comments.map(createCommentCard).join('');
 
             modal.innerHTML = `
