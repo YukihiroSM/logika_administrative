@@ -96,6 +96,8 @@ def get_open_lessons(request):
 
     open_lessons = []
     for group in groups:
+        if group is None:
+            continue
         lessons_facade = LessonFacade(lms_service=LMSService, group_id=group.lms_id)
         teacher = TeacherProfile.objects.filter(lms_id=group.teacher_id).first()
         lessons_facade.filter_open_lessons()
