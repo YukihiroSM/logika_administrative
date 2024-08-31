@@ -37,7 +37,7 @@ from utils.lms_authentication import get_authenticated_session
 from utils.logika_scripts import get_conversion
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-31",
+    "Серпень": "2024-08-01_2024-08-30",
     "Вересень": "2023-09-01_2023-09-30",
     "Жовтень": "2023-10-01_2023-10-31",
     "Листопад": "2023-11-01_2023-11-30",

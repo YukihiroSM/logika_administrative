@@ -18,7 +18,7 @@ from utils.get_possible_report_scales import get_possible_report_scales
 from utils.get_user_role import get_user_role
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-31",
+    "Серпень": "2024-08-01_2024-08-25",
     "Вересень": "2023-09-01_2023-09-30",
     "Жовтень": "2023-10-01_2023-10-31",
     "Листопад": "2023-11-01_2023-11-30",

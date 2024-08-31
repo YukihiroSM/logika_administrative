@@ -96,6 +96,7 @@ class Command(BaseCommand):
                 student_recent_group = student_details.get("lastGroup")
             except:
                 print(f"ISSUE: Can't get data about student {student_id} Skipping!")
+                student_recent_group = None
             if student_recent_group is None:
                 print(f"ISSUE: student {student_id} has no recent group")
 
