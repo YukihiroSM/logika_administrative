@@ -43,8 +43,9 @@ def tutor_month_report(request, user_id):
         report_id = request.POST.get("report_id")
         conversion = request.POST.get("conversion")
         if month:
+            current_year = timezone.now().year
             month_reports = TutorMonthReport.objects.filter(
-                month=month, tutor=tutor
+                month=month, tutor=tutor, created_at__year=current_year
             ).all()
             if not month_reports:
                 tutor_teachers = tutor.related_teachers.all()
@@ -58,7 +59,6 @@ def tutor_month_report(request, user_id):
                         tutor=tutor,
                     )
                     new_month_report.save()
-            current_year = timezone.now().year
             month_reports = (
                 TutorMonthReport.objects.filter(month=month, tutor=tutor, created_at__year=current_year)
                 .order_by("teacher")
