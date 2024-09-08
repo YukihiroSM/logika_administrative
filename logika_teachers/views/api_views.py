@@ -140,4 +140,12 @@ def get_churns(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({"churns": churn_list})
 
 
-
+@require_POST
+def change_tutor_offices(request: WSGIRequest) -> JsonResponse:
+    data = json.loads(request.body)
+    offices = data.get("offices", [])
+    tutor = TutorProfile.objects.filter(user=request.user).first()
+    if tutor:
+        office_objects = OfficeRegion.objects.filter(pk__in=offices)
+        tutor.offices.set(office_objects)
+    return JsonResponse({"status": 200})

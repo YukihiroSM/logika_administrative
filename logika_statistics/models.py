@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
-
 regions = [
     ("UA_Kievskaya oblast", "UA_Kievskaya oblast"),
     ("UA_Kiev", "UA_Kiev"),
@@ -28,8 +27,12 @@ regions = [
 ]
 
 
+class OfficeRegion(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+
 class Group(models.Model):
-    lms_id = models.IntegerField()
+    lms_id = models.IntegerField(unique=True)
     title = models.CharField(max_length=255)
     status = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
@@ -39,6 +42,7 @@ class Group(models.Model):
     approximate_end_date = models.DateField(blank=True, null=True)
     course_id = models.IntegerField(blank=True, null=True)
     teacher_id = models.IntegerField(blank=True, null=True)
+    office = models.ForeignKey(OfficeRegion, related_name="groups", on_delete=models.SET_NULL, null=True, default=None)
 
 
 class Location(models.Model):

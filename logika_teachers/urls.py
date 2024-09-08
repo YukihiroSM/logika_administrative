@@ -55,6 +55,11 @@ urlpatterns = [
         api_views.get_churns,
         name="get-churns",
     ),
+    path(
+        "api/change-tutor-offices/",
+        api_views.change_tutor_offices,
+        name="change-tutor-offices",
+    ),
     path("view-forms/<int:feedback_id>/", teacher_views.view_forms, name="view-forms"),
     path("create-comment/", teacher_views.create_comment, name="create-comment"),
     path(

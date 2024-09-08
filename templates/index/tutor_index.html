@@ -1,4 +1,15 @@
 {% load static %}
+<div>
+    <form id="officesForm" class="mb-3">
+        {% for office in offices %}
+            <input type="checkbox" name="office{{ office.pk }}" id="office{{ office.pk }}" class="form-check-input" value="{{ office.pk }}"
+            {% if office in tutor_offices %}checked{% endif %}>
+            <label for="office{{ office.pk }}" class="form-check-label">{{ office.name }}</label>
+            <br>
+        {% endfor %}
+        <button type="button" class="btn btn-primary mt-1" id="save_offices">Отправить</button>
+    </form>
+</div>
 <div class="action-btn">
     <a href="{% url 'logika_teachers:tutor-month-report' user.id %}"
        class="btn px-15 btn-primary">
@@ -203,6 +214,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Функция для загрузки данных с сервера
     async function loadLessons() {
+        const totalGroupsSpan = document.getElementById('total-groups');
+        totalGroupsSpan.textContent = ` Загрузка...`;
+
         try {
             let response = await fetch('{% url 'logika_teachers:open-lessons' %}'); // Замените URL на ваш
             if (!response.ok) {
@@ -214,6 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
             filterAndDisplayLessons();
         } catch (error) {
             console.error('Ошибка при загрузке данных:', error);
+            totalGroupsSpan.textContent = ` Зверніться до адміністрації`;
         }
     }
 
@@ -256,9 +271,9 @@ document.addEventListener("DOMContentLoaded", function() {
             return dateA - dateB;
         });
     }
-    async function loadComments(lessonId ,teacherId) {
+    async function loadComments(lessonId ,teacherId, groupId) {
         try {
-            let response = await fetch(`{% url 'logika_teachers:open-lessons-comments' %}?lesson_id=${lessonId}&teacher_id=${teacherId}`); // Замените URL на ваш
+            let response = await fetch(`{% url 'logika_teachers:open-lessons-comments' %}?lesson_id=${lessonId}&teacher_id=${teacherId}&group_id=${groupId}`); // Замените URL на ваш
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -327,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function() {
             modal.setAttribute('aria-hidden', 'true');
 
             // Загрузка комментариев для урока
-            let comments = await loadComments(lesson.lesson_id, lesson.teacher_id);
+            let comments = await loadComments(lesson.lesson_id, lesson.teacher_id, lesson.group_id);
             let commentsHtml = comments.map(createCommentCard).join('');
 
             modal.innerHTML = `
@@ -353,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                        value="${lesson.lesson_id}">
                                 <button class="btn btn-primary btn-default btn-squared"
                                         type="submit">
-                                    Відправити
+                                    Відправити ${lesson.teacher_id}
                                 </button>
                             </form>
                             ${commentsHtml || ''}
@@ -561,7 +576,36 @@ document.addEventListener("DOMContentLoaded", function() {
     // Загрузка данных при загрузке страницы
     loadChurns();
 
-    // Обработчик кнопки "Upd" для фильтрации данных
     document.getElementById('update-churns').addEventListener('click', filterChurns);
+    async function submitOffices() {
+        // Получаем форму
+        const form = document.getElementById('officesForm');
+        // Собираем все выбранные чекбоксы
+        const selectedOffices = [];
+
+        form.querySelectorAll('input[type="checkbox"]:checked').forEach((checkbox) => {
+            selectedOffices.push(checkbox.value);
+        });
+
+        // Делаем POST-запрос на сервер
+        fetch('{% url "logika_teachers:change-tutor-offices" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': "{{ csrf_token }}"  // Django требует CSRF токен
+            },
+            body: JSON.stringify({ offices: selectedOffices })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Успех:', data);
+            loadLessons();
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+        });
+    }
+    document.getElementById("save_offices").addEventListener("click", submitOffices);
+
 });
 </script>

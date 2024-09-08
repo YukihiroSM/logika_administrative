@@ -2,18 +2,15 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import render, redirect
 
-from logika_statistics.models import Group
-from logika_teachers.lesson_facade import LessonFacade
+from logika_statistics.models import OfficeRegion
 from logika_teachers.models import (
     TeacherProfile,
     TutorProfile,
     TeacherFeedback,
-    RegionalTutorProfile, PredictedChurn, TeacherComment,
+    RegionalTutorProfile, PredictedChurn,
 )
-from logika_teachers.services.lms_service import LMSService
 from utils.get_user_role import get_user_role
 
 
@@ -31,6 +28,8 @@ def index(request):
     les_from_date = datetime.now()
     les_to_date = datetime.now() + timedelta(days=7)
     open_lessons = []
+    offices = OfficeRegion.objects.all()
+    tutor_offices = []
     if user_role == "teacher":
         teacher_profile = TeacherProfile.objects.filter(user=request.user).first()
         feedbacks = (
@@ -64,6 +63,7 @@ def index(request):
                 .order_by("-created_at")
                 .first()
             )
+        tutor_offices = tutor_profile.offices.all()
     if user_role == "regional_tutor" or user_role == "admin":
         regional_tutor_profile = RegionalTutorProfile.objects.filter(
             user=request.user
@@ -90,7 +90,9 @@ def index(request):
             "teacher_name": teacher_name,
             "open_lessons": open_lessons,
             "les_date_from": les_from_date.strftime("%Y-%m-%d"),
-            "les_date_to": les_to_date.strftime("%Y-%m-%d")
+            "les_date_to": les_to_date.strftime("%Y-%m-%d"),
+            "offices": offices,
+            "tutor_offices": tutor_offices
         },
     )
 

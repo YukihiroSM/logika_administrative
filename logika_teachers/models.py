@@ -3,7 +3,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 import uuid
 
-from logika_statistics.models import Group
+from logika_statistics.models import Group, OfficeRegion
+from logika_teachers.repositories.anti_corruption_layers import GroupACL
+from logika_teachers.repositories.group_repository import GroupRepository
 from logika_teachers.services.group_service import GroupService
 from logika_teachers.services.lms_service import LMSService
 
@@ -31,6 +33,7 @@ class TutorProfile(models.Model):
     )
     auth_token = models.CharField(max_length=64, null=True, blank=True, default=None)
     login_timestamp = models.DateTimeField(null=True, blank=True, default=None)
+    offices = models.ManyToManyField(OfficeRegion, "tutors")
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -40,6 +43,7 @@ class TutorProfile(models.Model):
 
     class Meta:
         ordering = ("user__last_name", "user__first_name")
+
 
 class RegionalTutorProfile(models.Model):
     one_c_name = models.CharField(max_length=64, null=True, blank=True)
@@ -106,7 +110,7 @@ class PredictedChurn(models.Model):
 
     churn_id = models.CharField(max_length=16, null=True, blank=True, default=None)
     fullname = models.CharField(max_length=50, null=True)
-    group = models.ForeignKey(Group, related_name="predicted_churns", on_delete=models.DO_NOTHING, blank=True,
+    group = models.ForeignKey(Group, related_name="predicted_churns", on_delete=models.SET_NULL, blank=True,
                               null=True)
     description = models.TextField()
     created_at = models.DateField(auto_now_add=True)
@@ -116,6 +120,9 @@ class PredictedChurn(models.Model):
     teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.DO_NOTHING)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
     priority = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("churn_id", "teacher")
 
     def __str__(self):
         return f"{self.fullname} ({self.churn_id}) - {self.status}"
