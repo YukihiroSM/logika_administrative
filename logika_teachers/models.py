@@ -110,7 +110,7 @@ class PredictedChurn(models.Model):
 
     churn_id = models.CharField(max_length=16, null=True, blank=True, default=None)
     fullname = models.CharField(max_length=50, null=True)
-    group = models.ForeignKey(Group, related_name="predicted_churns", on_delete=models.DO_NOTHING, blank=True,
+    group = models.ForeignKey(Group, related_name="predicted_churns", on_delete=models.SET_NULL, blank=True,
                               null=True)
     description = models.TextField()
     created_at = models.DateField(auto_now_add=True)
@@ -120,6 +120,9 @@ class PredictedChurn(models.Model):
     teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.DO_NOTHING)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
     priority = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("churn_id", "teacher")
 
     def __str__(self):
         return f"{self.fullname} ({self.churn_id}) - {self.status}"
