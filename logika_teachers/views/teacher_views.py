@@ -18,7 +18,11 @@ from logika_teachers.forms import (
     TeacherEditProfileForm,
     TeacherFeedbackForm,
 )
-from logika_teachers.lesson_facade import LessonFacade
+from logika_teachers.repositories.churn_repository import ChurnRepository
+from logika_teachers.repositories.dtos import ChurnRawDTO
+from logika_teachers.repositories.group_repository import GroupRepository
+from logika_teachers.services.group_service import GroupService
+from logika_teachers.services.lesson_service import LessonService
 from logika_teachers.services.lms_service import LMSService
 from logika_teachers.models import (
     TeacherProfile,
@@ -70,24 +74,22 @@ def teacher_profile(request, id, tutor_id=None):
     open_lessons = list()
     lesson_ids = list()
     for group in groups:
-        lesson_facade = LessonFacade(lms_service=LMSService, group_id=group.lms_id)
-        lesson_facade.filter_open_lessons()
-        lesson_facade.filter_lessons_by_date(from_date=from_date, to_date=to_date)
+        group_service = GroupService(lms_service=LMSService, group_repository=GroupRepository)
+        lesson_service = LessonService(lms_service=LMSService, group_service=group_service)
+        lessons = lesson_service.get_lessons(group_id=group.lms_id)
+        lessons = lesson_service.filter_open_lessons(lessons)
+        lessons = lesson_service.filter_lessons_by_date(lessons, from_date, to_date)
 
-        for lesson in lesson_facade.lessons:
-            lesson_ids.append(lesson.get("lesson_id"))
-            lesson.update({"group_name": group.title,
-                           "group_id": group.lms_id,
-                           "teacher": group.teacher_name,
-                           })
-        open_lessons += lesson_facade.lessons
+        for lesson in lessons:
+            lesson_ids.append(lesson.lesson_id)
+        open_lessons += lessons
 
     comments = TeacherComment.objects.filter(comment_type="lesson", group_id__in=[g.lms_id for g in groups],
                                              lesson_id__in=lesson_ids).order_by("-created_at")
     comments_dict = {(comment.lesson_id, comment.group_id): comment.comment for comment in comments}
     for lesson in open_lessons:
-        com = comments_dict.get((str(lesson.get("lesson_id")), str(lesson.get("group_id"))), None)
-        lesson["comment"] = com
+        com = comments_dict.get((str(lesson.lesson_id), str(lesson.group_id)), None)
+        lesson.comment = com
 
     tutor_comments = TeacherComment.objects.filter(tutor=tutor_profile)
     churn_comments = []
@@ -104,7 +106,7 @@ def teacher_profile(request, id, tutor_id=None):
     filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30))
     predicted_churns = predicted_churns.filter(status=churn_status).order_by("-priority", "-created_at")
 
-    comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile)
+    comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile, lms_service=LMSService)
 
     call_comments = comments_facade.get_call_comments()
     lesson_comments = comments_facade.get_lesson_comments()
@@ -308,27 +310,18 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                 km_work_mark=form_data["km_work_mark"],
                 tutor_work_mark=form_data["tutor_work_mark"],
             )
-            churns = {}
             for i in range(len(predicted_churn_ids)):
                 if predicted_churn_ids[i] == "":
                     continue
-                churns[predicted_churn_ids[i]] = predicted_churn_descriptions[i]
-                predicted_churn = PredictedChurn.objects.filter(churn_id=predicted_churn_ids[i],
-                                                                teacher=teacher_profile)
-                if predicted_churn.exists():
-                    predicted_churn = predicted_churn.order_by("-priority", "-created_at").first()
-                    predicted_churn.status = "relevant"
-                    predicted_churn.description = predicted_churn_descriptions[i]
-                    predicted_churn.created_at = date.today()
-                    predicted_churn.save()
-                else:
-                    PredictedChurn.objects.create(churn_id=predicted_churn_ids[i],
-                                                  description=predicted_churn_descriptions[i],
-                                                  feedback=new_form,
-                                                  teacher=teacher_profile)
 
-            new_form.predicted_churn_object = pickle.dumps(churns)
-            new_form.save()
+                churn_dto = ChurnRawDTO(
+                    churn_id=predicted_churn_ids[i],
+                    teacher_id=teacher_profile.pk,
+                    status="relevant",
+                    description=predicted_churn_descriptions[i],
+                    feedback_id=new_form.pk
+                )
+                ChurnRepository.create_or_update_churn(churn_dto)
             return redirect("/")
         else:
             alerts.append(
