@@ -121,16 +121,16 @@ class PredictedChurn(models.Model):
         return f"{self.fullname} ({self.churn_id}) - {self.status}"
 
     def save(self, *args, **kwargs):
-        data, status = LMSService.get_student(self.churn_id)
+        student_dto, status = LMSService.get_student(self.churn_id)
         if status == 200:
-            name = data.get("last_name") + " " + data.get("first_name")
+            name = student_dto.last_name + " " + student_dto.first_name
             self.fullname = name
-            group = data.get("group")
-            if group:
-                group_id = group.get("id")
-                group_service = GroupService()
-                group, created = group_service.get_or_create_group(group_id=group_id)
-                self.group = group
+            group_id = student_dto.group_id
+            if group_id:
+                group_service = GroupService(LMSService, GroupRepository)
+                group_dto, created = group_service.get_or_create_group(group_id=group_id)
+                group_obj = GroupACL.map_dto_to_group(group_dto)
+                self.group = group_obj
         super().save(*args, **kwargs)
 
 
