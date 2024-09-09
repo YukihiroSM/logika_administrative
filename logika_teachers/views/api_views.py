@@ -72,11 +72,13 @@ def add_new_churn(request: WSGIRequest) -> HttpResponseRedirect:
     churn_status = request.POST.get("churn_status")
     teacher_id = request.POST.get("teacher")
     description = request.POST.get("description", "")
+    tutor = TutorProfile.objects.filter(user=request.user).first()
     churn_dto = ChurnRawDTO(
         churn_id=churn_id,
         status=churn_status,
         teacher_id=teacher_id,
-        description=description
+        description=description,
+        tutor_id=tutor.pk if tutor else None
     )
     ChurnRepository.create_or_update_churn(churn_dto)
 
@@ -127,13 +129,9 @@ def get_lesson_comments(request: WSGIRequest) -> JsonResponse:
 
 @require_GET
 def get_churns(request: WSGIRequest) -> JsonResponse:
-    teachers = (
-        TutorProfile.objects.filter(user=request.user)
-        .first()
-        .related_teachers
-        .values_list("pk", flat=True)
-    )
-    churns = ChurnRepository.get_churns_by_teachers(teachers)
+    tutor = TutorProfile.objects.filter(user=request.user).first()
+    teachers = tutor.related_teachers.values_list("pk", flat=True)
+    churns = ChurnRepository.get_churns_by_teachers(teachers, tutor_id=tutor.pk)
     churn_list = list()
     for churn in churns:
         churn_list.append(asdict(churn))

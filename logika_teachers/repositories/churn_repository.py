@@ -18,12 +18,12 @@ class ChurnRepositoryInterface(ABC):
 
     @classmethod
     @abstractmethod
-    def get_churn(cls, churn_id: int) -> Optional[ChurnDTO]:
+    def get_churn(cls, churn_id: int, tutor_id: Optional[int] = None) -> Optional[ChurnDTO]:
         pass
 
     @classmethod
     @abstractmethod
-    def get_churns_by_teachers(cls, teachers: list[int]) -> list[ChurnDTO]:
+    def get_churns_by_teachers(cls, teachers: list[int], tutor_id: Optional[int] = None) -> list[ChurnDTO]:
         pass
 
 
@@ -44,14 +44,20 @@ class ChurnRepository(ChurnRepositoryInterface):
         return cls._map_obj_to_dto(churn)
 
     @classmethod
-    def get_churn(cls, churn_id: int) -> Optional[ChurnDTO]:
-        churn = PredictedChurn.objects.filter(churn_id=churn_id)
+    def get_churn(cls, churn_id: int, tutor_id: Optional[int] = None) -> Optional[ChurnDTO]:
+        if not tutor_id:
+            churn = PredictedChurn.objects.filter(churn_id=churn_id)
+        else:
+            churn = PredictedChurn.objects.filter(churn_id=churn_id, tutor_id=tutor_id)
         if churn.exists():
-            return cls._map_obj_to_dto(churn)
+            return cls._map_obj_to_dto(churn.first())
 
     @classmethod
-    def get_churns_by_teachers(cls, teachers: list[int]) -> list[ChurnDTO]:
-        churns = PredictedChurn.objects.filter(teacher_id__in=teachers)
+    def get_churns_by_teachers(cls, teachers: list[int], tutor_id: Optional[int] = None) -> list[ChurnDTO]:
+        if not tutor_id:
+            churns = PredictedChurn.objects.filter(teacher_id__in=teachers)
+        else:
+            churns = PredictedChurn.objects.filter(teacher_id__in=teachers, tutor_id=tutor_id)
         churn_list = list()
         for churn in churns:
             churn_list.append(cls._map_obj_to_dto(churn))

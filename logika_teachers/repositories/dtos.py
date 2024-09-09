@@ -53,6 +53,7 @@ class ChurnRawDTO:
     teacher_id: int
     description: str = ""
     feedback_id: Optional[int] = None
+    tutor_id: Optional[int] = None
 
 
 @dataclass

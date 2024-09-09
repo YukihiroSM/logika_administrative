@@ -115,9 +115,10 @@ class PredictedChurn(models.Model):
     description = models.TextField()
     created_at = models.DateField(auto_now_add=True)
     comment = models.ForeignKey(TeacherComment, on_delete=models.DO_NOTHING, null=True)
-    feedback = models.ForeignKey(TeacherFeedback, related_name="predicted_churns", on_delete=models.DO_NOTHING,
+    feedback = models.ForeignKey(TeacherFeedback, related_name="predicted_churns", on_delete=models.SET_NULL,
                                  null=True)
-    teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.DO_NOTHING)
+    teacher = models.ForeignKey(TeacherProfile, related_name="predicted_churns", on_delete=models.SET_NULL, null=True)
+    tutor = models.ForeignKey(TutorProfile, related_name="predicted_churns", on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="relevant")
     priority = models.IntegerField(default=0)
 
