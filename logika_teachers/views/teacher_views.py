@@ -103,7 +103,8 @@ def teacher_profile(request, id, tutor_id=None):
     )
     churn_status = request.GET.get("churn_status", "relevant")
     predicted_churns = teacher.predicted_churns.order_by('-created_at')
-    filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30))
+    filtered_churns = predicted_churns.filter(status="churn", created_at__gte=datetime.now() - timedelta(days=30),
+                                              tutor_id=tutor_profile.pk)
     predicted_churns = predicted_churns.filter(status=churn_status).order_by("-priority", "-created_at")
 
     comments_facade = CommentsFacade(teacher=teacher, tutor=tutor_profile, lms_service=LMSService)
@@ -319,7 +320,8 @@ def teacher_feedback_form(request, teacher_id, tutor_id):
                     teacher_id=teacher_profile.pk,
                     status="relevant",
                     description=predicted_churn_descriptions[i],
-                    feedback_id=new_form.pk
+                    feedback_id=new_form.pk,
+                    tutor_id=tutor_profile.pk
                 )
                 ChurnRepository.create_or_update_churn(churn_dto)
             return redirect("/")
