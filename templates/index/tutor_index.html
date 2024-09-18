@@ -1,15 +1,4 @@
 {% load static %}
-<div>
-    <form id="officesForm" class="mb-3">
-        {% for office in offices %}
-            <input type="checkbox" name="office{{ office.pk }}" id="office{{ office.pk }}" class="form-check-input" value="{{ office.pk }}"
-            {% if office in tutor_offices %}checked{% endif %}>
-            <label for="office{{ office.pk }}" class="form-check-label">{{ office.name }}</label>
-            <br>
-        {% endfor %}
-        <button type="button" class="btn btn-primary mt-1" id="save_offices">Отправить</button>
-    </form>
-</div>
 <div class="action-btn">
     <a href="{% url 'logika_teachers:tutor-month-report' user.id %}"
        class="btn px-15 btn-primary">
@@ -55,7 +44,38 @@
               <input type="date" class="form-control" id="date_to_filter" name="les_date_to" value="{{ les_date_to }}">
           </div>
       </div>
+      <div class="col-auto">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#officeModal">
+            Обрати офіси
+          </button>
+      </div>
   </div>
+<div class="modal fade" id="officeModal" tabindex="-1" aria-labelledby="officeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="officeModalLabel">Офіси</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+      <form id="officesForm" class="mb-3">
+            {% for office in offices %}
+                <input type="checkbox" name="office{{ office.pk }}" id="office{{ office.pk }}" class="form-check-input" value="{{ office.pk }}"
+                {% if office in tutor_offices %}checked{% endif %}>
+                <label for="office{{ office.pk }}" class="form-check-label">{{ office.name }}</label>
+                <br>
+            {% endfor %}
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary mt-1" id="save_offices" data-bs-dismiss="modal">Зберегти</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 <div class="accordion mb-5" id="accordionExample">
   <div class="accordion-item">
     <h2 class="accordion-header">
