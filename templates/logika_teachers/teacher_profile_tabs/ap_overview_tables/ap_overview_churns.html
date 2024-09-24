@@ -86,7 +86,7 @@
                             <td style="text-transform: none !important;">
                              {% if c.comment %}
                               <a type="button" class="text-primary mb-2" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
-                                  {{ c.comment.comment|truncatechars:20 }}
+                                  {{ c.comment.comment|truncatechars:20 }} {% if c.comment.comment|length == 0 %}Порожній коментар{% endif %}
                               </a>
                              {% else %}
                                  <a type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#churn{{ c.pk }}comments">
