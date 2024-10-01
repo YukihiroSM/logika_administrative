@@ -44,12 +44,15 @@ def tutor_month_report(request, user_id):
         conversion = request.POST.get("conversion")
         if month:
             current_year = timezone.now().year
-            month_reports = TutorMonthReport.objects.filter(
-                month=month, tutor=tutor, created_at__year=current_year
-            ).all()
-            if not month_reports:
-                tutor_teachers = tutor.related_teachers.all()
-                for teacher in tutor_teachers:
+            # month_reports = TutorMonthReport.objects.filter(
+            #     month=month, tutor=tutor, created_at__year=current_year
+            # ).all()
+            tutor_teachers = tutor.related_teachers.all()
+            for teacher in tutor_teachers:
+                if not TutorMonthReport.objects.filter(month=month,
+                                                       tutor=tutor,
+                                                       created_at__year=current_year,
+                                                       teacher=teacher).exists():
                     new_month_report = TutorMonthReport(
                         teacher=teacher,
                         churns_percent="-",
