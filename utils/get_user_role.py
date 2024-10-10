@@ -10,12 +10,12 @@ def get_user_role(user):
     try:
         if user.username == "logikaadmin":
             return "admin"
-        if TeacherProfile.objects.filter(user=user).first():
-            return "teacher"
-        elif TutorProfile.objects.filter(user=user).first():
+        if TutorProfile.objects.filter(user=user).first():
             return "tutor"
         elif RegionalTutorProfile.objects.filter(user=user).first():
             return "regional_tutor"
+        elif TeacherProfile.objects.filter(user=user).first():
+            return "teacher"
         elif RegionalManagerProfile.objects.filter(user=user).first():
             return "regional_manager"
         elif TerritorialManagerProfile.objects.filter(user=user).first():
