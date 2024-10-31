@@ -551,8 +551,9 @@ def add_performance_to_report(request, teacher_id):
         print(request.POST)
         month = request.POST.get("month")
         performance = request.POST.get("performance")
+        current_year = timezone.now().year
         teacher_month_report = TutorMonthReport.objects.filter(
-            teacher=teacher, month=month, tutor=tutor
+            teacher=teacher, month=month, tutor=tutor, created_at__year=current_year
         ).first()
         print(teacher_month_report)
         if teacher_month_report:
