@@ -521,7 +521,10 @@ def resolve_consolidation_report(request, report_id):
     return redirect(redirect_url)
 
 
+@login_required
 def new_statistic(request):
+    if not request.user.is_superuser:
+        return redirect("logika_general:index")
     if request.method == "POST":
         start_date = request.POST.get("start_date")
         end_date = request.POST.get("end_date")
