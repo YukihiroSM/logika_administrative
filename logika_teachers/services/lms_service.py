@@ -3,8 +3,10 @@ from typing import Any, Optional, Union
 
 from requests import Response
 
-from logika_teachers.repositories.dtos import StudentDTO, GroupDTO, LessonDTO, LessonRawDTO
+from logika_teachers.repositories.dtos import StudentDTO, GroupDTO, LessonRawDTO
+from utils.get_jwt_session import AutoRefreshJWTSession
 from utils.lms_authentication import get_authenticated_session
+# from utils.get_jwt_session import session
 from logika_statistics.models import OfficeRegion
 
 
@@ -88,7 +90,8 @@ class LMSService(LMSServiceInterface):
         teacher_name = data.get("teacher").get("name") if data.get("teacher") else None
         start_date = None
         approximate_end_date = None
-        course_id = None
+        course_data = data.get("course")
+        course_id = course_data.get("id") if course_data else None
         teacher_id = data.get("teacher").get("id") if data.get("teacher") else None
         office = data.get("branch").get("title") if data.get("branch") else ""
         office_obj, created = OfficeRegion.objects.get_or_create(name=office)
@@ -120,3 +123,58 @@ class LMSService(LMSServiceInterface):
                 status=les.get("status", str)
             ))
         return raw_lessons
+
+
+class NewLMSService(LMSServiceInterface):
+    _session = AutoRefreshJWTSession()
+    _api_root = "https://api.logikaschool.com.ua"
+    _group_url = _api_root + "/sync/statistics/group/{0}"
+
+    @classmethod
+    def get_student(cls, student_id: Union[str, int]) -> tuple[Optional[StudentDTO], int]:
+        pass
+
+    @classmethod
+    def get_group(cls, group_id: Union[str, int]) -> tuple[Optional[GroupDTO], int]:
+        group_response = cls._session.get(cls._group_url.format(group_id))
+        group_data = group_response.json()
+        status = group_response.status_code
+        if status == 200:
+            return cls._parse_group(group_data), status
+        return None, status
+
+    @classmethod
+    def get_lessons(cls, group_id: Union[str, int]) -> tuple[Optional[list[LessonRawDTO]], int]:
+        pass
+
+    @classmethod
+    def _parse_group(cls, group_data: dict) -> GroupDTO:
+        lms_id = group_data.get("id")
+        title = group_data.get("description")
+        status = group_data.get("status")
+        group_type = group_data.get("type")
+        venue_data = group_data.get("venue")
+        venue = venue_data.get("name") if venue_data else "not_set"
+        teacher_data = group_data.get("teacher")
+        teacher_name = teacher_data.get("fullName") if teacher_data else None
+        teacher_id = teacher_data.get("id") if teacher_data else None
+        start_date = None
+        approximate_end_date = None
+        course_data = group_data.get("course")
+        course_id = course_data.get("key") if course_data else None
+        office = group_data.get("region").get("value") if group_data.get("region") else "Other"
+        office_obj, created = OfficeRegion.objects.get_or_create(name=office)
+
+        return GroupDTO(
+            lms_id=lms_id,
+            title=title,
+            status=status,
+            type=group_type,
+            venue=venue,
+            teacher_name=teacher_name,
+            start_date=start_date,
+            approximate_end_date=approximate_end_date,
+            course_id=course_id,
+            teacher_id=teacher_id,
+            office_id=office_obj.pk
+        )

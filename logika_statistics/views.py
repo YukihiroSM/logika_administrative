@@ -6,7 +6,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Count
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
@@ -20,6 +20,11 @@ from logika_general.models import (
     TerritorialManagerProfile,
 )
 from logika_teachers.models import TutorProfile
+from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_teachers.services.lms_service import LMSService, NewLMSService
+from logika_teachers.services.master_class_service import MasterClassService, MasterClassBOService
+from logika_teachers.services.one_c_service import PaymentService
+from logika_teachers.services.statistic_service import StatisticService
 from utils.get_possible_report_scales import get_possible_report_scales
 from utils.get_user_role import get_user_role
 from .forms import ReportDateForm, UpdateLocationForm
@@ -514,3 +519,98 @@ def resolve_consolidation_report(request, report_id):
         redirect_url = reverse(target_view_name)
 
     return redirect(redirect_url)
+
+
+@login_required
+def new_statistic(request):
+    if not request.user.is_superuser:
+        return redirect("logika_general:index")
+    if request.method == "POST":
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
+        print(start_date, end_date)
+
+        if start_date and end_date:
+            print(start_date, end_date)
+            mk_service = MasterClassService(LMSService)
+            mk_service2 = MasterClassBOService(NewLMSService)
+            pm_service = PaymentService()
+            statistic_service = StatisticService([mk_service2], [])
+            statistic_service.collect_statistic(start_date, end_date)
+
+    start_date = request.GET.get("view_start_date")
+    start_dates = MasterClassRecord.objects.values_list("start_date", flat=True).order_by("start_date").distinct()
+    start_dates = [datetime.datetime.strftime(date, "%Y-%m-%d") for date in start_dates]
+    locations = Location.objects.all()
+
+    context = {"start_dates": start_dates}
+    if start_date:
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+
+        master_classes_count = MasterClassRecord.objects.filter(start_date=start_date, business="programming",
+                                                                new_lms=False) \
+            .values('regional_manager', 'territorial_manager', 'location') \
+            .annotate(count=Count('id'))
+
+        new_master_classes_count = MasterClassRecord.objects.filter(start_date=start_date, business="programming",
+                                                                    new_lms=True) \
+            .values('regional_manager', 'territorial_manager', 'location') \
+            .annotate(count=Count('id'))
+
+        total_mk = sum(item["count"] for item in master_classes_count)
+        new_total_mk = sum(item["count"] for item in new_master_classes_count)
+
+        location_data = {}
+        new_location_data = {}
+        for location in locations:
+            regional_manager = location.regional_manager
+            territorial_manager = location.territorial_manager
+            lms_location_name = location.lms_location_name
+
+            location_count = next(
+                (item['count'] for item in master_classes_count if item['location'] == lms_location_name), 0
+            )
+            territorial_count = sum(
+                item['count'] for item in master_classes_count if
+                item['territorial_manager'] == territorial_manager)
+            regional_count = sum(
+                item['count'] for item in master_classes_count if item['regional_manager'] == regional_manager)
+
+            new_location_count = next(
+                (item['count'] for item in new_master_classes_count if item['location'] == lms_location_name), 0
+            )
+            new_territorial_count = sum(
+                item['count'] for item in new_master_classes_count if item['territorial_manager'] == territorial_manager)
+            new_regional_count = sum(
+                item['count'] for item in new_master_classes_count if item['regional_manager'] == regional_manager)
+
+            if location_count <= 0:
+                continue
+
+            if regional_manager not in location_data:
+                location_data[regional_manager] = (
+                    regional_count, {territorial_manager: (territorial_count, {location: location_count})})
+            elif territorial_manager not in location_data[regional_manager][1]:
+                location_data[regional_manager][1][territorial_manager] = (
+                    territorial_count, {location: location_count})
+            else:
+                location_data[regional_manager][1][territorial_manager][1][location] = location_count
+
+            if regional_manager not in new_location_data:
+                new_location_data[regional_manager] = (
+                    new_regional_count, {territorial_manager: (new_territorial_count, {location: new_location_count})})
+            elif territorial_manager not in new_location_data[regional_manager][1]:
+                new_location_data[regional_manager][1][territorial_manager] = (
+                    new_territorial_count, {location: new_location_count})
+            else:
+                new_location_data[regional_manager][1][territorial_manager][1][location] = new_location_count
+
+        context = {"start_dates": start_dates,
+                   "location_data": location_data,
+                   "new_location_data": new_location_data,
+                   "total_mk": total_mk,
+                   "new_total_mk": new_total_mk}
+
+    return render(request, "logika_statistics/new_statistic.html",
+                  context=context
+                  )
