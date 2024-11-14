@@ -309,6 +309,7 @@ class MasterClassRecord(models.Model):
     course_id = models.CharField(max_length=16, null=True)
     attended = models.BooleanField()
     is_uk = models.BooleanField()
+    new_lms = models.BooleanField(default=False, blank=True, null=True)
 
 
 class PaymentRecord(models.Model):
