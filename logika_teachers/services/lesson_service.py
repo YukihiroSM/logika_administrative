@@ -38,6 +38,8 @@ class LessonService(LessonServiceInterface):
         return lessons
 
     def _cook_lessons(self, raw_lessons: list[LessonRawDTO], group_id: int):
+        if raw_lessons is None:
+            return list()
         group_dto, created = self.group_service.get_or_create_group(group_id=group_id)
         teacher = TeacherProfile.objects.filter(lms_id=group_dto.teacher_id).first()
         title = "Не знайдено"
