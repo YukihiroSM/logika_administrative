@@ -21,6 +21,7 @@ from logika_general.models import (
 )
 from logika_teachers.models import TutorProfile
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_teachers.repositories.master_class_repository import MasterClassRepository
 from logika_teachers.services.lms_service import LMSService, NewLMSService
 from logika_teachers.services.master_class_service import MasterClassService, MasterClassBOService
 from logika_teachers.services.one_c_service import PaymentService
@@ -525,6 +526,10 @@ def resolve_consolidation_report(request, report_id):
 def new_statistic(request):
     if not request.user.is_superuser:
         return redirect("logika_general:index")
+    mk_service = MasterClassService(LMSService, MasterClassRepository, ban=True)
+    mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, ban=True)
+    pm_service = PaymentService()
+    statistic_service = StatisticService([mk_service, mk_service2], [pm_service])
     if request.method == "POST":
         start_date = request.POST.get("start_date")
         end_date = request.POST.get("end_date")
@@ -532,84 +537,20 @@ def new_statistic(request):
 
         if start_date and end_date:
             print(start_date, end_date)
-            mk_service = MasterClassService(LMSService)
-            mk_service2 = MasterClassBOService(NewLMSService)
-            pm_service = PaymentService()
-            statistic_service = StatisticService([mk_service2], [])
             statistic_service.collect_statistic(start_date, end_date)
 
     start_date = request.GET.get("view_start_date")
     start_dates = MasterClassRecord.objects.values_list("start_date", flat=True).order_by("start_date").distinct()
     start_dates = [datetime.datetime.strftime(date, "%Y-%m-%d") for date in start_dates]
-    locations = Location.objects.all()
 
     context = {"start_dates": start_dates}
     if start_date:
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-
-        master_classes_count = MasterClassRecord.objects.filter(start_date=start_date, business="programming",
-                                                                new_lms=False) \
-            .values('regional_manager', 'territorial_manager', 'location') \
-            .annotate(count=Count('id'))
-
-        new_master_classes_count = MasterClassRecord.objects.filter(start_date=start_date, business="programming",
-                                                                    new_lms=True) \
-            .values('regional_manager', 'territorial_manager', 'location') \
-            .annotate(count=Count('id'))
-
-        total_mk = sum(item["count"] for item in master_classes_count)
-        new_total_mk = sum(item["count"] for item in new_master_classes_count)
-
-        location_data = {}
-        new_location_data = {}
-        for location in locations:
-            regional_manager = location.regional_manager
-            territorial_manager = location.territorial_manager
-            lms_location_name = location.lms_location_name
-
-            location_count = next(
-                (item['count'] for item in master_classes_count if item['location'] == lms_location_name), 0
-            )
-            territorial_count = sum(
-                item['count'] for item in master_classes_count if
-                item['territorial_manager'] == territorial_manager)
-            regional_count = sum(
-                item['count'] for item in master_classes_count if item['regional_manager'] == regional_manager)
-
-            new_location_count = next(
-                (item['count'] for item in new_master_classes_count if item['location'] == lms_location_name), 0
-            )
-            new_territorial_count = sum(
-                item['count'] for item in new_master_classes_count if item['territorial_manager'] == territorial_manager)
-            new_regional_count = sum(
-                item['count'] for item in new_master_classes_count if item['regional_manager'] == regional_manager)
-
-            if location_count <= 0:
-                continue
-
-            if regional_manager not in location_data:
-                location_data[regional_manager] = (
-                    regional_count, {territorial_manager: (territorial_count, {location: location_count})})
-            elif territorial_manager not in location_data[regional_manager][1]:
-                location_data[regional_manager][1][territorial_manager] = (
-                    territorial_count, {location: location_count})
-            else:
-                location_data[regional_manager][1][territorial_manager][1][location] = location_count
-
-            if regional_manager not in new_location_data:
-                new_location_data[regional_manager] = (
-                    new_regional_count, {territorial_manager: (new_territorial_count, {location: new_location_count})})
-            elif territorial_manager not in new_location_data[regional_manager][1]:
-                new_location_data[regional_manager][1][territorial_manager] = (
-                    new_territorial_count, {location: new_location_count})
-            else:
-                new_location_data[regional_manager][1][territorial_manager][1][location] = new_location_count
+        reports = statistic_service.get_master_class_reports(start_date)
 
         context = {"start_dates": start_dates,
-                   "location_data": location_data,
-                   "new_location_data": new_location_data,
-                   "total_mk": total_mk,
-                   "new_total_mk": new_total_mk}
+                   "reports": reports,
+                   }
 
     return render(request, "logika_statistics/new_statistic.html",
                   context=context

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional, Union
 
@@ -75,3 +75,32 @@ class ChurnDTO:
     comment: str = ""
     group_lms: Union[int, str] = ""
     group_title: str = "Без групи"
+
+
+@dataclass
+class MasterClassDTO:
+    student_lms_id: Union[int, str]
+    mc_lms_id: Union[int, str]
+    start_date: str
+    end_date: str
+    business: str
+    location: str
+    teacher_lms_id: Union[int, str]
+    tutor: str
+    territorial_manager: str
+    regional_manager: str
+    course_id: Union[int, str]
+    attended: bool
+    is_uk: bool = False
+    student_lms_name: str = "Placeholder"
+    course_title: str = "Placeholder"
+    client_manager: str = "Placeholder"
+    teacher: str = "Placeholder"
+
+
+@dataclass
+class MKReportDTO:
+    service_name: str
+    mk_data: list
+    total_mk: int
+    location_data: dict = field(default_factory=dict)

@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Type, Optional
 from urllib.parse import quote
 
+from logika_teachers.repositories.dtos import MKReportDTO
+from logika_teachers.repositories.master_class_repository import MasterClassRepositoryInterface, MasterClassRepository
 from logika_teachers.services.django_setup import *
 
 from concurrent.futures import ThreadPoolExecutor
@@ -17,30 +19,48 @@ from utils.get_jwt_session import AutoRefreshJWTSession
 from utils.lms_authentication import get_authenticated_session
 
 import pandas as pd
+import logging
+
+logger = logging.getLogger("info_logger")
 
 
 class MasterClassServiceInterface(ABC):
+    __servicename__ = "default"
 
-    def __init__(self, lms_service: Type[LMSServiceInterface]):
+    def __init__(self, lms_service: Type[LMSServiceInterface], repository: Type[MasterClassRepositoryInterface],
+                 ban=False):
         self.start_date = None
         self.end_date = None
         self.lms_service = lms_service
+        self.repository = repository
+        self.ban = ban
 
     @abstractmethod
     def collect_master_classes(self, start_date: str, end_date: str):
         pass
 
+    @abstractmethod
+    def get_master_class_report(self, start_date: datetime.datetime) -> list:
+        pass
+
 
 class MasterClassService(MasterClassServiceInterface):
+    __servicename__ = "Old LMS Service"
     _lms_session = get_authenticated_session()
 
     def collect_master_classes(self, start_date: str, end_date: str):
+        if self.ban:
+            logger.info(f"Collecting {self.__servicename__} banned")
+            return
         self.start_date = start_date
         self.end_date = end_date
-        print("INFO: Collecting mk in old BO")
+        logger.info(f"Collecting mk in {self.__servicename__}")
         self._clear_records()
         file_path = self._get_groups_data()
         self._process_dataframe_in_threads(file_path)
+
+    def get_master_class_report(self, start_date: datetime.datetime) -> list:
+        return self.repository.get_master_class_statistics(start_date, business="programming", new_lms=False)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=False).delete()
@@ -56,7 +76,7 @@ class MasterClassService(MasterClassServiceInterface):
         with open(output_file_path, "w", encoding="UTF-8") as file_obj:
             for line in response.text:
                 file_obj.write(line)
-        print("SUCCESS: Groups file created")
+        logger.info("SUCCESS: Groups file created")
         return output_file_path
 
     def _process_dataframe_in_threads(self, file_path: Path, max_threads=6):
@@ -66,18 +86,17 @@ class MasterClassService(MasterClassServiceInterface):
 
     def _process_group(self, group: pd.Series):
         group_id = group["Group ID"]
-        print("INFO: Start process group:", group_id)
+        logger.info(f"Start process group: {group_id}")
         title = group["Назва групи"]
         location_name = group["Майданчик"]
         students_attendance_url = f"https://lms.logikaschool.com/api/v1/stats/default/attendance?group={group_id}"
         detail_group, status = self.lms_service.get_group(group_id)
         response = self._lms_session.get(students_attendance_url)
         if not response.ok:
-            print("ERROR: Request error:", response.status_code)
+            logger.error(f"Request error: {response.status_code}")
             return
         data = response.json().get("data")
         course_id = detail_group.course_id
-        print(course_id)
 
         business = get_business_by_group_course_id(course_id)
         territorial_manager = None
@@ -90,12 +109,12 @@ class MasterClassService(MasterClassServiceInterface):
                 regional_manager = location.regional_manager
                 tutor = location.tutor
             else:
-                print(f"ERROR: Location {location_name} not found in DB")
+                logger.error(f"Location {location_name} not found in DB")
         else:
-            print("ERROR: Location name not specified")
+            logger.error("Location name not specified")
 
         if "ук" in title.lower() and not ("мк" in title.lower()):
-            print("ATTENTION: Processing student in Lesson in Credit")
+            logger.warning("Processing student in Lesson in Credit")
             students_link = f"https://lms.logikaschool.com/api/v2/group/student/index?groupId={group_id}&expand=lastGroup%2ClastGroup.invoices%2ClastGroup.invoices.invoiceMail%2Cbranch%2Cwallet%2CamoLead%2Cb2bPartners%2Cgroups.b2bPartners"
             students_resp = self._lms_session.get(students_link)
             if students_resp.status_code == 200:
@@ -111,7 +130,7 @@ class MasterClassService(MasterClassServiceInterface):
                             redirected_student_link
                         )
                         if redirected_student_resp.status_code == 200:
-                            print("Inside redirected student")
+                            logger.info("Inside redirected student")
                             redirected_student_data = (
                                 redirected_student_resp.json()["data"]
                             )
@@ -128,18 +147,17 @@ class MasterClassService(MasterClassServiceInterface):
                                 next_group_link = f"https://lms.logikaschool.com/api/v1/group/{next_group_id}?expand=venue%2Cteacher%2Ccurator%2Cbranch"
                                 next_group_resp = self._lms_session.get(next_group_link)
                                 if next_group_resp.status_code == 200:
-                                    print(f"Inside next group {next_group_id}")
+                                    logger.info(f"Inside next group {next_group_id}")
                                     next_group_type = next_group_resp.json()[
                                         "data"
                                     ]["type"]["value"]
-                                    print(next_group_type)
                                     if next_group_type != "regular":
                                         continue
-                                    print(f"Next group {next_group_id} is regular!")
+                                    logger.info(f"Next group {next_group_id} is regular!")
                                 attendance_link = f"https://lms.logikaschool.com/api/v1/stats/default/attendance?group={next_group_id}&students%5B%5D={student['id']}"
                                 attendance_resp = self._lms_session.get(attendance_link)
                                 if attendance_resp.status_code == 200:
-                                    print("Getting attendance")
+                                    logger.info("Getting attendance")
                                     try:
                                         student_attendance_data = (
                                             attendance_resp.json()["data"][0][
@@ -148,7 +166,7 @@ class MasterClassService(MasterClassServiceInterface):
                                         )
                                     except IndexError:
                                         student_attendance_data = []
-                                        print("Attendance is empty")
+                                        logger.warning("Attendance is empty")
                                     for lesson in student_attendance_data:
                                         lesson_datetime = lesson[
                                             "start_time_formatted"
@@ -196,7 +214,7 @@ class MasterClassService(MasterClassServiceInterface):
                             is_uk=True,
                         )
                     except Exception as exp:
-                        print(exp)
+                        logger.error(exp)
 
         for item in data:
             student_id = item["student_id"]
@@ -222,23 +240,30 @@ class MasterClassService(MasterClassServiceInterface):
                 attended=attended,
                 is_uk=False,
             )
-            print(f"SUCCESS: Student in {group_id} processed", created)
-        print(f"SUCCESS: Group {group_id} processed")
+            logger.info(f"SUCCESS: Student in {group_id} processed {created}")
+        logger.info(f"SUCCESS: Group {group_id} processed")
 
 
 class MasterClassBOService(MasterClassServiceInterface):
+    __servicename__ = "New LMS Service"
     _api_root = "https://api.logikaschool.com.ua"
     _lms_session = AutoRefreshJWTSession()
 
     def collect_master_classes(self, start_date: str, end_date: str):
+        if self.ban:
+            logger.info(f"Collecting {self.__servicename__} banned")
+            return
         self.start_date = start_date
         self.end_date = end_date
-        print("INFO: Collecting mk in new BO")
+        logger.info(f"Collecting mk in {self.__servicename__}")
         self._clear_records()
         groups_data = self._get_groups_data()
         if not groups_data:
             raise Exception("ERROR: Groups data does not got")
         self._process_groups_in_threads(groups_data)
+
+    def get_master_class_report(self, start_date: datetime.datetime) -> list:
+        return self.repository.get_master_class_statistics(start_date, business="programming", new_lms=True)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=True).delete()
@@ -256,7 +281,7 @@ class MasterClassBOService(MasterClassServiceInterface):
                                                         "endDate": str(end_date),
                                                         "type": "MASTER_CLASS"})
         if groups_response.status_code != 200:
-            print("ERROR: New LMS API request error:", groups_response.status_code, groups_response.json())
+            logger.error(f"New LMS API request error: {groups_response.status_code} {groups_response.json()}")
             return None
 
         groups_data = groups_response.json()
@@ -268,18 +293,18 @@ class MasterClassBOService(MasterClassServiceInterface):
 
     def _process_group(self, group_id: int):
         if group_id < 0:
-            print("ERROR: Miss group id")
+            logger.error("Miss group id")
             return
-        print("INFO: Start process group", group_id)
+        logger.info(f"Start process group {group_id}")
         # group_dto, status = self.lms_service.get_group(group_id)
         group_response = self._lms_session.get(f"{self._api_root}/sync/statistics/group/{group_id}")
         if group_response.status_code != 200:
-            print("ERROR: Group is not found. Response status:", group_response.status_code)
+            logger.error(f"Group is not found. Response status:{group_response.status_code}")
             return
 
         students_response = self._lms_session.get(f"{self._api_root}/sync/statistics/students/group/{group_id}")
         if students_response.status_code != 200:
-            print("ERROR: Student request failed", students_response.status_code)
+            logger.error(f"Student request failed {students_response.status_code}")
             return
 
         group_data = group_response.json()
@@ -296,9 +321,9 @@ class MasterClassBOService(MasterClassServiceInterface):
                 regional_manager = location.regional_manager
                 tutor = location.tutor
             else:
-                print(f"ERROR: Location {location_name} not found in DB")
+                logger.error(f"Location {location_name} not found in DB")
         else:
-            print("ERROR: Location name not specified")
+            logger.error("Location name not specified")
 
         students = students_response.json()
         for student in students:
@@ -325,10 +350,10 @@ class MasterClassBOService(MasterClassServiceInterface):
                 is_uk=False,
                 new_lms=True
             )
-            print(f"SUCCESS: Student in {group_id} processed", created)
-        print(f"SUCCESS: Group {group_id} processed")
+            logger.info(f"SUCCESS: Student in {group_id} processed {created}")
+        logger.info(f"SUCCESS: Group {group_id} processed")
 
 
 if __name__ == "__main__":
-    statistic_service = MasterClassService(lms_service=LMSService)
+    statistic_service = MasterClassService(lms_service=LMSService, repository=MasterClassRepository)
     statistic_service.collect_master_classes("2024-10-01", "2024-10-06")

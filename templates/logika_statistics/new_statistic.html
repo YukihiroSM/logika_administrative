@@ -31,44 +31,35 @@
 </div>
 <div>
     <div class="row">
-    <div class="col-auto">
-    <h3>Total MK: {{ total_mk }}</h3>
-{#    {% for regional, terrotorial in location_data.items %}#}
-{#        <b>{{ regional }}</b><br>#}
-{##}
-{#        {% for ter, location in terrotorial.items %}#}
-{#            <small><b>{{ ter }}</b></small><br>#}
-{#            {% for loc, records in location.items %}#}
-{#                {% if records > 0 %}#}
-{#                    <small>{{ loc }} | {{ records }}</small><br>#}
-{#                {% endif %}#}
+    {% for report in reports %}
+        <div class="col-auto">
+        <h3>Total MK ({{ report.service_name }}): {{ report.total_mk }}</h3>
+
+        {% for regional, regional_data in report.location_data.items %}
+            <h4>{{ regional }} |  {{ regional_data.0 }}</h4>
+            {% for territorial, territorial_data in regional_data.1.items %}
+                <b>{{ territorial }} | {{ territorial_data.0 }}</b><br>
+                {% for location, data in territorial_data.1.items %}
+                    <small>{{ location }} | {{ data.0 }} | {{ data.1 }}</small><br>
+                {% endfor %}
+            {% endfor %}
+            <hr>
+        {% endfor %}
+        </div>
+    {% endfor %}
+{#    <div class="col-auto">#}
+{#    <h3>NEW Total MK: {{ new_total_mk }}</h3>#}
+{#        {% for regional, regional_data in new_location_data.items %}#}
+{#        <h4>{{ regional }} |  {{ regional_data.0 }}</h4>#}
+{#        {% for territorial, territorial_data in regional_data.1.items %}#}
+{#            <b>{{ territorial }} | {{ territorial_data.0 }}</b><br>#}
+{#            {% for location, locations_count in territorial_data.1.items %}#}
+{#                <small>{{ location }} | {{ locations_count }}</small><br>#}
 {#            {% endfor %}#}
 {#        {% endfor %}#}
+{#        <hr>#}
 {#    {% endfor %}#}
-    {% for regional, regional_data in location_data.items %}
-        <h4>{{ regional }} |  {{ regional_data.0 }}</h4>
-        {% for territorial, territorial_data in regional_data.1.items %}
-            <b>{{ territorial }} | {{ territorial_data.0 }}</b><br>
-            {% for location, locations_count in territorial_data.1.items %}
-                <small>{{ location }} | {{ locations_count }}</small><br>
-            {% endfor %}
-        {% endfor %}
-        <hr>
-    {% endfor %}
-    </div>
-    <div class="col-auto">
-    <h3>NEW Total MK: {{ new_total_mk }}</h3>
-        {% for regional, regional_data in new_location_data.items %}
-        <h4>{{ regional }} |  {{ regional_data.0 }}</h4>
-        {% for territorial, territorial_data in regional_data.1.items %}
-            <b>{{ territorial }} | {{ territorial_data.0 }}</b><br>
-            {% for location, locations_count in territorial_data.1.items %}
-                <small>{{ location }} | {{ locations_count }}</small><br>
-            {% endfor %}
-        {% endfor %}
-        <hr>
-    {% endfor %}
-    </div>
+{#    </div>#}
     </div>
 </div>
 

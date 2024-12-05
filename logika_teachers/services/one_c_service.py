@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 
@@ -6,6 +7,8 @@ import requests
 import library
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
 from utils.lms_authentication import get_authenticated_session
+
+logger = logging.getLogger("info_logger")
 
 
 class PaymentServiceInterface(ABC):
@@ -42,7 +45,8 @@ class PaymentService(PaymentServiceInterface):
         url = self._payments_url.format(self.start_date, self.end_date, self.course)
         session = self._get_session()
         data = self._get_payments_data(url, session)
-        self._process_data_in_threads(data)
+        if data:
+            self._process_data_in_threads(data)
 
     def _convert_date_to_url(self):
         self.start_date = self.start_date.replace("-", "")
@@ -62,10 +66,10 @@ class PaymentService(PaymentServiceInterface):
         return session
 
     def _get_payments_data(self, url: str, session: requests.Session):
-        print(url)
+        logger.info(f"Request url: {url}")
         response = session.get(url)
         if not response.ok:
-            print(f"ERROR: One C Http error: {response.status_code}")
+            logger.error(f"One C Http error: {response.status_code}")
             return
 
         return response.json()
@@ -91,7 +95,7 @@ class PaymentService(PaymentServiceInterface):
             else "english"
         )
         if self._get_true_payment_value(payment["Оплата"]) < 500:
-            print(f"ISSUE: too small payment {str(payment['КлиентID_БО'])}")
+            logger.warning(f"too small payment {str(payment['КлиентID_БО'])}")
             self.failed_payments["too small"].append(student_id)
             return
 
@@ -124,14 +128,14 @@ class PaymentService(PaymentServiceInterface):
         student_url = self._student_url.format(student_id)
         student_details_response = self._lms_session.get(student_url)
         if student_details_response.status_code == 404:
-            print(f"ISSUE: student {student_id} not found in LMS")
+            logger.warning(f"student {student_id} not found in LMS")
             self.failed_payments["wrong id"].append(student_id)
             return
 
         try:
             student_details = student_details_response.json()["data"]
         except KeyError:
-            print(f"ISSUE: Can't get data about student {student_id} Skipping!")
+            logger.warning(f"Can't get data about student {student_id} Skipping!")
             self.failed_payments["other"].append(student_id)
             return
 
@@ -140,7 +144,7 @@ class PaymentService(PaymentServiceInterface):
         student_recent_group = student_details.get("lastGroup")
 
         if student_recent_group is None:
-            print(f"ISSUE: student {student_id} has no recent group")
+            logger.warning(f"student {student_id} has no recent group")
             self.failed_payments["without mk"].append(student_id)
             return
 
@@ -149,8 +153,8 @@ class PaymentService(PaymentServiceInterface):
         group_response = self._lms_session.get(group_url)
 
         if group_response.status_code != 200:
-            print(
-                f"ISSUE: group {student_recent_group_id} unable to retrieve from LMS"
+            logger.warning(
+                f"group {student_recent_group_id} unable to retrieve from LMS"
             )
             self.failed_payments["other"].append(student_id)
             return
@@ -161,13 +165,13 @@ class PaymentService(PaymentServiceInterface):
         group_course_data = group_data.get("course")
 
         if group_teacher_data is None:
-            print(f"ISSUE: group {student_recent_group_id} has no teacher")
+            logger.warning(f"group {student_recent_group_id} has no teacher")
 
         if group_venue_data is None:
-            print(f"ISSUE: group {student_recent_group_id} has no venue")
+            logger.warning(f"group {student_recent_group_id} has no venue")
 
         if group_curator_data is None:
-            print(f"ISSUE: group {student_recent_group_id} has no curator")
+            logger.warning(f"group {student_recent_group_id} has no curator")
 
         location = group_venue_data.get("title") if group_venue_data else None
         teacher = group_teacher_data.get("name") if group_teacher_data else None
@@ -185,15 +189,15 @@ class PaymentService(PaymentServiceInterface):
             else None
         )
         if course_business != business:
-            print(
-                f"ISSUE: student {student_id} has wrong business {course_business}"
+            logger.warning(
+                f"student {student_id} has wrong business {course_business}"
             )
 
         location_object = Location.objects.filter(
             lms_location_name=location
         ).first()
         if location_object is None:
-            print(f"ISSUE: location {location} not found in DB")
+            logger.warning(f"location {location} not found in DB")
             self.failed_payments["location not found"].append(student_id)
 
         territorial_manager = None
