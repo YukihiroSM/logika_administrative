@@ -29,7 +29,7 @@ class PaymentServiceInterface(ABC):
 
 
 class PaymentService(PaymentServiceInterface):
-    _payments_url = "https://school.cloud24.com.ua:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={0}&till={1}&businessDirection={2}&firstPayment=true"
+    _payments_url = "https://localhost:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={0}&till={1}&businessDirection={2}&firstPayment=true"
     _student_url = "https://lms.logikaschool.com/api/v2/student/default/view/{0}?id={0}&expand=lastGroup%2Cwallet%2Cbranch%2ClastGroup.branch%2CamoLead%2Cgroups%2Cgroups.b2bPartners"
     _group_url = "https://lms.logikaschool.com/api/v1/group/{0}?expand=venue,teacher,curator"
     _lms_session = get_authenticated_session()
