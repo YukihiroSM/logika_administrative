@@ -528,7 +528,7 @@ def new_statistic(request):
         return redirect("logika_general:index")
     mk_service = MasterClassService(LMSService, MasterClassRepository, ban=True)
     mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, ban=True)
-    pm_service = PaymentService()
+    pm_service = PaymentService(ban=True)
     statistic_service = StatisticService([mk_service, mk_service2], [pm_service])
     if request.method == "POST":
         start_date = request.POST.get("start_date")

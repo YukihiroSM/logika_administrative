@@ -1,8 +1,10 @@
+import datetime
 import logging
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+from django.db.models import Count
 
 import library
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
@@ -27,6 +29,10 @@ class PaymentServiceInterface(ABC):
     def collect_payments(self, start_date: str, end_date: str):
         pass
 
+    @abstractmethod
+    def get_reports(self, start_date: datetime.datetime, **extra_filters):
+        pass
+
 
 class PaymentService(PaymentServiceInterface):
     _payments_url = "https://localhost:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={0}&till={1}&businessDirection={2}&firstPayment=true"
@@ -34,11 +40,15 @@ class PaymentService(PaymentServiceInterface):
     _group_url = "https://lms.logikaschool.com/api/v1/group/{0}?expand=venue,teacher,curator"
     _lms_session = get_authenticated_session()
 
-    def __init__(self, course: str = "programming"):
+    def __init__(self, course: str = "programming", ban=False):
         super().__init__(course=course)
         self._convent_course_to_url()
+        self.ban = ban
 
     def collect_payments(self, start_date: str, end_date: str):
+        if self.ban:
+            logger.warning("Payment service banned")
+            return
         self.start_date = start_date
         self.end_date = end_date
         self._convert_date_to_url()
@@ -47,6 +57,13 @@ class PaymentService(PaymentServiceInterface):
         data = self._get_payments_data(url, session)
         if data:
             self._process_data_in_threads(data)
+
+    def get_reports(self, start_date: datetime.datetime, **extra_filters):
+        payment_record_count = PaymentRecord.objects.filter(start_date=start_date,
+                                                            business="programming") \
+            .values('regional_manager', 'territorial_manager', 'location') \
+            .annotate(count=Count('id'))
+        return list(payment_record_count)
 
     def _convert_date_to_url(self):
         self.start_date = self.start_date.replace("-", "")

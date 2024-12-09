@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Type, Optional
 from urllib.parse import quote
 
-from logika_teachers.repositories.dtos import MKReportDTO
+from logika_teachers.repositories.dtos import MKReportDTO, MasterClassDTO
 from logika_teachers.repositories.master_class_repository import MasterClassRepositoryInterface, MasterClassRepository
 from logika_teachers.services.django_setup import *
 
@@ -194,7 +194,7 @@ class MasterClassService(MasterClassServiceInterface):
                                             else:
                                                 attended = False
                     try:
-                        MasterClassRecord.objects.get_or_create(
+                        mk_dto = MasterClassDTO(
                             student_lms_id=student_id,
                             student_lms_name=student_name,
                             mc_lms_id=group_id,
@@ -213,6 +213,7 @@ class MasterClassService(MasterClassServiceInterface):
                             attended=attended,
                             is_uk=True,
                         )
+                        self.repository.get_or_create(mk_dto)
                     except Exception as exp:
                         logger.error(exp)
 
@@ -220,8 +221,7 @@ class MasterClassService(MasterClassServiceInterface):
             student_id = item["student_id"]
             attendance = item["attendance"]
             attended = attendance[0].get("status") == "present"
-
-            mk_obj, created = MasterClassRecord.objects.get_or_create(
+            mk_dto = MasterClassDTO(
                 student_lms_id=student_id,
                 student_lms_name="Placeholder",
                 mc_lms_id=group_id,
@@ -240,6 +240,7 @@ class MasterClassService(MasterClassServiceInterface):
                 attended=attended,
                 is_uk=False,
             )
+            mk_obj, created = self.repository.get_or_create(mk_dto)
             logger.info(f"SUCCESS: Student in {group_id} processed {created}")
         logger.info(f"SUCCESS: Group {group_id} processed")
 
@@ -329,8 +330,7 @@ class MasterClassBOService(MasterClassServiceInterface):
         for student in students:
             student_id = student.get("id")
             attended = False
-
-            mk_obj, created = MasterClassRecord.objects.get_or_create(
+            mk_dto = MasterClassDTO(
                 student_lms_id=student_id,
                 student_lms_name="Placeholder",
                 mc_lms_id=group_id,
@@ -350,6 +350,7 @@ class MasterClassBOService(MasterClassServiceInterface):
                 is_uk=False,
                 new_lms=True
             )
+            mk_obj, created = self.repository.get_or_create(mk_dto)
             logger.info(f"SUCCESS: Student in {group_id} processed {created}")
         logger.info(f"SUCCESS: Group {group_id} processed")
 
