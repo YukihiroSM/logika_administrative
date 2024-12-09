@@ -40,7 +40,7 @@
             {% for territorial, territorial_data in regional_data.1.items %}
                 <b>{{ territorial }} | {{ territorial_data.0 }}</b><br>
                 {% for location, data in territorial_data.1.items %}
-                    <small>{{ location }} | {{ data.0 }} | {{ data.1 }}</small><br>
+                    <small>{{ location }} | {{ data }}</small><br>
                 {% endfor %}
             {% endfor %}
             <hr>

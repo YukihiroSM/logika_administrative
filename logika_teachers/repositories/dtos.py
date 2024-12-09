@@ -96,6 +96,7 @@ class MasterClassDTO:
     course_title: str = "Placeholder"
     client_manager: str = "Placeholder"
     teacher: str = "Placeholder"
+    new_lms: bool = False
 
 
 @dataclass
@@ -103,4 +104,11 @@ class MKReportDTO:
     service_name: str
     mk_data: list
     total_mk: int
+    location_data: dict = field(default_factory=dict)
+
+
+@dataclass
+class PMReportDTO:
+    pm_data: list
+    total_pm: int
     location_data: dict = field(default_factory=dict)
