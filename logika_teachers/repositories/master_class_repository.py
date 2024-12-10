@@ -21,6 +21,11 @@ class MasterClassRepositoryInterface(ABC):
     def get_master_class_statistics(cls, start_date: datetime, **extra_filters) -> list:
         pass
 
+    @classmethod
+    @abstractmethod
+    def get_student_lms_ids(cls, start_date: datetime, **extra_filters) -> list:
+        pass
+    
 
 class MasterClassRepository(MasterClassRepositoryInterface):
 
@@ -37,3 +42,9 @@ class MasterClassRepository(MasterClassRepositoryInterface):
             .annotate(count=Count('id'))
 
         return list(master_classes_count)
+
+    @classmethod
+    def get_student_lms_ids(cls, start_date: datetime, **extra_filters) -> list:
+        student_ids = MasterClassRecord.objects.filter(start_date=start_date, **extra_filters).\
+            values_list("student_lms_id", flat=True)
+        return list(student_ids)

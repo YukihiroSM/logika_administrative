@@ -61,7 +61,7 @@ class PaymentService(PaymentServiceInterface):
     def get_reports(self, start_date: datetime.datetime, **extra_filters):
         payment_record_count = PaymentRecord.objects.filter(start_date=start_date,
                                                             business="programming") \
-            .values('regional_manager', 'territorial_manager', 'location') \
+            .values('regional_manager', 'territorial_manager', 'location', "student_lms_id") \
             .annotate(count=Count('id'))
         return list(payment_record_count)
 
