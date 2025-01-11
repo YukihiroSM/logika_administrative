@@ -61,6 +61,10 @@ class MasterClassServiceInterface(ABC):
     def get_master_class_report(self, start_date: datetime.datetime) -> list:
         pass
 
+    @abstractmethod
+    def get_students_ids(self, start_date: datetime.datetime) -> list:
+        pass
+
 
 class MasterClassService(MasterClassServiceInterface):
     __servicename__ = "Old LMS Service"
@@ -79,6 +83,9 @@ class MasterClassService(MasterClassServiceInterface):
 
     def get_master_class_report(self, start_date: datetime.datetime) -> list:
         return self.mk_repository.get_master_class_statistics(start_date, business="programming", new_lms=False)
+
+    def get_students_ids(self, start_date: datetime.datetime) -> list:
+        return self.repository.get_student_lms_ids(start_date, business="programming", new_lms=False)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=False).delete()
@@ -291,6 +298,9 @@ class MasterClassBOService(MasterClassServiceInterface):
 
     def get_master_class_report(self, start_date: datetime.datetime) -> list:
         return self.mk_repository.get_master_class_statistics(start_date, business="programming", new_lms=True)
+
+    def get_students_ids(self, start_date: datetime.datetime) -> list:
+        return self.repository.get_student_lms_ids(start_date, business="programming", new_lms=True)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=True).delete()

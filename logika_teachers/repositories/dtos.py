@@ -103,6 +103,7 @@ class MasterClassDTO:
 class MKReportDTO:
     service_name: str
     mk_data: list
+    student_ids: list
     total_mk: int
     location_data: dict = field(default_factory=dict)
 
