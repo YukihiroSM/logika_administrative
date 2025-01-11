@@ -112,3 +112,11 @@ class PMReportDTO:
     pm_data: list
     total_pm: int
     location_data: dict = field(default_factory=dict)
+
+
+@dataclass
+class FailRecordDTO:
+    error_type: str
+    error_msg: str
+    additional_filters: dict
+    created_at: Optional[datetime] = None

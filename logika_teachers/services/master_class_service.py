@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Type, Optional
 from urllib.parse import quote
 
-from logika_teachers.repositories.dtos import MKReportDTO, MasterClassDTO
+from logika_teachers.repositories.dtos import MKReportDTO, MasterClassDTO, FailRecordDTO
+from logika_teachers.repositories.error_record_repository import FailRecordRepositoryInterface
 from logika_teachers.repositories.master_class_repository import MasterClassRepositoryInterface, MasterClassRepository
 from logika_teachers.services.django_setup import *
 
@@ -27,13 +28,30 @@ logger = logging.getLogger("info_logger")
 class MasterClassServiceInterface(ABC):
     __servicename__ = "default"
 
-    def __init__(self, lms_service: Type[LMSServiceInterface], repository: Type[MasterClassRepositoryInterface],
+    def __init__(self, lms_service: Type[LMSServiceInterface], mk_repository: Type[MasterClassRepositoryInterface],
+                 fail_repository: Type[FailRecordRepositoryInterface],
                  ban=False):
         self.start_date = None
         self.end_date = None
         self.lms_service = lms_service
-        self.repository = repository
+        self.mk_repository = mk_repository
+        self.fail_repository = fail_repository
         self.ban = ban
+        self.failed_mk = {"request error": list(),
+                          "location not found": list(),
+                          "location name not specified": list(),
+                          "other": list()}
+
+    def add_fail_group(self, error_type: str, msg: str, **additional_filters):
+        fail_list = self.failed_mk.get(error_type, None)
+        if fail_list is None:
+            logger.error(f"Incorrect fail record type ({error_type})")
+            return
+        additional_filters.update({"service": "master_class"})
+        fail_dto = FailRecordDTO(error_type=error_type, error_msg=msg, additional_filters=additional_filters)
+        fail_list.append(fail_dto)
+        self.fail_repository.create_error_record(fail_dto)
+        logger.debug("Fail group added")
 
     @abstractmethod
     def collect_master_classes(self, start_date: str, end_date: str):
@@ -60,7 +78,7 @@ class MasterClassService(MasterClassServiceInterface):
         self._process_dataframe_in_threads(file_path)
 
     def get_master_class_report(self, start_date: datetime.datetime) -> list:
-        return self.repository.get_master_class_statistics(start_date, business="programming", new_lms=False)
+        return self.mk_repository.get_master_class_statistics(start_date, business="programming", new_lms=False)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=False).delete()
@@ -92,10 +110,6 @@ class MasterClassService(MasterClassServiceInterface):
         students_attendance_url = f"https://lms.logikaschool.com/api/v1/stats/default/attendance?group={group_id}"
         detail_group, status = self.lms_service.get_group(group_id)
         response = self._lms_session.get(students_attendance_url)
-        if not response.ok:
-            logger.error(f"Request error: {response.status_code}")
-            return
-        data = response.json().get("data")
         course_id = detail_group.course_id
 
         business = get_business_by_group_course_id(course_id)
@@ -110,8 +124,14 @@ class MasterClassService(MasterClassServiceInterface):
                 tutor = location.tutor
             else:
                 logger.error(f"Location {location_name} not found in DB")
+                self.add_fail_group(error_type="location not found",
+                                    msg=f"Локація {location_name} не знайдена у базі даних. Група {group_id} ({title})",
+                                    regional_manager=regional_manager)
         else:
             logger.error("Location name not specified")
+            self.add_fail_group(error_type="location name not specified",
+                                msg=f"Локація {location_name} не знайдена у даних від БО. Група {group_id} ({title})",
+                                regional_manager=regional_manager)
 
         if "ук" in title.lower() and not ("мк" in title.lower()):
             logger.warning("Processing student in Lesson in Credit")
@@ -213,10 +233,16 @@ class MasterClassService(MasterClassServiceInterface):
                             attended=attended,
                             is_uk=True,
                         )
-                        self.repository.get_or_create(mk_dto)
+                        self.mk_repository.get_or_create(mk_dto)
                     except Exception as exp:
                         logger.error(exp)
-
+        if not response.ok:
+            logger.error(f"Request error: {response.status_code}")
+            self.add_fail_group(error_type="request error",
+                                msg=f"Не вдалось отримати інформацію по студентам групи {group_id} ({title})",
+                                regional_manager=regional_manager)
+            return
+        data = response.json().get("data")
         for item in data:
             student_id = item["student_id"]
             attendance = item["attendance"]
@@ -240,7 +266,7 @@ class MasterClassService(MasterClassServiceInterface):
                 attended=attended,
                 is_uk=False,
             )
-            mk_obj, created = self.repository.get_or_create(mk_dto)
+            mk_obj, created = self.mk_repository.get_or_create(mk_dto)
             logger.info(f"SUCCESS: Student in {group_id} processed {created}")
         logger.info(f"SUCCESS: Group {group_id} processed")
 
@@ -264,7 +290,7 @@ class MasterClassBOService(MasterClassServiceInterface):
         self._process_groups_in_threads(groups_data)
 
     def get_master_class_report(self, start_date: datetime.datetime) -> list:
-        return self.repository.get_master_class_statistics(start_date, business="programming", new_lms=True)
+        return self.mk_repository.get_master_class_statistics(start_date, business="programming", new_lms=True)
 
     def _clear_records(self):
         MasterClassRecord.objects.filter(start_date=self.start_date, end_date=self.end_date, new_lms=True).delete()
@@ -323,13 +349,26 @@ class MasterClassBOService(MasterClassServiceInterface):
                 tutor = location.tutor
             else:
                 logger.error(f"Location {location_name} not found in DB")
+                self.add_fail_group(error_type="location not found",
+                                    msg=f"Локація {location_name} не знайдена у базі даних. Група {group_id} ({title})",
+                                    regional_manager=regional_manager)
         else:
             logger.error("Location name not specified")
+            self.add_fail_group(error_type="location name not specified",
+                                msg=f"Локація {location_name} не знайдена у даних від БО. Група {group_id} ({title})",
+                                regional_manager=regional_manager)
 
         students = students_response.json()
         for student in students:
             student_id = student.get("id")
+            lessons_response = self._lms_session.get(f"{self._api_root}/sync/statistics/lessons/group/{group_id}")
             attended = False
+            if lessons_response.status_code != 200:
+                logger.error(f"Lesson get error: {lessons_response.status_code}")
+            lesson = lessons_response.json()[0] if len(lessons_response.json()) > 0 else None
+            if lesson:
+                attended_students = lesson.get("attendedStudent", list())
+                attended = student_id in attended_students
             mk_dto = MasterClassDTO(
                 student_lms_id=student_id,
                 student_lms_name="Placeholder",
@@ -350,11 +389,11 @@ class MasterClassBOService(MasterClassServiceInterface):
                 is_uk=False,
                 new_lms=True
             )
-            mk_obj, created = self.repository.get_or_create(mk_dto)
+            mk_obj, created = self.mk_repository.get_or_create(mk_dto)
             logger.info(f"SUCCESS: Student in {group_id} processed {created}")
         logger.info(f"SUCCESS: Group {group_id} processed")
 
 
 if __name__ == "__main__":
-    statistic_service = MasterClassService(lms_service=LMSService, repository=MasterClassRepository)
+    statistic_service = MasterClassService(lms_service=LMSService, mk_repository=MasterClassRepository)
     statistic_service.collect_master_classes("2024-10-01", "2024-10-06")

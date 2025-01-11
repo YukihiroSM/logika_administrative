@@ -21,6 +21,7 @@ from logika_general.models import (
 )
 from logika_teachers.models import TutorProfile
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_teachers.repositories.error_record_repository import FailRecordRepository
 from logika_teachers.repositories.master_class_repository import MasterClassRepository
 from logika_teachers.services.lms_service import LMSService, NewLMSService
 from logika_teachers.services.master_class_service import MasterClassService, MasterClassBOService
@@ -236,14 +237,14 @@ def programming_report_updated(request):
     ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
         if (
-            report.total_attended == 0
-            and report.total_enrolled == 0
-            and report.total_payments == 0
+                report.total_attended == 0
+                and report.total_enrolled == 0
+                and report.total_payments == 0
         ):
             continue
         if (
-            report.territorial_manager is not None
-            and report.territorial_manager != "UNKNOWN"
+                report.territorial_manager is not None
+                and report.territorial_manager != "UNKNOWN"
         ):
             if report.territorial_manager in totals_tm:
                 totals_tm[report.territorial_manager][
@@ -526,9 +527,10 @@ def resolve_consolidation_report(request, report_id):
 def new_statistic(request):
     if not request.user.is_superuser:
         return redirect("logika_general:index")
-    mk_service = MasterClassService(LMSService, MasterClassRepository, ban=True)
-    mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, ban=True)
-    pm_service = PaymentService(ban=True)
+    mk_service = MasterClassService(LMSService, MasterClassRepository, fail_repository=FailRecordRepository, ban=False)
+    mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, fail_repository=FailRecordRepository,
+                                       ban=False)
+    pm_service = PaymentService(fail_repository=FailRecordRepository, ban=True)
     statistic_service = StatisticService([mk_service, mk_service2], [pm_service])
     if request.method == "POST":
         start_date = request.POST.get("start_date")
@@ -547,11 +549,25 @@ def new_statistic(request):
     if start_date:
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         reports = statistic_service.get_master_class_reports(start_date)
+        failed_mk = {"request error": FailRecordRepository.get_errors_by_type("request error", service="master_class"),
+                     "location not found": FailRecordRepository.get_errors_by_type("location not found",
+                                                                                   service="master_class"),
+                     "location name not specified": FailRecordRepository.get_errors_by_type(
+                         "location name not specified", service="master_class"),
+                     "other": FailRecordRepository.get_errors_by_type("other", service="master_class")}
+        failed_pm = {"too small": FailRecordRepository.get_errors_by_type("too small", service="payments"),
+                     "location not found": FailRecordRepository.get_errors_by_type("location not found", service="payments"),
+                     "other": FailRecordRepository.get_errors_by_type("other", service="payments"),
+                     "wrong id": FailRecordRepository.get_errors_by_type("wrong id", service="payments"),
+                     "without mk": FailRecordRepository.get_errors_by_type("without mk", service="payments")}
 
         context = {"start_dates": start_dates,
                    "reports": reports,
+                   "failed_mk": failed_mk,
+                   "failed_pm": failed_pm
                    }
 
     return render(request, "logika_statistics/new_statistic.html",
                   context=context
                   )
+
