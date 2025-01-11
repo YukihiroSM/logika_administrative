@@ -2,12 +2,16 @@ import datetime
 import logging
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
+from typing import Type
 
 import requests
 from django.db.models import Count
 
 import library
 from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_teachers.repositories.dtos import FailRecordDTO
+from logika_teachers.repositories.error_record_repository import FailRecordRepositoryInterface
+from utils.get_jwt_session import AutoRefreshJWTSession
 from utils.lms_authentication import get_authenticated_session
 
 logger = logging.getLogger("info_logger")
@@ -15,10 +19,11 @@ logger = logging.getLogger("info_logger")
 
 class PaymentServiceInterface(ABC):
 
-    def __init__(self, course: str = "programming"):
+    def __init__(self, fail_repository: Type[FailRecordRepositoryInterface], course: str = "programming"):
         self.start_date = None
         self.end_date = None
         self.course = course
+        self.fail_repository = fail_repository
         self.failed_payments = {"too small": list(),
                                 "location not found": list(),
                                 "other": list(),
@@ -33,15 +38,26 @@ class PaymentServiceInterface(ABC):
     def get_reports(self, start_date: datetime.datetime, **extra_filters):
         pass
 
+    def add_fail_group(self, error_type: str, msg: str, **additional_filters):
+        fail_list = self.failed_payments.get(error_type)
+        if not fail_list:
+            logger.error(f"Incorrect fail record type ({error_type})")
+            return
+        additional_filters.update({"service": "payments"})
+        fail_dto = FailRecordDTO(error_type=error_type, error_msg=msg, additional_filters=additional_filters)
+        fail_list.append(fail_dto)
+        self.fail_repository.create_error_record(fail_dto)
+
 
 class PaymentService(PaymentServiceInterface):
     _payments_url = "https://localhost:22443/SCHOOL/ru_RU/hs/1cData/B2C/?from={0}&till={1}&businessDirection={2}&firstPayment=true"
     _student_url = "https://lms.logikaschool.com/api/v2/student/default/view/{0}?id={0}&expand=lastGroup%2Cwallet%2Cbranch%2ClastGroup.branch%2CamoLead%2Cgroups%2Cgroups.b2bPartners"
     _group_url = "https://lms.logikaschool.com/api/v1/group/{0}?expand=venue,teacher,curator"
     _lms_session = get_authenticated_session()
+    _new_lms_session = AutoRefreshJWTSession()
 
-    def __init__(self, course: str = "programming", ban=False):
-        super().__init__(course=course)
+    def __init__(self, fail_repository: Type[FailRecordRepositoryInterface], course: str = "programming", ban=False):
+        super().__init__(fail_repository, course=course)
         self._convent_course_to_url()
         self.ban = ban
 
@@ -61,7 +77,7 @@ class PaymentService(PaymentServiceInterface):
     def get_reports(self, start_date: datetime.datetime, **extra_filters):
         payment_record_count = PaymentRecord.objects.filter(start_date=start_date,
                                                             business="programming") \
-            .values('regional_manager', 'territorial_manager', 'location') \
+            .values('regional_manager', 'territorial_manager', 'location', "student_lms_id") \
             .annotate(count=Count('id'))
         return list(payment_record_count)
 
@@ -104,56 +120,18 @@ class PaymentService(PaymentServiceInterface):
         else:
             return value
 
-    def _process_payment(self, payment):
-        student_id = payment["КлиентID_БО"]
-        business = (
-            "programming"
-            if payment["НаправлениеБизнеса"] == "Школы программирования"
-            else "english"
-        )
-        if self._get_true_payment_value(payment["Оплата"]) < 500:
-            logger.warning(f"too small payment {str(payment['КлиентID_БО'])}")
-            self.failed_payments["too small"].append(student_id)
-            return
-
-        existing_report = (
-            MasterClassRecord.objects.filter(
-                student_lms_id=student_id, business=business, attended=True
-            )
-            .order_by("-start_date")
-            .first()
-        )
-        if existing_report:
-            report = PaymentRecord.objects.get_or_create(
-                student_lms_id=existing_report.student_lms_id,
-                student_lms_name=existing_report.student_lms_name,
-                recent_group_lms_id=existing_report.mc_lms_id,
-                start_date=self.start_date,
-                end_date=self.end_date,
-                business=business,
-                location=existing_report.location,
-                teacher=existing_report.teacher,
-                teacher_lms_id=existing_report.teacher_lms_id,
-                client_manager=existing_report.client_manager,
-                territorial_manager=existing_report.territorial_manager,
-                regional_manager=existing_report.regional_manager,
-                course_title=existing_report.course_title,
-                course_id=existing_report.course_id,
-                payment_amount=self._get_true_payment_value(payment["Оплата"]),
-            )
-            return
+    def _process_recent_group(self, student_id: str, business: str, payment: dict):
         student_url = self._student_url.format(student_id)
         student_details_response = self._lms_session.get(student_url)
         if student_details_response.status_code == 404:
             logger.warning(f"student {student_id} not found in LMS")
-            self.failed_payments["wrong id"].append(student_id)
-            return
+            raise ValueError("student not found")
 
         try:
             student_details = student_details_response.json()["data"]
         except KeyError:
             logger.warning(f"Can't get data about student {student_id} Skipping!")
-            self.failed_payments["other"].append(student_id)
+            self.add_fail_group("other", msg=f"Can't get data about student {student_id}")
             return
 
         student_lms_name = student_details.get("fullName")
@@ -162,7 +140,7 @@ class PaymentService(PaymentServiceInterface):
 
         if student_recent_group is None:
             logger.warning(f"student {student_id} has no recent group")
-            self.failed_payments["without mk"].append(student_id)
+            self.add_fail_group("without mk", msg=f"МК студента {student_id} не знайдено")
             return
 
         student_recent_group_id = student_recent_group.get("id")
@@ -173,7 +151,6 @@ class PaymentService(PaymentServiceInterface):
             logger.warning(
                 f"group {student_recent_group_id} unable to retrieve from LMS"
             )
-            self.failed_payments["other"].append(student_id)
             return
         group_data = group_response.json()["data"]
         group_teacher_data = group_data.get("teacher")
@@ -215,7 +192,7 @@ class PaymentService(PaymentServiceInterface):
         ).first()
         if location_object is None:
             logger.warning(f"location {location} not found in DB")
-            self.failed_payments["location not found"].append(student_id)
+            self.add_fail_group("location not found", msg=f"Локація {location} не знайдена у базі даних")
 
         territorial_manager = None
         regional_manager = None
@@ -240,4 +217,50 @@ class PaymentService(PaymentServiceInterface):
             course_title=course_title,
             course_id=course_id,
             payment_amount=self._get_true_payment_value(payment["Оплата"]),
+            new_lms=False
         )
+
+    def _process_payment(self, payment):
+        student_id = payment["КлиентID_БО"]
+        business = (
+            "programming"
+            if payment["НаправлениеБизнеса"] == "Школы программирования"
+            else "english"
+        )
+        if self._get_true_payment_value(payment["Оплата"]) < 500:
+            logger.warning(f"too small payment {str(payment['КлиентID_БО'])}")
+            self.add_fail_group(error_type="too small",
+                                msg=f"Оплата менше 500. Студент {student_id}")
+            return
+
+        existing_report = (
+            MasterClassRecord.objects.filter(
+                student_lms_id=student_id, business=business, attended=True
+            )
+            .order_by("-start_date")
+            .first()
+        )
+        if existing_report:
+            report = PaymentRecord.objects.get_or_create(
+                student_lms_id=existing_report.student_lms_id,
+                student_lms_name=existing_report.student_lms_name,
+                recent_group_lms_id=existing_report.mc_lms_id,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                business=business,
+                location=existing_report.location,
+                teacher=existing_report.teacher,
+                teacher_lms_id=existing_report.teacher_lms_id,
+                client_manager=existing_report.client_manager,
+                territorial_manager=existing_report.territorial_manager,
+                regional_manager=existing_report.regional_manager,
+                course_title=existing_report.course_title,
+                course_id=existing_report.course_id,
+                payment_amount=self._get_true_payment_value(payment["Оплата"]),
+                new_lms=existing_report.new_lms
+            )
+            return
+        try:
+            self._process_recent_group(student_id, business, payment)
+        except ValueError:
+            pass

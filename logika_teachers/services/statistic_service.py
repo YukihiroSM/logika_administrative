@@ -48,9 +48,10 @@ class StatisticService(StatisticServiceInterface):
              item['attended']), 0
         )
         location_payments = next(
-            (item['count'] for item in pm_count if item['location'] == lms_location_name), 0
+            (item['count'] for item in pm_count if
+             item['location'] == lms_location_name and item['student_lms_id'] in report.student_ids), 0
         )
-        location_conversion = (location_payments / location_attended) * 100 if location_attended != 0 else 0
+        location_conversion = round((location_payments / location_attended) * 100, 2) if location_attended != 0 else 0
 
         return location_count, location_attended, location_payments, location_conversion
 
@@ -66,8 +67,8 @@ class StatisticService(StatisticServiceInterface):
             item['territorial_manager'] == territorial_manager and item['attended'])
         territorial_payments = sum(
             item['count'] for item in pm_count if
-            item['territorial_manager'] == territorial_manager)
-        territorial_conversion = (territorial_payments / territorial_attended) * 100 if territorial_attended != 0 else 0
+            item['territorial_manager'] == territorial_manager and item['student_lms_id'] in report.student_ids)
+        territorial_conversion = round((territorial_payments / territorial_attended) * 100, 2) if territorial_attended != 0 else 0
 
         return territorial_count, territorial_attended, territorial_payments, territorial_conversion
 
@@ -82,8 +83,8 @@ class StatisticService(StatisticServiceInterface):
             item['regional_manager'] == regional_manager and item['attended'])
         regional_payments = sum(
             item['count'] for item in pm_count if
-            item['regional_manager'] == regional_manager)
-        regional_conversion = (regional_payments / regional_attended) * 100 if regional_attended != 0 else 0
+            item['regional_manager'] == regional_manager and item['student_lms_id'] in report.student_ids)
+        regional_conversion = round((regional_payments / regional_attended) * 100, 2) if regional_attended != 0 else 0
 
         return regional_count, regional_attended, regional_payments, regional_conversion
 
@@ -92,8 +93,10 @@ class StatisticService(StatisticServiceInterface):
         mk_reports = list()
         for mk_service in self.master_class_services:
             data = mk_service.get_master_class_report(start_date)
+            student_ids = mk_service.get_students_ids(start_date)
             report = MKReportDTO(service_name=mk_service.__servicename__,
                                  mk_data=data,
+                                 student_ids=student_ids,
                                  total_mk=sum(item["count"] for item in data))
             mk_reports.append(report)
 
