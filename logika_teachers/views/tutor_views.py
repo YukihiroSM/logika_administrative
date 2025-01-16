@@ -14,6 +14,7 @@ from logika_teachers.models import (
     TutorMonthReport,
     RegionalTutorProfile
 )
+from utils.constants import MONTHS_UA
 from utils.get_possible_report_scales import get_possible_report_scales
 from utils.get_user_role import get_user_role
 
@@ -43,7 +44,11 @@ def tutor_month_report(request, user_id):
         report_id = request.POST.get("report_id")
         conversion = request.POST.get("conversion")
         if month:
-            current_year = timezone.now().year
+            current_date = timezone.now()
+            current_year = current_date.year
+            month_number = MONTHS_UA.get(month)
+            if month_number > current_date.month:
+                current_year -= 1
             # month_reports = TutorMonthReport.objects.filter(
             #     month=month, tutor=tutor, created_at__year=current_year
             # ).all()
