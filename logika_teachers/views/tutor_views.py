@@ -46,7 +46,7 @@ def tutor_month_report(request, user_id):
         if month:
             current_date = timezone.now()
             current_year = current_date.year
-            month_number = MONTHS_UA.get(month)
+            month_number = MONTHS_UA.get(month.strip().lower())
             if month_number > current_date.month:
                 current_year -= 1
             # month_reports = TutorMonthReport.objects.filter(
