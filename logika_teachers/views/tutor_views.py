@@ -65,6 +65,7 @@ def tutor_month_report(request, user_id):
                         conversion="-",
                         month=month,
                         tutor=tutor,
+                        created_at=current_date.replace(year=current_year)
                     )
                     new_month_report.save()
             month_reports = (
