@@ -118,7 +118,7 @@ def auth_user(request):
     user_obj = User.objects.filter(
         first_name=first_name,
         last_name=last_name,
-        username__contains=first_name.strip(),
+        username__contains=first_name.strip(), # angelina_prihodko
     ).first()
     user_role = get_user_role(user_obj)
 
@@ -139,6 +139,9 @@ def auth_user(request):
             profile = TerritorialManagerProfile.objects.filter(user=user_obj).first()
         elif user_role == "client_manager":
             profile = ClientManagerProfile.objects.filter(user=user_obj).first()
+        
+        if not profile:
+            return JsonResponse({"user_role": user_role, "user_obj": [user_obj.pk, user_obj.first_name]})
 
         if token != profile.auth_token:
             if request.META["REMOTE_ADDR"] != "127.0.0.1":
@@ -164,6 +167,8 @@ def auth_user(request):
             if time_now - profile.login_timestamp < timedelta(minutes=1):
                 password = "abcdefgh"
                 user = authenticate(username=username, password=password)
+                print("user")
+                print(user)
             else:
                 return JsonResponse(
                     {"status": "False", "details": "Out of authorisation time"}
@@ -177,6 +182,7 @@ def auth_user(request):
             "status": "True",
             "request_data_GET": request_data_GET,
             "request_data_POST": request_data_POST,
+            "test": ""
         }
     )
 

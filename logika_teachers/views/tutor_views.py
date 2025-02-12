@@ -14,15 +14,16 @@ from logika_teachers.models import (
     TutorMonthReport,
     RegionalTutorProfile
 )
+from utils.constants import MONTHS_UA
 from utils.get_possible_report_scales import get_possible_report_scales
 from utils.get_user_role import get_user_role
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-31",
-    "Вересень": "2023-09-01_2023-09-30",
-    "Жовтень": "2023-10-01_2023-10-31",
-    "Листопад": "2023-11-01_2023-11-30",
-    "Грудень": "2023-12-01_2023-12-20",
+    "Серпень": "2024-08-01_2024-08-31",
+    "Вересень": "2024-09-01_2024-09-30",
+    "Жовтень": "2024-10-01_2024-10-31",
+    "Листопад": "2024-11-01_2024-11-30",
+    "Грудень": "2024-12-01_2024-12-13",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
     "Березень": "2024-03-01_2024-03-10",
@@ -43,7 +44,11 @@ def tutor_month_report(request, user_id):
         report_id = request.POST.get("report_id")
         conversion = request.POST.get("conversion")
         if month:
-            current_year = timezone.now().year
+            current_date = timezone.now()
+            current_year = current_date.year
+            month_number = MONTHS_UA.get(month.strip().lower())
+            if month_number > current_date.month:
+                current_year -= 1
             # month_reports = TutorMonthReport.objects.filter(
             #     month=month, tutor=tutor, created_at__year=current_year
             # ).all()
@@ -60,6 +65,7 @@ def tutor_month_report(request, user_id):
                         conversion="-",
                         month=month,
                         tutor=tutor,
+                        created_at=current_date.replace(year=current_year)
                     )
                     new_month_report.save()
             month_reports = (

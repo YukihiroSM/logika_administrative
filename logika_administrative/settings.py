@@ -14,10 +14,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 load_dotenv(Path(BASE_DIR, ".env"))
 # Quick-start development settings - unsuitable for production
@@ -93,7 +91,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "logika_administrative.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -107,7 +104,6 @@ DATABASES = {
         "PORT": os.environ.get("POSTGRES_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -127,7 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -138,7 +133,6 @@ TIME_ZONE = "Europe/Kiev"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -166,26 +160,51 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "file": {
+        "console": {  # Консольный обработчик для стандартных сообщений Django
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "timestamped",
+        },
+        "default_file": {  # Основной файл логов
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": f"{BASE_DIR}/logging.log",
             "formatter": "timestamped",
         },
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
+        "errors_file": {  # Файл для ошибок 500
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": f"{BASE_DIR}/errors.log",
+            "formatter": "timestamped",
+        },
+        "info_file": {  # Файл для записей print
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": f"{BASE_DIR}/info.log",
             "formatter": "timestamped",
         },
     },
     "loggers": {
+        "django.request": {
+            "handlers": ["errors_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "info_logger": {
+            "handlers": ["info_file", "console"],
+            "propagate": False,
+        },
+        "urllib3": {
+            "handlers": ["default_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         "": {
-            "handlers": ["file"],
+            "handlers": ["console", "default_file"],
             "level": "DEBUG",
             "propagate": True,
         },

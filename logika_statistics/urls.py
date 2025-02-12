@@ -27,5 +27,10 @@ urlpatterns = [
         views.resolve_consolidation_report,
         name="resolve-consolidation-report",
     ),
+    path(
+        "programming-statistic/",
+        views.new_statistic,
+        name="programming-statistic",
+    ),
 ]
 app_name = "logika_statistics"

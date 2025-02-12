@@ -309,6 +309,7 @@ class MasterClassRecord(models.Model):
     course_id = models.CharField(max_length=16, null=True)
     attended = models.BooleanField()
     is_uk = models.BooleanField()
+    new_lms = models.BooleanField(default=False, blank=True, null=True)
 
 
 class PaymentRecord(models.Model):
@@ -332,6 +333,7 @@ class PaymentRecord(models.Model):
     course_title = models.CharField(max_length=128, null=True)
     course_id = models.CharField(max_length=16, null=True)
     payment_amount = models.CharField(max_length=16, null=True)
+    new_lms = models.BooleanField(default=False, blank=True, null=True)
 
 
 class ConsolidationReport(models.Model):
@@ -347,3 +349,10 @@ class ConsolidationReport(models.Model):
     status = models.CharField(max_length=256, null=True, default="todo")
     comment = models.TextField(null=True)
     type = models.CharField(max_length=256)
+
+
+class FailRecord(models.Model):
+    error_type = models.CharField(max_length=50)
+    error_msg = models.TextField()
+    additional_filters = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -3,12 +3,15 @@ from datetime import datetime
 from logika_statistics.models import Group
 from logika_teachers.models import TeacherProfile
 from utils.lms_authentication import get_authenticated_session
-
+import logging
+logger = logging.getLogger("info_logger")
 
 def is_lesson_in_month(lesson_date, month):
     # lesson_date_example: 2023-03-13T20:30:00+03:00
+    logger.info(f"{lesson_date} | {month}")
     lesson_date = datetime.strptime(lesson_date, "%Y-%m-%dT%H:%M:%S%z")
-    if lesson_date.month == month and lesson_date.year == 2024:
+    year = datetime.now().year
+    if lesson_date.month == month and lesson_date.year == year:
         return True
 
 
@@ -54,6 +57,7 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
                     lesson.get("startTime"), month
                 ):
                     perf = lesson.get("regularTaskScoreSumPercent")
+                    logger.info(f"{perf}")
                     if not perf:
                         if group.lms_id not in zero_performance_lessons:
                             zero_performance_lessons[group.lms_id] = []
@@ -69,6 +73,7 @@ def get_teacher_performance_by_month(teacher_id, locations, month, teacher_group
                     else:
                         month_performance.append(perf)
         results[group.lms_id] = month_performance
+    logger.info(f"{results} | {zero_performance_lessons}")
     return results, zero_performance_lessons
 
 

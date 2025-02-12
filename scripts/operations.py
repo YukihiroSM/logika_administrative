@@ -12,12 +12,12 @@ from logika_administrative.settings import BASE_DIR
 def run():
     logger = logging.getLogger(__name__)
     timelines = [
-        ("2024-07-01", "2024-07-07"),
-        ("2024-07-08", "2024-07-14"),
-        ("2024-07-15", "2024-07-21"),
-        ("2024-07-22", "2024-07-28"),
-        ("2024-07-29", "2024-07-31"),
-        ("2024-07-01", "2024-07-31"),
+        # ("2024-12-01", "2024-12-08"),
+        ("2024-12-09", "2024-12-15"),
+        # ("2024-11-18", "2024-11-24"),
+        # ("2024-11-25", "2024-11-30"),
+        # ("2024-10-28", "2024-10-31"),
+        # ("2024-12-01", "2024-12-13"),
     ]
 
     start_dates = [line[0] for line in timelines]
@@ -39,11 +39,11 @@ def run():
         )
         os.environ["start_date"] = timeline[0]
         os.environ["end_date"] = timeline[1]
-        os.environ["month"] = month
+        # os.environ["month"] = month
         # management.call_command("process_master_classes")
         # management.call_command("process_payments", course="english")
-        # management.call_command("process_payments", course="programming")
-        management.call_command("generate_reports")
+        management.call_command("process_payments", course="programming")
+        # management.call_command("generate_reports")
 
         # management.call_command("lesson_consolidation")
     # management.call_command("collect_groups_data")

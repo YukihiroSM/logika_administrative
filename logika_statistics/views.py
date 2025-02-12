@@ -6,7 +6,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Count
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
@@ -20,6 +20,13 @@ from logika_general.models import (
     TerritorialManagerProfile,
 )
 from logika_teachers.models import TutorProfile
+from logika_statistics.models import MasterClassRecord, PaymentRecord, Location
+from logika_teachers.repositories.error_record_repository import FailRecordRepository
+from logika_teachers.repositories.master_class_repository import MasterClassRepository
+from logika_teachers.services.lms_service import LMSService, NewLMSService
+from logika_teachers.services.master_class_service import MasterClassService, MasterClassBOService
+from logika_teachers.services.one_c_service import PaymentService
+from logika_teachers.services.statistic_service import StatisticService
 from utils.get_possible_report_scales import get_possible_report_scales
 from utils.get_user_role import get_user_role
 from .forms import ReportDateForm, UpdateLocationForm
@@ -49,11 +56,11 @@ def health(request):
 base_path = os.path.dirname(os.path.dirname(__file__))
 
 scales_new = {
-    "Серпень": "2023-08-01_2023-08-31",
+    "Серпень": "2024-08-01_2024-08-30",
     "Вересень": "2023-09-01_2023-09-30",
     "Жовтень": "2023-10-01_2023-10-31",
-    "Листопад": "2023-11-01_2023-11-30",
-    "Грудень": "2023-12-01_2023-12-20",
+    "Листопад": "2024-11-01_2024-11-30",
+    "Грудень": "2024-12-01_2024-12-13",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
     "Березень": "2024-03-01_2024-03-31",
@@ -230,14 +237,14 @@ def programming_report_updated(request):
     ukrainian_totals = {"Ukraine": {"attended": 0, "payments": 0, "enrolled": 0}}
     for report in client_manager_reports:
         if (
-            report.total_attended == 0
-            and report.total_enrolled == 0
-            and report.total_payments == 0
+                report.total_attended == 0
+                and report.total_enrolled == 0
+                and report.total_payments == 0
         ):
             continue
         if (
-            report.territorial_manager is not None
-            and report.territorial_manager != "UNKNOWN"
+                report.territorial_manager is not None
+                and report.territorial_manager != "UNKNOWN"
         ):
             if report.territorial_manager in totals_tm:
                 totals_tm[report.territorial_manager][
@@ -514,3 +521,53 @@ def resolve_consolidation_report(request, report_id):
         redirect_url = reverse(target_view_name)
 
     return redirect(redirect_url)
+
+
+@login_required
+def new_statistic(request):
+    if not request.user.is_superuser:
+        return redirect("logika_general:index")
+    mk_service = MasterClassService(LMSService, MasterClassRepository, fail_repository=FailRecordRepository, ban=False)
+    mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, fail_repository=FailRecordRepository,
+                                       ban=False)
+    pm_service = PaymentService(fail_repository=FailRecordRepository, ban=False)
+    statistic_service = StatisticService([mk_service, mk_service2], [pm_service])
+    if request.method == "POST":
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
+        print(start_date, end_date)
+
+        if start_date and end_date:
+            print(start_date, end_date)
+            statistic_service.collect_statistic(start_date, end_date)
+
+    start_date = request.GET.get("view_start_date")
+    start_dates = MasterClassRecord.objects.values_list("start_date", flat=True).order_by("start_date").distinct()
+    start_dates = [datetime.datetime.strftime(date, "%Y-%m-%d") for date in start_dates]
+
+    context = {"start_dates": start_dates}
+    if start_date:
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        reports = statistic_service.get_master_class_reports(start_date)
+        failed_mk = {"request error": FailRecordRepository.get_errors_by_type("request error", service="master_class"),
+                     "location not found": FailRecordRepository.get_errors_by_type("location not found",
+                                                                                   service="master_class"),
+                     "location name not specified": FailRecordRepository.get_errors_by_type(
+                         "location name not specified", service="master_class"),
+                     "other": FailRecordRepository.get_errors_by_type("other", service="master_class")}
+        failed_pm = {"too small": FailRecordRepository.get_errors_by_type("too small", service="payments"),
+                     "location not found": FailRecordRepository.get_errors_by_type("location not found", service="payments"),
+                     "other": FailRecordRepository.get_errors_by_type("other", service="payments"),
+                     "wrong id": FailRecordRepository.get_errors_by_type("wrong id", service="payments"),
+                     "without mk": FailRecordRepository.get_errors_by_type("without mk", service="payments")}
+
+        context = {"start_dates": start_dates,
+                   "reports": reports,
+                   "failed_mk": failed_mk,
+                   "failed_pm": failed_pm
+                   }
+
+    return render(request, "logika_statistics/new_statistic.html",
+                  context=context
+                  )
+
