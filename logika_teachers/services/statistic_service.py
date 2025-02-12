@@ -116,7 +116,7 @@ class StatisticService(StatisticServiceInterface):
                 territorial_count = self._count_territorial(location, report, pm_report)
                 regional_count = self._count_regional(location, report, pm_report)
 
-                if location_count[0] <= 0:
+                if location_count[0] <= 0 and location_count[1] <= 0 and location_count[2] <= 0:
                     continue
 
                 if regional_manager not in report.location_data:

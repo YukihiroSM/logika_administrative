@@ -40,7 +40,7 @@ class PaymentServiceInterface(ABC):
 
     def add_fail_group(self, error_type: str, msg: str, **additional_filters):
         fail_list = self.failed_payments.get(error_type)
-        if not fail_list:
+        if fail_list is None:
             logger.error(f"Incorrect fail record type ({error_type})")
             return
         additional_filters.update({"service": "payments"})
@@ -58,17 +58,18 @@ class PaymentService(PaymentServiceInterface):
 
     def __init__(self, fail_repository: Type[FailRecordRepositoryInterface], course: str = "programming", ban=False):
         super().__init__(fail_repository, course=course)
-        self._convent_course_to_url()
         self.ban = ban
 
     def collect_payments(self, start_date: str, end_date: str):
         if self.ban:
             logger.warning("Payment service banned")
             return
+        logger.warning("Start collect pyments " + str(start_date))
         self.start_date = start_date
         self.end_date = end_date
-        self._convert_date_to_url()
-        url = self._payments_url.format(self.start_date, self.end_date, self.course)
+        start_date, end_date = self._convert_date_to_url()
+        course = self._convent_course_to_url()
+        url = self._payments_url.format(start_date, end_date, course)
         session = self._get_session()
         data = self._get_payments_data(url, session)
         if data:
@@ -82,11 +83,10 @@ class PaymentService(PaymentServiceInterface):
         return list(payment_record_count)
 
     def _convert_date_to_url(self):
-        self.start_date = self.start_date.replace("-", "")
-        self.end_date = self.end_date.replace("-", "")
+        return self.start_date.replace("-", ""), self.end_date.replace("-", "")
 
     def _convent_course_to_url(self):
-        self.course = (
+        return (
             "Школы Программирования"
             if self.course == "programming"
             else "english"
@@ -121,6 +121,7 @@ class PaymentService(PaymentServiceInterface):
             return value
 
     def _process_recent_group(self, student_id: str, business: str, payment: dict):
+        logger.warning("start procces recent group")
         student_url = self._student_url.format(student_id)
         student_details_response = self._lms_session.get(student_url)
         if student_details_response.status_code == 404:
@@ -129,6 +130,8 @@ class PaymentService(PaymentServiceInterface):
 
         try:
             student_details = student_details_response.json()["data"]
+            if isinstance(student_details, list):
+                raise KeyError()
         except KeyError:
             logger.warning(f"Can't get data about student {student_id} Skipping!")
             self.add_fail_group("other", msg=f"Can't get data about student {student_id}")
@@ -219,6 +222,7 @@ class PaymentService(PaymentServiceInterface):
             payment_amount=self._get_true_payment_value(payment["Оплата"]),
             new_lms=False
         )
+        logger.info("payments processed")
 
     def _process_payment(self, payment):
         student_id = payment["КлиентID_БО"]
@@ -232,7 +236,7 @@ class PaymentService(PaymentServiceInterface):
             self.add_fail_group(error_type="too small",
                                 msg=f"Оплата менше 500. Студент {student_id}")
             return
-
+        student_id = student_id.lstrip("0")
         existing_report = (
             MasterClassRecord.objects.filter(
                 student_lms_id=student_id, business=business, attended=True
@@ -259,8 +263,11 @@ class PaymentService(PaymentServiceInterface):
                 payment_amount=self._get_true_payment_value(payment["Оплата"]),
                 new_lms=existing_report.new_lms
             )
+            logger.info("payments processed")
             return
         try:
             self._process_recent_group(student_id, business, payment)
-        except ValueError:
-            pass
+        except Exception as exp:
+            logger.warning("try error: " + str(exp))
+            import traceback
+            # logger.error(str(traceback.format_exc()))

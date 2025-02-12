@@ -59,8 +59,8 @@ scales_new = {
     "Серпень": "2024-08-01_2024-08-30",
     "Вересень": "2023-09-01_2023-09-30",
     "Жовтень": "2023-10-01_2023-10-31",
-    "Листопад": "2023-11-01_2023-11-30",
-    "Грудень": "2023-12-01_2023-12-20",
+    "Листопад": "2024-11-01_2024-11-30",
+    "Грудень": "2024-12-01_2024-12-13",
     "Січень": "2023-12-21_2024-01-31",
     "Лютий": "2024-02-01_2024-02-29",
     "Березень": "2024-03-01_2024-03-31",
@@ -530,7 +530,7 @@ def new_statistic(request):
     mk_service = MasterClassService(LMSService, MasterClassRepository, fail_repository=FailRecordRepository, ban=False)
     mk_service2 = MasterClassBOService(NewLMSService, MasterClassRepository, fail_repository=FailRecordRepository,
                                        ban=False)
-    pm_service = PaymentService(fail_repository=FailRecordRepository, ban=True)
+    pm_service = PaymentService(fail_repository=FailRecordRepository, ban=False)
     statistic_service = StatisticService([mk_service, mk_service2], [pm_service])
     if request.method == "POST":
         start_date = request.POST.get("start_date")

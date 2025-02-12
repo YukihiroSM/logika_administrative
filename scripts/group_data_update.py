@@ -17,30 +17,33 @@ def run():
     #     churn.group = None
     #     churn.save()
 
-    Group.objects.all().delete()
+    # Group.objects.all().delete()
     group_service = GroupService(lms_service=LMSService, group_repository=GroupRepository)
-    success = 0
-    total = 0
-    errors = 0
-    with open(GROUPS_FILE_PATH, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter=";")
-        for row in reader:
-            group_id = row['\ufeff"ID"']
-            group, created = group_service.get_or_create_group(group_id)
-            total += 1
-            if created:
-                print(f"Group {group.title} created")
-                success += 1
-            elif group and not created:
-                print(f"Group {group.title} has been found")
-            else:
-                print(f"Group {group_id} did not create")
-                errors += 1
+    # success = 0
+    # total = 0
+    # errors = 0
+    # with open(GROUPS_FILE_PATH, 'r', encoding='utf-8') as file:
+    #     reader = csv.DictReader(file, delimiter=";")
+    #     print(reader.fieldnames)
+    #     for row in reader:
+    #         group_id = row['Group ID']
+    #         group, created = group_service.get_or_create_group(group_id)
+    #         total += 1
+    #         if created:
+    #             print(f"Group {group.title} created")
+    #             success += 1
+    #         elif group and not created:
+    #             print(f"Group {group.title} has been found")
+    #         else:
+    #             print(f"Group {group_id} did not create")
+    #             errors += 1
 
-        print("success", success)
-        print("errors", errors)
-        print("total", total)
+    #     print("success", success)
+    #     print("errors", errors)
+    #     print("total", total)
 
-    churns = PredictedChurn.objects.all()
-    for churn in churns:
-        churn.save()
+    # churns = PredictedChurn.objects.all()
+    # for churn in churns:
+    #     churn.save()
+    group, created = group_service.get_or_create_group(1598389)
+    print(group, created)
