@@ -339,12 +339,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${lesson.teacher}</td>
                 <td>`;
             if (lesson.last_comment === "Коментаря немає") {
-                content += `<a type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#lesson${index + 1}comments">
+                content += `<a type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#lesson${lesson.lesson_id}comments">
                                         Додати
                                    </a>
                                 </td>`;
             } else {
-                content += `<a type="button" class="text-primary mb-2" data-bs-toggle="modal" data-bs-target="#lesson${index + 1}comments">
+                content += `<a type="button" class="text-primary mb-2" data-bs-toggle="modal" data-bs-target="#lesson${lesson.lesson_id}comments">
                                         ${lesson.last_comment}
                                    </a>
                                 </td>`;
@@ -356,9 +356,10 @@ document.addEventListener("DOMContentLoaded", function() {
             // Добавляем модальное окно для комментариев
             let modal = document.createElement('div');
             modal.className = 'modal fade';
-            modal.id = `lesson${index + 1}comments`;
+            modal.id = `lesson${lesson.lesson_id}comments`;
+
             modal.tabIndex = -1;
-            modal.setAttribute('aria-labelledby', `lesson${index + 1}commentsLabel`);
+            modal.setAttribute('aria-labelledby', `lesson${lesson.lesson_id}commentsLabel`);
             modal.setAttribute('aria-hidden', 'true');
 
             // Загрузка комментариев для урока
